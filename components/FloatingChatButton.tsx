@@ -60,9 +60,8 @@ export default function FloatingChatButton() {
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-                        className={`fixed z-[60] right-4 md:right-8 ${isProductPage ? 'bottom-32 md:top-1/2 md:bottom-auto' : 'top-1/2'
-                            }`}
-                        style={{ y: isProductPage ? 0 : springY }}
+                        className={`fixed z-[60] right-4 md:right-8 ${isProductPage ? 'md:top-1/2 md:bottom-auto' : 'top-1/2'}`}
+                        style={{ y: isProductPage ? 0 : springY, bottom: isProductPage ? 'calc(56px + 80px)' : undefined }}
                     >
                         <motion.button
                             onClick={toggleChat}
