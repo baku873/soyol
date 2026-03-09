@@ -39,7 +39,19 @@ function SearchContent() {
   const [recommended, setRecommended] = useState<ProductItem[]>([]);
   const [categories, setCategories] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const addItem = useCartStore((state) => state.addItem);
+
+  useEffect(() => {
+    const saved = localStorage.getItem('soyol-recent-searches');
+    if (saved) {
+      try {
+        setRecentSearches(JSON.parse(saved).slice(0, 5));
+      } catch (e) {
+        setRecentSearches([]);
+      }
+    }
+  }, []);
 
   useEffect(() => {
     // Fetch categories for discovery
@@ -62,6 +74,14 @@ function SearchContent() {
       return;
     }
     setIsLoading(true);
+
+    // Update recent searches
+    setRecentSearches(prev => {
+      const updated = [q, ...prev.filter(s => s !== q)].slice(0, 5);
+      localStorage.setItem('soyol-recent-searches', JSON.stringify(updated));
+      return updated;
+    });
+
     fetch(`/api/products?q=${encodeURIComponent(q)}&limit=100`)
       .then((res) => res.json())
       .then((data) => {
@@ -198,9 +218,16 @@ function SearchContent() {
               <Clock className="w-4 h-4" /> Сүүлд хайсан
             </h3>
             <div className="flex flex-wrap gap-2">
-              {['Smart watch', 'Nike shoes', 'Summer dress'].map((h, i) => (
-                <span key={i} className="text-xs font-bold text-gray-400 bg-gray-100/50 px-3 py-1.5 rounded-lg">{h}</span>
+              {recentSearches.map((h, i) => (
+                <Link key={i} href={`/search?q=${encodeURIComponent(h)}`}>
+                  <span className="text-xs font-bold text-gray-400 bg-gray-100/50 px-3 py-1.5 rounded-lg active:scale-95 transition-all cursor-pointer hover:bg-gray-200">
+                    {h}
+                  </span>
+                </Link>
               ))}
+              {recentSearches.length === 0 && (
+                <span className="text-xs text-gray-300 italic">Түүх байхгүй</span>
+              )}
             </div>
           </section>
         </div>
