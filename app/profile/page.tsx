@@ -18,12 +18,29 @@ import {
   Camera
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useWishlistStore } from '@/store/wishlistStore';
 import toast from 'react-hot-toast';
 
 export default function ProfilePage() {
   const router = useRouter();
   const { user, isAuthenticated, logout } = useAuth();
   const [isLoading, setIsLoading] = useState(true);
+  const wishlistCount = useWishlistStore(state => state.getTotalItems());
+  const [stats, setStats] = useState({ orders: 0, wishlist: 0, addresses: 0 });
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    Promise.all([
+      fetch('/api/orders').then(r => r.json()),
+      fetch('/api/user/addresses').then(r => r.json()),
+    ]).then(([ordersData, addressData]) => {
+      setStats({
+        orders: ordersData.orders?.length || 0,
+        wishlist: wishlistCount,
+        addresses: addressData.addresses?.length || 0,
+      });
+    }).catch(() => { });
+  }, [isAuthenticated, wishlistCount]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -93,29 +110,29 @@ export default function ProfilePage() {
           {user.name || 'Munh'}
         </h1>
         <p className="text-[14px] text-white/80 z-10 font-medium">
-          {user.phone || '99918122'}
+          {user.phone || user.email || ''}
         </p>
 
-        <button className="mt-3 px-4 py-1.5 border border-white/40 rounded-full text-white text-[12px] font-bold tracking-wide hover:bg-white/10 transition-colors z-10">
+        <Link href="/profile/edit" className="mt-3 px-4 py-1.5 border border-white/40 rounded-full text-white text-[12px] font-bold tracking-wide hover:bg-white/10 transition-colors z-10">
           Профайл засах
-        </button>
+        </Link>
       </div>
 
       {/* 2. STATS ROW */}
       <div className="relative z-20 px-4 -mt-6 mb-6">
         <div className="bg-white rounded-[16px] shadow-[0_4px_20px_rgba(0,0,0,0.06)] p-4 flex items-center justify-between">
           <div className="flex-1 flex flex-col items-center">
-            <span className="text-[18px] font-bold text-[#FF6B00]">12</span>
+            <span className="text-[18px] font-bold text-[#FF6B00]">{stats.orders}</span>
             <span className="text-[12px] text-gray-400 font-medium mt-0.5">Захиалга</span>
           </div>
           <div className="w-[1px] h-[30px] bg-gray-100"></div>
           <div className="flex-1 flex flex-col items-center">
-            <span className="text-[18px] font-bold text-[#FF6B00]">5</span>
+            <span className="text-[18px] font-bold text-[#FF6B00]">{wishlistCount}</span>
             <span className="text-[12px] text-gray-400 font-medium mt-0.5">Хадгалсан</span>
           </div>
           <div className="w-[1px] h-[30px] bg-gray-100"></div>
           <div className="flex-1 flex flex-col items-center">
-            <span className="text-[18px] font-bold text-[#FF6B00]">3</span>
+            <span className="text-[18px] font-bold text-[#FF6B00]">{stats.addresses}</span>
             <span className="text-[12px] text-gray-400 font-medium mt-0.5">Хаяг</span>
           </div>
         </div>
