@@ -161,6 +161,12 @@ export default function HomePage() {
                 <div className="flex items-center gap-1.5 lg:gap-2">
                   <Sparkles className="w-3 h-3 lg:w-3.5 lg:h-3.5" strokeWidth={1.2} />
                   <span>Бүгд</span>
+                  {allProducts.length > 0 && (
+                    <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-black ${activeFilter === 'all' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'
+                      }`}>
+                      {allProducts.length}
+                    </span>
+                  )}
                 </div>
               </motion.button>
 
@@ -182,8 +188,8 @@ export default function HomePage() {
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setActiveFilter(key)}
                     className={`px-4 py-2 lg:px-5 lg:py-2.5 rounded-2xl font-bold text-xs lg:text-sm transition-all duration-300 whitespace-nowrap ${isActive
-                        ? 'bg-[#FF5000] text-white shadow-lg shadow-orange-500/30'
-                        : 'bg-white/50 text-gray-600 hover:bg-white border border-gray-100'
+                      ? 'bg-[#FF5000] text-white shadow-lg shadow-orange-500/30'
+                      : 'bg-white/50 text-gray-600 hover:bg-white border border-gray-100'
                       }`}
                   >
                     <div className="flex items-center gap-1.5 lg:gap-2">
