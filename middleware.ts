@@ -29,7 +29,11 @@ const protectedRoutes = [
   '/dashboard',
   '/admin',
   '/profile',
-  '/orders'
+  '/orders',
+  '/checkout',
+  '/wishlist',
+  '/addresses',
+  '/settings',
 ];
 
 // Add paths that are for admins only
