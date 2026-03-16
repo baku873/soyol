@@ -1,13 +1,16 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Phone, ArrowRight, Loader2, Lock } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/context/AuthContext';
 import Link from 'next/link';
 
-export default function SignInPage() {
+function SignInContent() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect_url') || '/';
+
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -46,7 +49,7 @@ export default function SignInPage() {
         login(data.user);
       }
 
-      router.push('/');
+      router.push(redirectTo);
       router.refresh();
 
     } catch (error: any) {
@@ -210,7 +213,7 @@ export default function SignInPage() {
                       if (res.ok) {
                         login(data.user);
                         toast.success('Амжилттай нэвтэрлээ');
-                        router.push('/');
+                        router.push(redirectTo);
                       } else {
                         toast.error(data.error || 'Код буруу байна');
                       }
@@ -239,5 +242,17 @@ export default function SignInPage() {
         </p>
       </div>
     </div>
+  );
+}
+
+export default function SignInPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-[#F5F5F7]">
+        <div className="w-8 h-8 border-4 border-[#F57E20] border-t-transparent rounded-full animate-spin" />
+      </div>
+    }>
+      <SignInContent />
+    </Suspense>
   );
 }

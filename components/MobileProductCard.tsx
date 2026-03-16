@@ -27,9 +27,9 @@ export default function MobileProductCard({ product }: MobileProductCardProps) {
 
     return (
         <motion.div
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="group relative bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100/50 transition-all duration-300"
+            whileTap={{ scale: 0.97 }} 
+            transition={{ type: 'spring', stiffness: 400, damping: 30 }} 
+            className="group relative bg-white rounded-2xl overflow-hidden shadow-[0_2px_12px_rgba(0,0,0,0.04)] border border-gray-100/50 will-change-transform"
         >
             <Link href={`/product/${product.id}`} className="block">
                 <div className="relative aspect-square overflow-hidden bg-gray-50 rounded-t-2xl">
@@ -38,7 +38,7 @@ export default function MobileProductCard({ product }: MobileProductCardProps) {
                         alt={product.name}
                         fill
                         sizes="(max-width: 768px) 50vw"
-                        className="object-cover transition-transform duration-500 group-active:scale-105"
+                        className="object-cover"
                     />
 
                     {/* Premium Status & Discount Badges */}

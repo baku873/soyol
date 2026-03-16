@@ -373,7 +373,89 @@ export default function AdminOrdersPage() {
                         <div className="hidden md:block bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl"> 
                           <div className="overflow-x-auto"> 
                             <table className="w-full text-left border-collapse"> 
-                              ...одоогийн thead, tbody бүгдийг хэвээр нь ороол... 
+                                <thead>
+                                    <tr className="bg-slate-950 border-b border-slate-800">
+                                        <th className="px-4 py-3 w-10">
+                                            <input
+                                                type="checkbox"
+                                                checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
+                                                onChange={toggleBulkSelectAll}
+                                                className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-amber-500 focus:ring-amber-500/20"
+                                            />
+                                        </th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">ID / Огноо</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Хэрэглэгч</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Дүн / Бараа</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Төлөв</th>
+                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Шуурхай үйлдэл</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-800">
+                                    {filteredOrders.map((order) => {
+                                        const totalAmt = order.totalPrice || order.total || 0;
+                                        return (
+                                            <tr
+                                                key={order._id}
+                                                onClick={() => openOrderDetails(order)}
+                                                className={`group cursor-pointer transition-colors ${selectedOrderId === order._id ? 'bg-slate-800/50' : 'hover:bg-slate-800/30'}`}
+                                            >
+                                                <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={selectedOrderIds.has(order._id)}
+                                                        onChange={(e) => toggleBulkSelect(order._id, e as any)}
+                                                        className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-amber-500 focus:ring-amber-500/20"
+                                                    />
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <p className="font-mono text-sm text-white font-bold group-hover:text-amber-500 transition-colors">#{order._id.slice(-8).toUpperCase()}</p>
+                                                    <p className="text-xs text-slate-500 mt-1">{formatDistanceToNow(new Date(order.createdAt), { addSuffix: true, locale: mn })}</p>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <p className="text-sm font-bold text-white">{order.shipping?.fullName || order.fullName || 'Нэргүй'}</p>
+                                                    <p className="text-xs font-mono text-slate-400 mt-1">{order.shipping?.phone || order.phone}</p>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <p className="text-sm font-black text-amber-500">{formatPrice(totalAmt)}</p>
+                                                    <p className="text-xs text-slate-500 mt-1">{order.items.length} төрөл бараа</p>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold border uppercase tracking-wider ${getStatusBadgeClass(order.status)}`}>
+                                                        {getStatusLabel(order.status)}
+                                                    </span>
+                                                </td>
+                                                <td className="px-4 py-4">
+                                                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                                                        {order.status === 'pending' && (
+                                                            <button
+                                                                onClick={() => handleStatusQuickChange(order._id, 'confirmed')}
+                                                                disabled={quickUpdating === order._id}
+                                                                className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-bold rounded-lg border border-blue-500/20 disabled:opacity-50 transition-colors"
+                                                            >
+                                                                {quickUpdating === order._id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Батлах'}
+                                                            </button>
+                                                        )}
+                                                        {order.status === 'confirmed' && (
+                                                            <button
+                                                                onClick={() => handleStatusQuickChange(order._id, 'delivered')}
+                                                                disabled={quickUpdating === order._id}
+                                                                className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/20 disabled:opacity-50 transition-colors"
+                                                            >
+                                                                {quickUpdating === order._id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Хүргэх'}
+                                                            </button>
+                                                        )}
+                                                        <button
+                                                            onClick={() => openOrderDetails(order)}
+                                                            className="p-1.5 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-colors ml-auto opacity-0 group-hover:opacity-100"
+                                                        >
+                                                            <ChevronRight className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
+                                </tbody>
                             </table> 
                           </div> 
                         </div> 

@@ -115,11 +115,7 @@ export async function POST(req: Request) {
       }
     }
 
-    console.log('--- Calling Gemini API ---');
     const apiKey = process.env.GOOGLE_GENERATIVE_AI_API_KEY;
-    console.log('API Key configured:', !!apiKey);
-
-    console.log('Model: gemini-2.5-flash');
 
     const result = await streamText({
       model: google('gemini-2.5-flash'),
@@ -167,7 +163,6 @@ export async function POST(req: Request) {
             productId: z.string(),
           }),
           execute: async ({ productId }: { productId: string }) => {
-            console.log('Executing addToCart tool with args:', { productId });
             if (!productId) return 'Error: productId is missing.';
 
             try {
@@ -181,7 +176,6 @@ export async function POST(req: Request) {
               }
 
               if (!product) {
-                console.log('Product not found for addToCart:', productId);
                 return 'Product not found with that ID.';
               }
 
@@ -227,7 +221,6 @@ export async function POST(req: Request) {
             productName: z.string().describe('The name of the product to check. REQUIRED.'),
           }),
           execute: async ({ productName }: { productName: string }) => {
-            console.log('Executing checkInventory tool with args:', { productName });
             if (!productName) return 'Error: productName is missing.';
             try {
               const productsCollection = await getCollection('products');
@@ -253,7 +246,6 @@ export async function POST(req: Request) {
             searchQuery: z.string().describe('The search query. REQUIRED. e.g. "Sony", "camera"'),
           }),
           execute: async ({ searchQuery }: { searchQuery: string }) => {
-            console.log('Executing searchProducts tool with args:', { searchQuery });
             let query = searchQuery;
             if (!query) {
               console.error('Search query is missing in args');

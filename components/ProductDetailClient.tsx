@@ -433,6 +433,20 @@ export default function ProductDetailClient({ product }: { product: ProductDetai
 
       <div className="min-h-screen pb-[140px] md:pb-20 font-dm bg-[#FAFAF9] text-slate-600 overflow-hidden">
 
+        {/* Mobile back button */} 
+        <div 
+          className="lg:hidden fixed top-0 left-0 z-[110] p-3" 
+          style={{ paddingTop: 'calc(env(safe-area-inset-top) + 8px)' }} 
+        > 
+          <motion.button 
+            whileTap={{ scale: 0.9 }} 
+            onClick={() => router.back()} 
+            className="w-10 h-10 bg-white/90 backdrop-blur-md rounded-2xl flex items-center justify-center shadow-md border border-slate-100/80" 
+          > 
+            <ChevronLeft className="w-5 h-5 text-slate-700" strokeWidth={2.5} /> 
+          </motion.button> 
+        </div> 
+
         {/* ── Sticky header ─────────────────────────────────────────────── */}
         <AnimatePresence>
           {isScrolled && (

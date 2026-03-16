@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 import { ChevronLeft, Package, Clock, Truck, CheckCircle2, XCircle, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useSWR from 'swr';
@@ -22,8 +24,27 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: any; b
 };
 
 export default function MyOrdersPage() {
+  const router = useRouter();
+  const { isAuthenticated, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState('Бүгд');
+
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      router.replace('/sign-in?redirect_url=/orders');
+    }
+  }, [isAuthenticated, authLoading, router]);
+
   const { data, error, isLoading } = useSWR('/api/orders', fetcher);
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
+        <div className="w-8 h-8 border-4 border-[#FF5000] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) return null;
 
   const orders = data?.orders || [];
 
