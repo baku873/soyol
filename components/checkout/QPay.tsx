@@ -9,6 +9,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import confetti from 'canvas-confetti';
 import toast from 'react-hot-toast';
+import { Browser } from '@capacitor/browser';
 
 interface QPayProps {
     orderId: string;
@@ -227,7 +228,7 @@ export default function QPay({ orderId, amount, onSuccess }: QPayProps) {
                         Төлбөр шалгах
                     </button>
                     <button
-                        onClick={() => window.open(qpayData?.urls[0]?.link, '_blank')}
+                        onClick={() => Browser.open({ url: qpayData?.urls[0]?.link || '' })}
                         className="flex-1 py-4 bg-amber-500 hover:bg-amber-600 rounded-2xl flex items-center justify-center gap-2 text-sm font-bold text-white transition-all shadow-lg shadow-amber-500/20 active:scale-95"
                     >
                         <ExternalLink className="w-4 h-4" />
