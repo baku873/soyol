@@ -27,16 +27,17 @@ export async function POST(request: Request) {
 
         const users = await getCollection('users');
         let user = await users.findOne({ $or: [{ googleId }, { email }] });
+        let isNewUser = false;
 
         if (!user) {
             // Create user
+            isNewUser = true;
             const result = await users.insertOne({
                 googleId,
                 email,
                 name: name || email.split('@')[0],
                 image: picture,
                 role: 'user',
-                phone: null,
                 createdAt: new Date(),
                 status: 'available'
             });
@@ -62,6 +63,7 @@ export async function POST(request: Request) {
         // Set cookie
         const response = NextResponse.json({
             success: true,
+            isNewUser,
             user: {
                 id: user._id.toString(),
                 phone: user.phone,

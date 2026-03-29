@@ -48,8 +48,13 @@ function GoogleLoginButton({ mode, onLoading }: { mode: 'signIn' | 'signUp', onL
         const data = await res.json();
         if (res.ok) {
           login(data.user);
-          toast.success('Амжилттай нэвтэрлээ!');
-          router.push('/profile');
+          if (data.isNewUser) {
+            toast.success('Мэдээллээ бөглөнө үү!');
+            router.push('/complete-profile');
+          } else {
+            toast.success('Амжилттай нэвтэрлээ!');
+            router.push('/profile');
+          }
         } else {
           toast.error(data.error || 'Нэвтрэхэд алдаа гарлаа');
         }
