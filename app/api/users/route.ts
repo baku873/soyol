@@ -52,19 +52,21 @@ export async function GET(req: Request) {
             // 2. Count unread messages for the current admin
             let unreadCount = 0;
             if (adminId) {
+                const targetReceiverId = userRole === 'admin' ? 'support_admin' : adminId;
                 unreadCount = await messagesCollection.countDocuments({
-                    receiverId: adminId,
+                    receiverId: targetReceiverId,
                     senderId: userIdStr,
                     read: false
                 });
             }
 
             // 3. Get the very last message in this conversation
+            const targetId = userRole === 'admin' ? 'support_admin' : adminId;
             const lastMsgDoc = await messagesCollection.findOne(
                 {
                     $or: [
-                        { senderId: userIdStr, receiverId: adminId },
-                        { senderId: adminId, receiverId: userIdStr }
+                        { senderId: userIdStr, receiverId: targetId },
+                        { senderId: targetId, receiverId: userIdStr }
                     ]
                 },
                 { sort: { createdAt: -1 } }
@@ -76,9 +78,49 @@ export async function GET(req: Request) {
                 id: userIdStr,
                 isOnline,
                 unreadCount,
-                lastMessage: lastMsgDoc ? lastMsgDoc.content : ''
+                lastMessage: lastMsgDoc ? lastMsgDoc.content : '',
+                hasActiveChat: !!lastMsgDoc // Flag to help UI filter active chats
             };
         }));
+
+        // For admins, sort users so those with active chats and unread messages appear first
+        if (userRole === 'admin') {
+            // Also fetch guests who have chatted with support_admin
+            const guestConversations = await messagesCollection.aggregate([
+                { $match: { receiverId: 'support_admin', senderId: { $regex: /^guest-/ } } },
+                { $sort: { createdAt: 1 } },
+                { $group: { 
+                    _id: '$senderId', 
+                    unreadCount: { $sum: { $cond: [{ $eq: ['$read', false] }, 1, 0] } }, 
+                    lastMessage: { $last: '$content' }, 
+                    lastSeen: { $max: '$createdAt' } 
+                } }
+            ]).toArray();
+
+            const guestUsers = guestConversations.map(g => ({
+                _id: g._id,
+                id: g._id,
+                userId: g._id,
+                name: 'Зочин (Guest)',
+                email: 'Зочин',
+                isOnline: (Date.now() - new Date(g.lastSeen).getTime()) < 5 * 60 * 1000,
+                unreadCount: g.unreadCount,
+                lastMessage: g.lastMessage,
+                hasActiveChat: true,
+                role: 'guest'
+            }));
+
+            enhancedUsers.push(...guestUsers);
+
+            enhancedUsers.sort((a, b) => {
+                if (a.unreadCount !== b.unreadCount) {
+                    return b.unreadCount - a.unreadCount;
+                }
+                if (a.hasActiveChat && !b.hasActiveChat) return -1;
+                if (!a.hasActiveChat && b.hasActiveChat) return 1;
+                return 0;
+            });
+        }
 
         return NextResponse.json(enhancedUsers);
     } catch (error) {

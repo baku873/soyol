@@ -54,14 +54,9 @@ export default function AdminMessagesPage() {
     }, []);
 
     useEffect(() => {
-        if (viewFilter === 'all') {
-            setFilteredUsers(users);
-        } else if (viewFilter === 'admins') {
-            setFilteredUsers(users.filter(u => u.role === 'admin'));
-        } else {
-            setFilteredUsers(users.filter(u => u.role !== 'admin'));
-        }
-    }, [users, viewFilter]);
+        // Just use the sorted users from the API, filtering by search happens in UserList
+        setFilteredUsers(users);
+    }, [users]);
 
     // Timer logic
     useEffect(() => {
@@ -156,24 +151,8 @@ export default function AdminMessagesPage() {
                         {/* User List Sidebar */}
                         <div className={`
                             ${mobileView === 'list' ? 'flex' : 'hidden lg:flex'} 
-                            w-full lg:w-80 h-full flex-col border-r border-slate-800 bg-slate-900/30
+                            w-full lg:w-80 h-full flex-col border-r border-slate-800 bg-slate-900/40
                         `}>
-                            {/* Filter Tabs */}
-                            <div className="flex p-2 gap-1 bg-slate-900/50 border-b border-slate-800">
-                                {(['all', 'clients', 'admins'] as const).map((f) => (
-                                    <button
-                                        key={f}
-                                        onClick={() => setViewFilter(f)}
-                                        className={`flex-1 py-2 text-[10px] font-black uppercase tracking-wider rounded-lg transition-all ${viewFilter === f
-                                            ? 'bg-amber-500 text-slate-950 shadow-lg shadow-amber-500/20'
-                                            : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
-                                            }`}
-                                    >
-                                        {f === 'all' ? 'Бүгд' : f === 'clients' ? 'Хэрэглэгч' : 'Админ'}
-                                    </button>
-                                ))}
-                            </div>
-
                             <UserList
                                 users={filteredUsers}
                                 selectedUser={selectedUser}
@@ -197,20 +176,13 @@ export default function AdminMessagesPage() {
                                             onBack={() => setMobileView('list')}
                                         />
                                     ) : (
-                                        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-8 text-center bg-slate-950 decoration-slate-900 border-l border-slate-800">
-                                            <motion.div
-                                                initial={{ opacity: 0, scale: 0.9 }}
-                                                animate={{ opacity: 1, scale: 1 }}
-                                                className="w-24 h-24 rounded-3xl bg-slate-900/50 border border-slate-800 flex items-center justify-center mb-6 relative"
-                                            >
-                                                <MessageCircle className="w-10 h-10 text-slate-600" />
-                                                <div className="absolute -top-2 -right-2 w-6 h-6 bg-amber-500 rounded-full animate-pulse flex items-center justify-center">
-                                                    <div className="w-2 h-2 bg-amber-300 rounded-full" />
-                                                </div>
-                                            </motion.div>
-                                            <h3 className="text-xl font-bold text-white mb-2">Харилцагчаа сонгоно уу</h3>
-                                            <p className="text-sm max-w-xs text-slate-500">
-                                                Хэрэглэгчидтэй шууд чатлах эсвэл видео дуудлага хийж бараагаа танилцуулах боломжтой
+                                        <div className="flex-1 flex flex-col items-center justify-center text-slate-500 p-8 text-center bg-[#0B1120]">
+                                            <div className="w-20 h-20 rounded-full bg-slate-800/50 flex items-center justify-center mb-4">
+                                                <MessageCircle className="w-8 h-8 text-slate-400" strokeWidth={1.5} />
+                                            </div>
+                                            <h3 className="text-xl font-bold text-white mb-2 tracking-tight">Чат сонгох</h3>
+                                            <p className="text-sm max-w-[260px] text-slate-400 font-medium leading-relaxed">
+                                                Зүүн талаас харилцагчаа сонгож чатлах эсвэл видео дуудлага хийнэ үү.
                                             </p>
                                         </div>
                                     )}

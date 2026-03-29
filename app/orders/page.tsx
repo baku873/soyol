@@ -8,6 +8,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ChevronLeft, Package, Clock, Truck, CheckCircle2, XCircle, ShoppingBag } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import useSWR from 'swr';
+import { toast } from 'react-hot-toast';
 import { formatPrice } from '@/lib/utils';
 
 const TABS = ['Бүгд', 'Хүлээгдэж буй', 'Баталгаажсан', 'Хүргэлтэнд', 'Дууссан'];
@@ -34,7 +35,31 @@ export default function MyOrdersPage() {
     }
   }, [isAuthenticated, authLoading, router]);
 
-  const { data, error, isLoading } = useSWR('/api/orders', fetcher);
+  const { data, error, isLoading, mutate } = useSWR('/api/orders', fetcher);
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
+
+  const handleCancel = async (orderId: string) => {
+    if (!confirm('Та энэ захиалгыг цуцлахдаа итгэлтэй байна уу?')) return;
+    setCancellingId(orderId);
+    try {
+      const res = await fetch('/api/orders', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, status: 'cancelled' })
+      });
+      if (res.ok) {
+        toast.success('Захиалга амжилттай цуцлагдлаа');
+        mutate();
+      } else {
+        const data = await res.json();
+        toast.error(data.error || 'Цуцлахад алдаа гарлаа');
+      }
+    } catch (e) {
+      toast.error('Алдаа гарлаа');
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   if (authLoading) {
     return (
@@ -236,12 +261,23 @@ export default function MyOrdersPage() {
                           {formatPrice(order.total || order.totalPrice || 0)}
                         </span>
                       </div>
-                      <Link
-                        href={`/orders/${order._id}`}
-                        className="px-6 py-2.5 rounded-2xl bg-slate-50 text-slate-900 text-[13px] font-black hover:bg-[#FF5000] hover:text-white transition-all active:scale-95 shadow-sm border border-slate-100"
-                      >
-                        Дэлгэрэнгүй
-                      </Link>
+                      <div className="flex items-center gap-2">
+                        {order.status === 'pending' && (
+                          <button
+                            onClick={() => handleCancel(order._id)}
+                            disabled={cancellingId === order._id}
+                            className="px-5 py-2.5 rounded-2xl bg-white text-slate-500 text-[13px] font-bold hover:bg-slate-50 hover:text-red-500 transition-all active:scale-95 border border-slate-200"
+                          >
+                            {cancellingId === order._id ? 'Түр хүлээнэ үү...' : 'Цуцлах'}
+                          </button>
+                        )}
+                        <Link
+                          href={`/orders/${order._id}`}
+                          className="px-6 py-2.5 rounded-2xl bg-slate-50 text-slate-900 text-[13px] font-black hover:bg-[#FF5000] hover:text-white transition-all active:scale-95 shadow-sm border border-slate-100"
+                        >
+                          Дэлгэрэнгүй
+                        </Link>
+                      </div>
                     </div>
                   </motion.div>
                 );

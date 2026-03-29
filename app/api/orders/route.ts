@@ -125,62 +125,21 @@ export async function POST(req: NextRequest) {
       updatedAt: new Date(),
     });
 
+    const currentOrderId = result.insertedId.toString();
+
     // Admin Notification (Non-blocking)
-    try {
-      const usersCollection = await getCollection('users');
-      const notificationsCollection = await getCollection('notifications');
-
-      const admins = await usersCollection.find({ role: 'admin' }).toArray();
-
-      if (admins.length > 0) {
-        const notifications = admins.map(admin => ({
-          userId: admin._id.toString(),
-          title: '🛒 Шинэ захиалга ирлээ!',
-          message: `${body.shipping?.fullName || 'Хэрэглэгч'} - ${totalToSave}₮`,
-          type: 'order',
-          isRead: false,
-          link: '/admin/orders',
-          createdAt: new Date()
-        }));
-
-        await notificationsCollection.insertMany(notifications);
-      }
-    } catch (notifError) {
-      console.error('Failed to send admin notifications:', notifError);
-      // Continue execution - notification failure shouldn't block order creation
-    }
-
-    // Decrement inventory for each purchased item
-    // Note: We don't perform a pre-check of inventory here (even for guests)
-    // because the checkout/route.ts endpoint handles strict inventory validation
-    // using a transaction before this order creation endpoint is hit.
-    for (const item of (body.items || [])) {
-      const productId = item.productId || item.id;
-      if (!productId) continue;
-
-      let objectId: ObjectId;
+    if (body.paymentMethod !== 'qpay') {
       try {
-        objectId = new ObjectId(productId);
-      } catch {
-        continue; // Skip invalid IDs
-      }
-
-      // Decrement the inventory
-      await products.updateOne(
-        { _id: objectId },
-        { $inc: { inventory: -(item.quantity || 1) } }
-      );
-
-      // Check if inventory hit 0 or below — if so, mark as out-of-stock
-      const updatedProduct = await products.findOne({ _id: objectId });
-      if (updatedProduct && (updatedProduct.inventory ?? 0) <= 0) {
-        await products.updateOne(
-          { _id: objectId },
-          { $set: { stockStatus: 'out-of-stock', inventory: 0 } }
-        );
-        console.log(`[Orders API] Product ${productId} marked out-of-stock — inventory reached 0`);
+        const { notifyAdminNewOrder } = await import('@/lib/adminNotifications');
+        await notifyAdminNewOrder(currentOrderId, body.shipping?.fullName || 'Хэрэглэгч', totalToSave);
+      } catch (notifError) {
+        console.error('Failed to send admin notifications:', notifError);
       }
     }
+
+    // Inventory is NO LONGER decremented here on order creation.
+    // It will be lazily deducted when the order status changes to 'confirmed'
+    // via QPay or Administrator action to prevent stock hoarding.
 
     // Silent Registration: Save address if requested
     if (userId !== 'guest' && body.saveAddress && body.shipping) {
@@ -225,7 +184,6 @@ export async function POST(req: NextRequest) {
     }
 
     // Send Email Confirmation (Non-blocking)
-    const currentOrderId = result.insertedId.toString();
     (async () => {
       try {
         let recipientEmail = body.shipping?.email || body.email;

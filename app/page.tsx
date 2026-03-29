@@ -7,7 +7,7 @@ import PremiumProductGrid from '@/components/PremiumProductGrid';
 import BannerSlider from '@/components/BannerSlider';
 import SpecialProductsCarousel from '@/components/SpecialProductsCarousel';
 import MobileFeaturedCarousel from '@/components/MobileFeaturedCarousel';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -28,6 +28,26 @@ export default function HomePage() {
   const [minPrice, setMinPrice] = useState<string>('');
   const [maxPrice, setMaxPrice] = useState<string>('');
   const [showPriceFilter, setShowPriceFilter] = useState(false);
+  // Scroll-hide filter bar
+  const [filterBarVisible, setFilterBarVisible] = useState(true);
+  const lastScrollY = useRef(0);
+
+  // Scroll direction tracking for filter bar hide/show
+  useEffect(() => {
+    const onScroll = () => {
+      const currentY = window.scrollY;
+      if (currentY < 60) {
+        setFilterBarVisible(true);
+      } else if (currentY > lastScrollY.current + 5) {
+        setFilterBarVisible(false);
+      } else if (currentY < lastScrollY.current - 5) {
+        setFilterBarVisible(true);
+      }
+      lastScrollY.current = currentY;
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
 
   // Convert UI filter to API stockStatus
   const stockStatus = activeFilter === 'Бэлэн' ? 'in-stock' : activeFilter === 'Захиалга' ? 'pre-order' : undefined;
@@ -123,10 +143,114 @@ export default function HomePage() {
             <SpecialProductsCarousel products={featuredProducts as any} />
           )}
 
-          {/* Filter & Sort Bar */}
+          {/* === MOBILE: Native-style Category Tabs + Sort === */}
+          <div className="lg:hidden sticky z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100"
+            style={{ top: 'calc(52px + env(safe-area-inset-top, 0px))' }}
+          >
+            {/* Category Tabs Row */}
+            <div className="flex items-center gap-2 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide">
+              {(['all', 'Бэлэн', 'Захиалга'] as const).map((f) => (
+                <button
+                  key={f}
+                  onClick={() => setActiveFilter(f as FilterType)}
+                  className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${activeFilter === f
+                      ? 'bg-[#FF5000] text-white shadow-sm'
+                      : 'bg-gray-100 text-gray-500'
+                    }`}
+                >
+                  {f === 'all' ? 'Бүгд' : f}
+                </button>
+              ))}
+            </div>
+
+            {/* Sort + Filter Row */}
+            <div className="flex items-center gap-2 px-4 py-2">
+              <span className="text-xs text-gray-400 font-medium">{sortedProducts.length} бараа</span>
+              <div className="flex-1" />
+              {/* Sort select — styled natively */}
+              <div className="flex items-center gap-1.5 bg-gray-100 rounded-full px-3 py-1.5">
+                <ArrowUpDown className="w-3.5 h-3.5 text-gray-500" strokeWidth={2} />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as SortType)}
+                  className="text-xs font-semibold text-gray-700 bg-transparent outline-none cursor-pointer appearance-none"
+                >
+                  <option value="name-az">А-Я</option>
+                  <option value="newest">Шинэ</option>
+                  <option value="price-low">Хямд эхэлж</option>
+                  <option value="price-high">Үнэтэй эхэлж</option>
+                </select>
+              </div>
+              {/* Price filter button */}
+              <button
+                onClick={() => setShowPriceFilter(!showPriceFilter)}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${showPriceFilter || minPrice || maxPrice
+                    ? 'bg-[#FF5000] text-white'
+                    : 'bg-gray-100 text-gray-700'
+                  }`}
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={2} />
+                Үнэ{(minPrice || maxPrice) ? ' •' : ''}
+              </button>
+            </div>
+
+            {/* Price filter panel */}
+            <AnimatePresence>
+              {showPriceFilter && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: 'auto', opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="overflow-hidden border-t border-gray-100 bg-white"
+                >
+                  <div className="px-4 py-3 space-y-3">
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase mb-1">Доод</p>
+                        <input
+                          type="number"
+                          value={minPrice}
+                          onChange={(e) => setMinPrice(e.target.value)}
+                          placeholder={suggestedMin.toLocaleString()}
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-orange-400"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase mb-1">Дээд</p>
+                        <input
+                          type="number"
+                          value={maxPrice}
+                          onChange={(e) => setMaxPrice(e.target.value)}
+                          placeholder={suggestedMax.toLocaleString()}
+                          className="w-full px-3 py-2 text-sm border border-gray-200 rounded-xl bg-gray-50 outline-none focus:border-orange-400"
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => { setMinPrice(''); setMaxPrice(''); }}
+                        className="flex-1 py-2 text-sm font-semibold bg-gray-100 text-gray-600 rounded-xl"
+                      >
+                        Арилгах
+                      </button>
+                      <button
+                        onClick={() => setShowPriceFilter(false)}
+                        className="flex-1 py-2 text-sm font-bold text-white bg-[#FF5000] rounded-xl"
+                      >
+                        Хэрэглэх
+                      </button>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {/* === DESKTOP: Old Filter Bar (unchanged) === */}
           <div
-            className="flex items-center justify-between gap-4 mb-6 px-3 lg:px-0 flex-wrap sticky top-[56px] lg:static z-30 bg-white/80 backdrop-blur-md lg:bg-transparent py-2 lg:py-0 rounded-2xl lg:rounded-none"
-            style={{ top: 'calc(56px + env(safe-area-inset-top))' }}
+            className="hidden lg:flex items-center justify-between gap-4 mb-6 px-3 lg:px-0 flex-wrap sticky top-[52px] z-30 bg-white/80 backdrop-blur-md lg:bg-transparent py-2 lg:py-0 rounded-2xl lg:rounded-none"
+            style={{ top: 'calc(52px + env(safe-area-inset-top))' }}
           >
             <div className="flex items-center gap-2 lg:gap-3 flex-wrap overflow-x-auto scrollbar-hide pb-1 lg:pb-0">
               <motion.button
@@ -171,7 +295,7 @@ export default function HomePage() {
             </div>
 
             <div className="flex items-center gap-2 lg:gap-3 ml-auto">
-              <div className="flex items-center gap-2 hidden sm:flex">
+              <div className="flex items-center gap-2">
                 <ArrowUpDown className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
                 <select
                   value={sortBy}
@@ -210,22 +334,17 @@ export default function HomePage() {
                       transition={{ duration: 0.2 }}
                       className="absolute right-0 top-full mt-2 w-72 lg:w-80 bg-white rounded-xl shadow-2xl shadow-orange-100/20 border border-orange-100/50 p-4 lg:p-5 z-50"
                     >
-                      {/* Price Filter Content - Same as original but slightly more compact if needed */}
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
                           <SlidersHorizontal className="w-4 h-4 text-orange-500" strokeWidth={1.5} />
                           {t('filters', 'priceFilter')}
                         </h3>
-                        <button
-                          onClick={() => setShowPriceFilter(false)}
-                          className="p-1 hover:bg-gray-100 rounded-full transition"
-                        >
+                        <button onClick={() => setShowPriceFilter(false)} className="p-1 hover:bg-gray-100 rounded-full transition">
                           <X className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
                         </button>
                       </div>
 
                       <div className="space-y-4 lg:space-y-5">
-                        {/* ... (Existing Price Filter UI) ... */}
                         <div className="flex items-center justify-between px-1">
                           <div className="flex flex-col">
                             <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">{t('filters', 'minPrice')}</span>
@@ -243,7 +362,6 @@ export default function HomePage() {
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
-                          {/* Inputs */}
                           <div className="relative">
                             <input type="number" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} placeholder={suggestedMin.toLocaleString()} className="w-full px-3 py-2 text-sm border rounded-lg" />
                           </div>
@@ -253,8 +371,8 @@ export default function HomePage() {
                         </div>
 
                         <div className="flex gap-2 pt-2 border-t border-gray-100">
-                          <button onClick={() => { setMinPrice(''); setMaxPrice(''); }} className="flex-1 px-3 py-2 text-xs lg:text-sm font-medium bg-gray-100 rounded-lg">Clear</button>
-                          <button onClick={() => setShowPriceFilter(false)} className="flex-1 px-3 py-2 text-xs lg:text-sm font-bold text-white bg-orange-500 rounded-lg">Apply</button>
+                          <button onClick={() => { setMinPrice(''); setMaxPrice(''); }} className="flex-1 px-3 py-2 text-xs lg:text-sm font-medium bg-gray-100 rounded-lg">{t('filters', 'clear')}</button>
+                          <button onClick={() => setShowPriceFilter(false)} className="flex-1 px-3 py-2 text-xs lg:text-sm font-bold text-white bg-orange-500 rounded-lg">{t('filters', 'apply')}</button>
                         </div>
                       </div>
                     </motion.div>

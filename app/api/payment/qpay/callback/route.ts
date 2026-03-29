@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { checkPayment } from '@/lib/qpay';
+import { deductInventory } from '@/lib/inventory';
 
 export async function POST(req: NextRequest) {
     try {
@@ -47,6 +48,23 @@ export async function POST(req: NextRequest) {
                 }
             }
         );
+
+        // Deduct inventory since order is now confirmed
+        if (order.items && order.items.length > 0) {
+            await deductInventory(orderId, order.items);
+        }
+
+        // Notify Admin
+        try {
+            const { notifyAdminNewOrder } = await import('@/lib/adminNotifications');
+            await notifyAdminNewOrder(
+                orderId, 
+                order.shipping?.fullName || 'Хэрэглэгч', 
+                order.total || order.totalPrice || 0
+            );
+        } catch (e) {
+            console.error('[QPay Callback] Failed to notify admin:', e);
+        }
 
         // Notify Customer
         try {

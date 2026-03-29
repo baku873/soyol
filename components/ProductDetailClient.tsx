@@ -563,14 +563,15 @@ export default function ProductDetailClient({
                 </div>
               </div>
 
-              {product.relatedProducts && product.relatedProducts.length > 0 && (
-                <div className="mt-3 px-5 lg:px-0">
-                  <p className="text-[11px] font-semibold text-black/30 uppercase tracking-widest mb-3">Төстэй бараа</p>
-                  <RelatedProducts products={product.relatedProducts} />
-                </div>
-              )}
             </div>
           </div>
+
+          {/* Related Products Full Width */}
+          {product.relatedProducts && product.relatedProducts.length > 0 && (
+            <div className="mt-10 px-5 lg:px-8">
+              <RelatedProducts products={product.relatedProducts} />
+            </div>
+          )}
         </div>
 
         <div className="fixed left-0 right-0 z-[60] md:hidden bg-white border-t border-black/[0.06]"

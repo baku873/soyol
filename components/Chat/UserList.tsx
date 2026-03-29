@@ -16,6 +16,7 @@ interface User {
     isOnline?: boolean;
     lastMessage?: string;
     unreadCount?: number;
+    hasActiveChat?: boolean;
 }
 
 interface UserListProps {
@@ -27,40 +28,42 @@ interface UserListProps {
 export default function UserList({ users, selectedUser, onSelectUser }: UserListProps) {
     const [search, setSearch] = useState('');
 
-    const filteredUsers = users.filter((u) =>
-        (u.name || '').toLowerCase().includes(search.toLowerCase()) ||
-        (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
-        (u.phone || '').includes(search)
-    );
+    const filteredUsers = users.filter((u) => {
+        const matchesSearch = search ? (
+            (u.name || '').toLowerCase().includes(search.toLowerCase()) ||
+            (u.email || '').toLowerCase().includes(search.toLowerCase()) ||
+            (u.phone || '').includes(search)
+        ) : true;
+
+        // By default, only show users with active chats. If searching, show any match.
+        if (!search && !u.hasActiveChat) return false;
+
+        return matchesSearch;
+    });
 
     return (
-        <div className="flex flex-col h-full bg-slate-900/50">
-            <div className="p-6 border-b border-white/5 bg-slate-900/80 backdrop-blur-xl">
-                <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-black text-white tracking-tight flex items-center gap-2">
-                        <UserIcon className="w-5 h-5 text-orange-500" />
-                        Зурвас
+        <div className="flex flex-col h-full bg-[#0B1120]">
+            <div className="p-5 border-b border-white/5">
+                <div className="flex items-center justify-between mb-5">
+                    <h2 className="text-2xl font-bold text-white tracking-tight">
+                        Чатууд
                     </h2>
-                    <span className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] bg-white/5 px-2 py-1 rounded-md">
-                        {users.length} хэрэглэгч
-                    </span>
                 </div>
                 <div className="relative group">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-orange-500 transition-colors" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-blue-500 transition-colors" />
                     <input
                         type="text"
                         placeholder="Хайх..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full bg-slate-800/50 border border-white/5 rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-orange-500/50 transition-all"
+                        className="w-full bg-[#1A2235] border border-transparent rounded-full pl-10 pr-4 py-2 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-blue-500/50 transition-all"
                     />
                 </div>
             </div>
             <div className="flex-1 overflow-y-auto no-scrollbar py-2">
                 {filteredUsers.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center py-12 text-slate-600 opacity-50">
-                        <Search className="w-10 h-10 mb-2 stroke-[1px]" />
-                        <p className="text-xs font-bold uppercase tracking-widest">Илэрц олдсонгүй</p>
+                    <div className="flex flex-col items-center justify-center py-12 text-slate-500">
+                        <p className="text-sm font-medium">{search ? 'Илэрц олдсонгүй' : 'Одоогоор чат алга байна'}</p>
                     </div>
                 ) : (
                     filteredUsers.map((user) => (

@@ -93,9 +93,9 @@ export default function UniversalProductCard({
         className="block"
         onClick={(e) => { if (isDragging.current) e.preventDefault(); }}
       >
-        <div className="bg-white rounded-2xl sm:rounded-[2rem] overflow-hidden border border-black/[0.05] shadow-[0_2px_12px_rgba(0,0,0,0.05)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-1">
+        <div className="bg-white rounded-[20px] sm:rounded-[2rem] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1">
           {/* ── Image area ─────────────────────────────── */}
-          <div className="relative aspect-square bg-[#F7F7F5] overflow-hidden rounded-t-2xl sm:rounded-t-[2rem]">
+          <div className="relative aspect-square bg-[#F7F7F5] overflow-hidden rounded-t-[20px] sm:rounded-t-[2rem]">
             {/* Swipeable image slider */}
             {hasMultiple ? (
               <motion.div
@@ -145,15 +145,15 @@ export default function UniversalProductCard({
 
               {/* Stock status */}
               {product.stockStatus === 'in-stock' && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/90 backdrop-blur-md rounded-lg border border-black/[0.04] shadow-sm">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                  <span className="text-[9px] sm:text-[10px] font-black text-emerald-700 uppercase tracking-widest">Бэлэн</span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                  <div className="w-1.5 h-1.5 rounded-full bg-[#34C759] animate-pulse" />
+                  <span className="text-[10px] sm:text-[11px] font-bold text-[#34C759] uppercase tracking-wider leading-none mt-[1px]">Бэлэн</span>
                 </div>
               )}
               {product.stockStatus === 'pre-order' && (
-                <div className="flex items-center gap-1.5 px-2.5 py-1 bg-white/90 backdrop-blur-md rounded-lg border border-black/[0.04] shadow-sm">
-                  <Clock className="w-2.5 h-2.5 text-amber-500" />
-                  <span className="text-[9px] sm:text-[10px] font-black text-amber-700 uppercase tracking-widest">Захиалга</span>
+                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                  <Clock className="w-3 h-3 text-[#FF9500]" strokeWidth={2.5} />
+                  <span className="text-[10px] sm:text-[11px] font-bold text-[#FF9500] uppercase tracking-wider leading-none mt-[1px]">Захиалга</span>
                 </div>
               )}
 
@@ -187,9 +187,9 @@ export default function UniversalProductCard({
           </div>
 
           {/* ── Info area ──────────────────────────────── */}
-          <div className="px-3 pt-2.5 pb-3 sm:px-5 sm:pt-5 sm:pb-5 flex flex-col gap-2.5 sm:gap-4">
+          <div className="px-3.5 pt-3 pb-3.5 sm:px-5 sm:pt-5 sm:pb-5 flex flex-col gap-2.5 sm:gap-4">
             {/* Product name */}
-            <h3 className="text-[14px] sm:text-lg font-medium sm:font-black text-gray-900 leading-snug sm:leading-tight line-clamp-2 min-h-[40px] sm:min-h-[48px] tracking-tight group-hover:text-[#FF5000] transition-colors">
+            <h3 className="text-[14px] sm:text-[16px] font-semibold text-[#1C1C1E] leading-snug line-clamp-2 min-h-[42px] sm:min-h-[48px] tracking-tight group-hover:text-[#FF5000] transition-colors">
               {product.name}
             </h3>
 
@@ -198,12 +198,12 @@ export default function UniversalProductCard({
               {/* Inventory Level (Visible only for low stock <= 10) */}
               {product.inventory !== undefined && product.inventory <= 10 && product.inventory > 0 && (
                 <div className="flex flex-col gap-1.5 pt-1">
-                  <span className="text-[10px] sm:text-[11px] font-medium text-gray-500 leading-none">
+                  <span className="text-[10px] sm:text-[11px] font-medium text-gray-400 leading-none">
                     Сүүлийн {product.inventory} ширхэг
                   </span>
-                  <div className="w-full h-1 bg-[#EEEEEE] rounded-full overflow-hidden">
+                  <div className="w-full h-1 bg-[#E5E5EA] rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-[#FF5722] rounded-full"
+                      className="h-full bg-[#FF3B30] rounded-full"
                       style={{ width: `${(product.inventory / 10) * 100}%` }}
                     />
                   </div>
@@ -211,14 +211,14 @@ export default function UniversalProductCard({
               )}
 
               {/* Desktop: Price section separate */}
-              <div className="hidden sm:flex flex-col gap-1">
+              <div className="hidden sm:flex flex-col gap-0.5">
                 {product.originalPrice && product.originalPrice > product.price && (
-                  <span className="text-[11px] sm:text-xs text-black/25 line-through font-medium leading-none">
+                  <span className="text-[11px] sm:text-xs text-gray-400 line-through font-medium leading-none">
                     {formatPrice(product.originalPrice)}
                   </span>
                 )}
                 <div className="flex items-baseline gap-1">
-                  <span className="text-[18px] sm:text-2xl font-black text-[#FF5000] leading-none tracking-tight">
+                  <span className="text-[18px] sm:text-2xl font-bold text-[#FF5000] leading-none tracking-tight">
                     {formatPrice(product.price)}
                   </span>
                 </div>
@@ -233,21 +233,21 @@ export default function UniversalProductCard({
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={handleAddToCart}
-                  className="lg:w-11 lg:h-11 w-10 h-10 flex items-center justify-center bg-[#FF5000] text-white rounded-xl shadow-[0_2px_8px_rgba(255,80,0,0.3)] active:bg-[#E64800] transition-all shrink-0"
+                  className="lg:w-11 lg:h-11 w-10 h-10 flex items-center justify-center bg-[#FF5000] text-white rounded-[14px] shadow-[0_4px_12px_rgba(255,80,0,0.3)] active:bg-[#E64800] transition-all shrink-0"
                 >
                   <ShoppingCart className="w-5 h-5" strokeWidth={2.5} />
                 </motion.button>
               </div>
 
               {/* Mobile: Footer row (Price & Cart Button merged) */}
-              <div className="flex sm:hidden items-center justify-between gap-2">
+              <div className="flex sm:hidden items-center justify-between gap-2 mt-1">
                 <div className="flex flex-col">
                   {product.originalPrice && product.originalPrice > product.price && (
-                    <span className="text-[10px] sm:text-xs text-black/25 line-through font-medium leading-none mb-0.5">
+                    <span className="text-[11px] text-gray-400 line-through font-medium leading-none mb-1">
                       {formatPrice(product.originalPrice)}
                     </span>
                   )}
-                  <span className="text-[16px] sm:text-2xl font-black text-[#FF5000] leading-none tracking-tight">
+                  <span className="text-[17px] font-bold text-[#FF5000] leading-none tracking-tight">
                     {formatPrice(product.price)}
                   </span>
                 </div>
@@ -256,9 +256,9 @@ export default function UniversalProductCard({
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={handleAddToCart}
-                    className="w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-[#FF5000] text-white rounded-xl shadow-[0_2px_8px_rgba(255,80,0,0.3)] active:bg-[#E64800] transition-all shrink-0"
+                    className="w-[34px] h-[34px] flex items-center justify-center bg-[#FF5000] text-white rounded-[12px] shadow-[0_4px_12px_rgba(255,80,0,0.3)] active:bg-[#E64800] transition-all shrink-0"
                   >
-                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5" strokeWidth={2.5} />
+                    <ShoppingCart className="w-[18px] h-[18px]" strokeWidth={2.5} />
                   </motion.button>
                 </div>
               </div>

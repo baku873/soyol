@@ -43,9 +43,9 @@ export default function MobileHero() {
     }
 
     return (
-        <section className="relative w-full bg-white lg:hidden mb-6 mt-4">
+        <section className="relative w-full bg-white lg:hidden mb-5 mt-3">
             {/* Floating Card Container */}
-            <div className="mx-4 relative rounded-2xl overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+            <div className="mx-3 sm:mx-4 relative rounded-[24px] overflow-hidden" style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.06)' }}>
                 <div className="relative aspect-[16/9] w-full bg-slate-100">
                     <AnimatePresence initial={false} mode="wait">
                         <motion.div
@@ -87,7 +87,7 @@ export default function MobileHero() {
             </div>
 
             {/* Quick Actions / Categories for Mobile */}
-            <div className="flex justify-between items-center px-4 pt-6 bg-white overflow-x-auto gap-4 scrollbar-hide">
+            <div className="flex justify-between items-start px-5 pt-7 pb-2 bg-white overflow-x-auto gap-3 scrollbar-hide">
                 {[
                     { name: 'Шинэ', icon: '🔥', href: '/new-arrivals' },
                     { name: 'Бэлэн', icon: '📦', href: '/ready-to-ship' },
@@ -97,13 +97,14 @@ export default function MobileHero() {
                     <motion.a
                         key={item.name}
                         href={item.href}
-                        whileTap={{ scale: 0.9 }}
-                        className="flex flex-col items-center gap-2 min-w-[70px]"
+                        whileTap={{ scale: 0.92 }}
+                        className="flex flex-col items-center gap-2 flex-1 max-w-[76px]"
+                        style={{ WebkitTapHighlightColor: 'transparent' }}
                     >
-                        <div className="w-14 h-14 rounded-2xl bg-orange-50 flex items-center justify-center text-2xl shadow-sm border border-orange-100 hover:bg-orange-100 transition-colors">
+                        <div className="w-[60px] h-[60px] rounded-[20px] bg-white flex items-center justify-center text-[28px] border border-black/[0.04]" style={{ boxShadow: '0 4px 16px rgba(0,0,0,0.05)' }}>
                             {item.icon}
                         </div>
-                        <span className="text-[10px] font-bold text-gray-700 uppercase tracking-tighter">
+                        <span className="text-[11px] font-semibold text-[#1C1C1E] tracking-tight text-center leading-tight">
                             {item.name}
                         </span>
                     </motion.a>

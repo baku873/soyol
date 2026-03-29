@@ -65,8 +65,8 @@ export default function AntiGravityCartItem({ item }: AntiGravityCartItemProps) 
             initial={{ opacity: 0, y: 12 }}
             animate={isRemoving ? { opacity: 0, x: -60, scale: 0.95 } : { opacity: 1, y: 0 }}
             exit={{ opacity: 0, x: -40, scale: 0.97 }}
-            className="relative overflow-hidden rounded-2xl border border-black/[0.05] bg-white mb-3"
-            style={{ boxShadow: item.selected ? '0 2px 12px rgba(255,80,0,0.06)' : '0 1px 4px rgba(0,0,0,0.04)' }}
+            className="relative overflow-hidden rounded-[20px] bg-white mb-3"
+            style={{ boxShadow: item.selected ? '0 4px 16px rgba(255,80,0,0.08)' : '0 2px 10px rgba(0,0,0,0.03)' }}
         >
             <motion.div
                 drag="x"
@@ -79,7 +79,7 @@ export default function AntiGravityCartItem({ item }: AntiGravityCartItemProps) 
                 }}
                 className="relative z-10 flex items-center gap-3 p-3.5"
             >
-                {/* Checkbox (Strictly Sized) */}
+                {/* Checkbox (Circular for iOS) */}
                 <button
                     onClick={() => toggleItemSelection(item.cartItemId)}
                     className="p-2 -ml-2 shrink-0 flex-none outline-none cursor-pointer"
@@ -88,9 +88,9 @@ export default function AntiGravityCartItem({ item }: AntiGravityCartItemProps) 
                     <motion.div
                         whileTap={{ scale: 0.88 }}
                         style={{ width: 22, height: 22, minWidth: 22, minHeight: 22 }}
-                        className={`rounded-[6px] flex items-center justify-center transition-all ${item.selected
-                            ? 'bg-gradient-to-br from-[#FF6B00] to-[#FF5000] shadow-[0_2px_8px_rgba(255,80,0,0.3)]'
-                            : 'bg-white border-2 border-slate-200 hover:border-slate-300'
+                        className={`rounded-full flex items-center justify-center transition-all ${item.selected
+                            ? 'bg-[#FF5000] shadow-[0_2px_8px_rgba(255,80,0,0.3)]'
+                            : 'bg-white border-2 border-[#E5E5EA]'
                             }`}
                     >
                         {item.selected && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3.5} />}
@@ -98,13 +98,13 @@ export default function AntiGravityCartItem({ item }: AntiGravityCartItemProps) 
                 </button>
 
                 {/* Image */}
-                <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#F7F7F5] shrink-0 flex items-center justify-center">
+                <div className="w-[72px] h-[72px] rounded-[16px] overflow-hidden bg-[#F7F7F5] shrink-0 flex items-center justify-center">
                     <Image
                         src={imgError ? '/soyol-logo.png' : (item.image || '/soyol-logo.png')}
                         onError={() => setImgError(true)}
                         alt={item.name}
-                        width={64}
-                        height={64}
+                        width={72}
+                        height={72}
                         className="object-contain p-1.5"
                     />
                 </div>
@@ -136,7 +136,7 @@ export default function AntiGravityCartItem({ item }: AntiGravityCartItemProps) 
                         )}
                         {/* Qty controls */}
                         <div
-                            className="flex items-center bg-[#F5F5F3] rounded-[10px] overflow-hidden flex-shrink-0"
+                            className="flex items-center bg-[#F2F2F7] rounded-full overflow-hidden flex-shrink-0"
                             style={{ height: 28, width: 'fit-content' }}
                         >
                             <button
@@ -164,7 +164,7 @@ export default function AntiGravityCartItem({ item }: AntiGravityCartItemProps) 
 
                 {/* Price + delete */}
                 <div className="flex flex-col items-end justify-between self-stretch shrink-0 ml-1 py-0.5">
-                    <p className="text-[14px] font-black text-slate-800 tracking-tight leading-none bg-slate-50 px-2 py-1 rounded-md">
+                    <p className="text-[15px] font-bold text-[#111] tracking-tight leading-none px-1">
                         {formatPrice(item.price * item.quantity)}
                     </p>
                     <button

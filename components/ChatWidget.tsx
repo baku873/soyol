@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, Video, MessageCircle } from 'lucide-react';
+import { X, ArrowLeft, Video, MessageCircle, Loader2 } from 'lucide-react';
 import ChatWindow from '@/components/Chat/ChatWindow';
 import AIChatWindow from '@/components/Chat/AIChatWindow';
 import AdminSelector from '@/components/Chat/AdminSelector';
@@ -21,6 +21,7 @@ interface AdminUser {
     email?: string;
     image?: string;
     userId: string;
+    isOnline?: boolean;
 }
 
 export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
@@ -43,6 +44,39 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
 
     const [selectedAdmin, setSelectedAdmin] = useState<AdminUser | null>(null);
     const [viewMode, setViewMode] = useState<'menu' | 'chat_selection' | 'video_selection' | 'chat' | 'video_call' | 'ai_chat'>('menu');
+    const [connectingMode, setConnectingMode] = useState<'chat' | 'video_call' | null>(null);
+
+    const connectToAdmin = async (mode: 'chat' | 'video_call') => {
+        setConnectingMode(mode);
+        try {
+            // Fetch admins just to check if anyone is online, optional but good for UI
+            const res = await fetch('/api/users?role=admin');
+            const data = await res.json();
+            const anyOnline = Array.isArray(data) && data.some(a => a.isOnline);
+
+            const supportAdmin: AdminUser = {
+                _id: 'support_admin',
+                userId: 'support_admin',
+                name: 'Тусламжийн баг',
+                isOnline: anyOnline
+            };
+
+            setSelectedAdmin(supportAdmin);
+            setViewMode(mode);
+        } catch (e) {
+            console.error("Failed to connect to support", e);
+            // Fallback even if fetch fails
+            setSelectedAdmin({
+                _id: 'support_admin',
+                userId: 'support_admin',
+                name: 'Тусламжийн баг',
+                isOnline: true
+            });
+            setViewMode(mode);
+        } finally {
+            setConnectingMode(null);
+        }
+    };
 
     const handleSelectAdmin = (admin: AdminUser) => {
         setSelectedAdmin(admin);
@@ -56,13 +90,10 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
     };
 
     const handleBack = () => {
-        if (viewMode === 'chat') {
-            setViewMode('chat_selection');
+        if (viewMode === 'chat' || viewMode === 'video_call' || viewMode === 'ai_chat') {
+            setViewMode('menu');
             setSelectedAdmin(null);
-        } else if (viewMode === 'video_call') {
-            setViewMode('video_selection');
-            setSelectedAdmin(null);
-        } else if (viewMode === 'chat_selection' || viewMode === 'video_selection' || viewMode === 'ai_chat') {
+        } else {
             setViewMode('menu');
         }
     };
@@ -122,26 +153,36 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
                                 </button>
 
                                 <button
-                                    onClick={() => setViewMode('chat_selection')}
-                                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-white/5 transition-all group text-left"
+                                    onClick={() => connectToAdmin('chat')}
+                                    disabled={connectingMode !== null}
+                                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-white/5 transition-all group text-left relative overflow-hidden"
                                 >
-                                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center group-hover:bg-[#FF5000] transition-colors">
-                                        <MessageCircle className="w-6 h-6 text-blue-500 group-hover:text-white" strokeWidth={1.2} />
+                                    <div className="w-12 h-12 rounded-2xl bg-blue-500/10 flex items-center justify-center group-hover:bg-[#FF5000] transition-colors relative z-10">
+                                        {connectingMode === 'chat' ? (
+                                            <Loader2 className="w-6 h-6 text-white animate-spin" strokeWidth={1.5} />
+                                        ) : (
+                                            <MessageCircle className="w-6 h-6 text-blue-500 group-hover:text-white" strokeWidth={1.2} />
+                                        )}
                                     </div>
-                                    <div>
+                                    <div className="relative z-10">
                                         <h4 className="font-bold text-white text-lg">{t('chat', 'sendMessage')}</h4>
                                         <p className="text-sm text-slate-400">{t('chat', 'chatWithOperator')}</p>
                                     </div>
                                 </button>
 
                                 <button
-                                    onClick={() => setViewMode('video_selection')}
-                                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-white/5 transition-all group text-left"
+                                    onClick={() => connectToAdmin('video_call')}
+                                    disabled={connectingMode !== null}
+                                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-white/5 transition-all group text-left relative overflow-hidden"
                                 >
-                                    <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center group-hover:bg-[#FF5000] transition-colors">
-                                        <Video className="w-6 h-6 text-orange-500 group-hover:text-white" strokeWidth={1.2} />
+                                    <div className="w-12 h-12 rounded-2xl bg-orange-500/10 flex items-center justify-center group-hover:bg-[#FF5000] transition-colors relative z-10">
+                                        {connectingMode === 'video_call' ? (
+                                            <Loader2 className="w-6 h-6 text-white animate-spin" strokeWidth={1.5} />
+                                        ) : (
+                                            <Video className="w-6 h-6 text-orange-500 group-hover:text-white" strokeWidth={1.2} />
+                                        )}
                                     </div>
-                                    <div>
+                                    <div className="relative z-10">
                                         <h4 className="font-bold text-white text-lg">{t('chat', 'videoCall')}</h4>
                                         <p className="text-sm text-slate-400">{t('chat', 'joinByCode')}</p>
                                     </div>

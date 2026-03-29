@@ -1,7 +1,9 @@
 'use client';
 
+import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
+import { toast } from 'react-hot-toast';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, Clock, Package, Truck, CheckCircle2, XCircle, MapPin, Phone, Loader2 } from 'lucide-react';
@@ -28,8 +30,32 @@ const STEPS = [
 export default function OrderDetailPage() {
     const { id } = useParams<{ id: string }>();
     const router = useRouter();
-    const { data, isLoading } = useSWR(`/api/orders/${id}`, fetcher);
+    const { data, isLoading, mutate } = useSWR(`/api/orders/${id}`, fetcher);
     const order = data?.order;
+    const [isCancelling, setIsCancelling] = useState(false);
+
+    const handleCancel = async () => {
+        if (!confirm('Та энэ захиалгыг цуцлахдаа итгэлтэй байна уу?')) return;
+        setIsCancelling(true);
+        try {
+            const res = await fetch('/api/orders', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderId: id, status: 'cancelled' })
+            });
+            if (res.ok) {
+                toast.success('Захиалга амжилттай цуцлагдлаа');
+                mutate();
+            } else {
+                const data = await res.json();
+                toast.error(data.error || 'Цуцлахад алдаа гарлаа');
+            }
+        } catch (e) {
+            toast.error('Алдаа гарлаа');
+        } finally {
+            setIsCancelling(false);
+        }
+    };
 
     if (isLoading) return (
         <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center">
@@ -135,6 +161,19 @@ export default function OrderDetailPage() {
                                 </div>
                             )}
                         </div>
+                    </div>
+                )}
+
+                {/* Cancel Button */}
+                {order.status === 'pending' && (
+                    <div className="pt-4 pb-8">
+                        <button
+                            onClick={handleCancel}
+                            disabled={isCancelling}
+                            className="w-full py-4 rounded-2xl bg-white text-red-500 font-bold border-2 border-red-50 hover:bg-red-50 transition-colors active:scale-[0.98]"
+                        >
+                            {isCancelling ? 'Уншиж байна...' : 'Захиалга цуцлах'}
+                        </button>
                     </div>
                 )}
             </div>

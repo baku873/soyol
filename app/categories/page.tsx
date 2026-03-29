@@ -322,17 +322,17 @@ export default function CategoriesPage() {
 
             {/* Header & Filters */}
             <motion.div
-              style={{ padding: headerPadding, top: 'calc(56px + env(safe-area-inset-top))' }}
+              style={{ padding: headerPadding, top: 'calc(52px + env(safe-area-inset-top))' }}
               className="bg-white lg:rounded-3xl shadow-sm border-b lg:border border-gray-100 sticky z-20 will-change-[padding]"
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <motion.div
-                  style={{ 
-                    height: titleHeight, 
+                  style={{
+                    height: titleHeight,
                     opacity: titleOpacity,
                     scale: titleScale,
                     y: titleY,
-                    marginBottom: titleOpacity 
+                    marginBottom: titleOpacity
                   }}
                   className="overflow-hidden origin-top-left lg:h-auto lg:mb-0 lg:opacity-100 lg:scale-100 lg:translate-y-0 will-change-[height,opacity,transform]"
                 >
@@ -459,15 +459,15 @@ export default function CategoriesPage() {
                       : "flex flex-col gap-4 px-4 lg:px-0"
                   }
                 >
-                    {sortedProducts.map((product, index) => (
-                      <motion.div key={product.id} variants={itemVariants}>
-                        <UniversalProductCard
-                          product={product}
-                          index={index}
-                          disableInitialAnimation={true}
-                        />
-                      </motion.div>
-                    ))}
+                  {sortedProducts.map((product, index) => (
+                    <motion.div key={product.id} variants={itemVariants}>
+                      <UniversalProductCard
+                        product={product}
+                        index={index}
+                        disableInitialAnimation={true}
+                      />
+                    </motion.div>
+                  ))}
                 </motion.div>
               )}
             </AnimatePresence>

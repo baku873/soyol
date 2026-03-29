@@ -25,6 +25,7 @@ export default function AddressPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [editingId, setEditingId] = useState<string | null>(null);
 
     // Form State
     const [formData, setFormData] = useState({
@@ -68,6 +69,23 @@ export default function AddressPage() {
         }
     };
 
+    const handleEdit = (addr: Address) => {
+        setFormData({
+            label: addr.label || 'Гэр',
+            city: addr.city,
+            district: addr.district,
+            khoroo: addr.khoroo,
+            street: addr.street,
+            entrance: addr.entrance || '',
+            floor: addr.floor || '',
+            door: addr.door || '',
+            note: addr.note || '',
+            isDefault: addr.isDefault
+        });
+        setEditingId(addr.id);
+        setIsModalOpen(true);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!formData.district || !formData.khoroo || !formData.street) {
@@ -77,16 +95,20 @@ export default function AddressPage() {
 
         setIsSaving(true);
         try {
-            const res = await fetch('/api/user/addresses', {
-                method: 'POST',
+            const method = editingId ? 'PUT' : 'POST';
+            const url = editingId ? `/api/user/addresses/${editingId}` : '/api/user/addresses';
+
+            const res = await fetch(url, {
+                method,
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(formData)
             });
 
             if (!res.ok) throw new Error();
             
-            toast.success('Хаяг амжилттай хадгалагдлаа');
+            toast.success(editingId ? 'Хаяг амжилттай шинэчлэгдлээ' : 'Хаяг амжилттай хадгалагдлаа');
             setIsModalOpen(false);
+            setEditingId(null);
             fetchAddresses();
             setFormData({
                 label: 'Гэр',
@@ -172,18 +194,43 @@ export default function AddressPage() {
                                         {addr.note && <p className="text-[12px] italic text-[#FF6B00] mt-2 font-medium">⚠️ {addr.note}</p>}
                                     </div>
                                 </div>
-                                <div className="absolute top-12 right-4 flex flex-col gap-4">
+                                <div className="absolute top-1/2 -translate-y-1/2 right-4 flex flex-col gap-2">
                                     {!addr.id.startsWith('order-') && (
                                         <>
-                                            <button className="text-gray-300 hover:text-gray-600 transition-colors" aria-label="Засах">
-                                                <Edit3 className="w-5 h-5" strokeWidth={2} />
+                                            {!addr.isDefault && (
+                                                <button 
+                                                    onClick={async () => {
+                                                        const loadingToast = toast.loading('Тохируулж байна...');
+                                                        try {
+                                                            const res = await fetch(`/api/user/addresses/${addr.id}`, {
+                                                                method: 'PUT',
+                                                                headers: { 'Content-Type': 'application/json' },
+                                                                body: JSON.stringify({ isDefault: true })
+                                                            });
+                                                            if (!res.ok) throw new Error();
+                                                            toast.success('Үндсэн хаяг солигдлоо', { id: loadingToast });
+                                                            fetchAddresses();
+                                                        } catch {
+                                                            toast.error('Алдаа гарлаа', { id: loadingToast });
+                                                        }
+                                                    }}
+                                                    className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-orange-500 hover:bg-orange-50 transition-colors" title="Үндсэн болгох"
+                                                >
+                                                    <Check className="w-4 h-4" strokeWidth={3} />
+                                                </button>
+                                            )}
+                                            <button 
+                                                onClick={() => handleEdit(addr)}
+                                                className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-700 hover:bg-gray-100 transition-colors" aria-label="Засах"
+                                            >
+                                                <Edit3 className="w-4 h-4" strokeWidth={2} />
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(addr.id)}
-                                                className="text-gray-300 hover:text-red-500 transition-colors"
+                                                className="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
                                                 aria-label="Устгах"
                                             >
-                                                <Trash2 className="w-5 h-5" strokeWidth={2} />
+                                                <Trash2 className="w-4 h-4" strokeWidth={2} />
                                             </button>
                                         </>
                                     )}
@@ -197,7 +244,14 @@ export default function AddressPage() {
             {/* Fixed Bottom Button */}
             <div className="fixed bottom-0 left-0 right-0 p-5 bg-white border-t border-gray-100 z-40 pb-8 rounded-t-[30px] shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
                 <button 
-                    onClick={() => setIsModalOpen(true)}
+                    onClick={() => {
+                        setEditingId(null);
+                        setFormData({
+                            label: 'Гэр', city: 'Улаанбаатар', district: '', khoroo: '', street: '', 
+                            entrance: '', floor: '', door: '', note: '', isDefault: false
+                        });
+                        setIsModalOpen(true);
+                    }}
                     className="w-full flex items-center justify-center gap-3 py-4 bg-[#1A1A1A] text-white text-[16px] font-bold rounded-2xl active:scale-[0.98] transition-all"
                 >
                     <Plus className="w-5 h-5" strokeWidth={3} />
@@ -225,9 +279,12 @@ export default function AddressPage() {
                         >
                             {/* Modal Header */}
                             <div className="p-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
-                                <h3 className="text-[20px] font-bold text-gray-900">Хаяг нэмэх</h3>
+                                <h3 className="text-[20px] font-bold text-gray-900">{editingId ? 'Хаяг засах' : 'Хаяг нэмэх'}</h3>
                                 <button 
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={() => {
+                                        setIsModalOpen(false);
+                                        setEditingId(null);
+                                    }}
                                     className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors"
                                 >
                                     <X className="w-6 h-6" strokeWidth={2.5} />
@@ -376,7 +433,7 @@ export default function AddressPage() {
                                     ) : (
                                         <>
                                             <Save className="w-5 h-5" strokeWidth={2.5} />
-                                            Хадгалах
+                                            {editingId ? 'Шинэчлэх' : 'Хадгалах'}
                                         </>
                                     )}
                                 </button>

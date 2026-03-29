@@ -43,6 +43,7 @@ export async function PUT(req: Request, { params }: { params: any }) {
 
     // Build update object
     const updateSet: any = {};
+    if (data.label !== undefined) updateSet["addresses.$.label"] = data.label;
     if (data.city) updateSet["addresses.$.city"] = data.city;
     if (data.district) updateSet["addresses.$.district"] = data.district;
     if (data.khoroo) updateSet["addresses.$.khoroo"] = data.khoroo;

@@ -54,18 +54,15 @@ function SearchContent() {
   }, []);
 
   useEffect(() => {
-    // Fetch categories for discovery
     fetch('/api/categories')
       .then(res => res.json())
       .then(data => setCategories(data.categories || (Array.isArray(data) ? data : [])))
       .catch(() => { });
 
-    // Fetch recommended products for discovery
     fetch('/api/products?limit=8')
       .then(res => res.json())
       .then(data => setRecommended(data.products || []))
       .catch(() => { });
-
   }, []);
 
   useEffect(() => {
@@ -76,7 +73,6 @@ function SearchContent() {
     }
     setIsLoading(true);
 
-    // Update recent searches
     setRecentSearches(prev => {
       const updated = [q, ...prev.filter(s => s !== q)].slice(0, 5);
       localStorage.setItem('soyol-recent-searches', JSON.stringify(updated));
@@ -111,44 +107,40 @@ function SearchContent() {
     router.push(`/search?q=${encodeURIComponent(text)}`);
   };
 
-
   const containerVariants = {
     hidden: { opacity: 0 },
     show: {
       opacity: 1,
-      transition: {
-        staggerChildren: 0.06,
-        delayChildren: 0.1
-      }
+      transition: { staggerChildren: 0.05, delayChildren: 0.05 }
     }
   };
 
   const itemVariants: any = {
-    hidden: { opacity: 0, y: 40, scale: 0.85, rotateX: 15 },
+    hidden: { opacity: 0, y: 20, scale: 0.95 },
     show: {
       opacity: 1,
       y: 0,
       scale: 1,
-      rotateX: 0,
-      transition: {
-        type: "spring",
-        stiffness: 260,
-        damping: 24,
-        mass: 1
-      }
+      transition: { type: 'spring', stiffness: 300, damping: 25 }
     }
   };
 
+  /* ─── DISCOVERY VIEW (no query) ─── */
   if (!q.trim()) {
     return (
-      <div className="min-h-screen bg-[#F8F9FA] pb-24">
-        {/* Luxury Search Header for Mobile */}
-        <div className="lg:hidden bg-white px-4 pt-6 pb-4 rounded-b-[40px] shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-black text-gray-900 tracking-tight">{t('nav', 'search')}</h2>
-            <div className="flex gap-3">
-              <Camera className="w-5 h-5 text-gray-400" />
-              <Mic className="w-5 h-5 text-gray-400" />
+      <div className="min-h-screen bg-[#F2F2F7] pb-28">
+
+        {/* Native iOS-style Search Header */}
+        <div className="lg:hidden bg-white px-4 pt-4 pb-3 border-b border-gray-100">
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-2xl font-black text-gray-900 tracking-tight">{t('nav', 'search')}</h1>
+            <div className="flex gap-2">
+              <button className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 active:bg-gray-200 transition">
+                <Camera className="w-4 h-4 text-gray-500" />
+              </button>
+              <button className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 active:bg-gray-200 transition">
+                <Mic className="w-4 h-4 text-gray-500" />
+              </button>
             </div>
           </div>
 
@@ -158,62 +150,78 @@ function SearchContent() {
               const val = (e.currentTarget.elements.namedItem('q') as HTMLInputElement).value.trim();
               if (val) router.push(`/search?q=${encodeURIComponent(val)}`);
             }}
-            className="relative mb-5"
           >
-            <Search 
-               onClick={() => {
-                  const input = document.querySelector('input[name="q"]') as HTMLInputElement;
-                  if (input && input.value) router.push(`/search?q=${encodeURIComponent(input.value.trim())}`);
-               }}
-               className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 cursor-pointer" 
-            />
-            <input
-              name="q"
-              type="search"
-              autoFocus
-              defaultValue={q}
-              onChange={(e) => {
-                clearTimeout((window as any).mobileSearchTimeout);
-                (window as any).mobileSearchTimeout = setTimeout(() => {
-                  const val = e.target.value.trim();
-                  if (val) router.replace(`/search?q=${encodeURIComponent(val)}`);
-                  else router.replace(`/search`);
-                }, 500);
-              }}
-              placeholder="Бараа хайх..."
-              className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl text-sm font-medium outline-none focus:border-[#FF5000] focus:ring-2 focus:ring-[#FF5000]/10 transition-all"
-            />
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <input
+                name="q"
+                type="search"
+                autoFocus
+                defaultValue={q}
+                onChange={(e) => {
+                  clearTimeout((window as any).mobileSearchTimeout);
+                  (window as any).mobileSearchTimeout = setTimeout(() => {
+                    const val = e.target.value.trim();
+                    if (val) router.replace(`/search?q=${encodeURIComponent(val)}`);
+                    else router.replace(`/search`);
+                  }, 400);
+                }}
+                placeholder="Бараа хайх..."
+                className="w-full pl-9 pr-4 py-2.5 bg-[#F2F2F7] rounded-[10px] text-[15px] text-gray-900 outline-none placeholder-gray-400"
+              />
+            </div>
           </form>
-
         </div>
 
-        {/* Discovery Sections */}
-        <div className="px-4 mt-8 space-y-10">
+        <div className="px-4 mt-5 space-y-7">
 
-          {/* Dynamic Categories Grid from Database */}
+          {/* Recent searches */}
+          {recentSearches.length > 0 && (
+            <section>
+              <h2 className="text-[13px] font-semibold text-gray-500 uppercase tracking-wider mb-3">Сүүлд хайсан</h2>
+              <div className="flex flex-wrap gap-2">
+                {recentSearches.map((h, i) => (
+                  <Link key={i} href={`/search?q=${encodeURIComponent(h)}`}>
+                    <motion.span
+                      whileTap={{ scale: 0.95 }}
+                      className="flex items-center gap-1.5 text-sm font-medium text-gray-700 bg-white px-3 py-1.5 rounded-full shadow-sm border border-gray-100"
+                    >
+                      <Clock className="w-3.5 h-3.5 text-gray-400" />
+                      {h}
+                    </motion.span>
+                  </Link>
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Category grid */}
           <section>
-            <div className="flex items-center justify-between mb-5">
-              <h3 className="text-lg font-black text-gray-900">{t('nav', 'allCategories')}</h3>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-[17px] font-bold text-gray-900">{t('nav', 'allCategories')}</h2>
+              <Link href="/categories" className="flex items-center text-[#FF5000] text-sm font-semibold">
+                Бүгд <ChevronRight className="w-4 h-4" />
+              </Link>
             </div>
+
             {categories.length > 0 ? (
               <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="show"
-                className="grid grid-cols-4 gap-y-8 gap-x-1 sm:gap-x-4"
+                className="grid grid-cols-4 gap-3"
               >
                 {categories.map((cat, idx) => (
                   <Link key={cat.id || idx} href={`/categories?selected=${cat.id || cat._id}`}>
                     <motion.div
                       variants={itemVariants}
-                      whileTap={{ scale: 0.95 }}
-                      className="flex flex-col items-center gap-3 cursor-pointer"
+                      whileTap={{ scale: 0.93 }}
+                      className="flex flex-col items-center gap-2"
                     >
-                      <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-[20px] bg-white border border-gray-100 shadow-[0_4px_12px_rgba(0,0,0,0.03)] flex items-center justify-center text-gray-800 transition-all duration-300 hover:shadow-md hover:border-gray-200 hover:-translate-y-1">
-                        <span className="text-xl sm:text-2xl">{cat.icon || '📦'}</span>
+                      <div className="w-16 h-16 rounded-[22px] bg-white shadow-sm border border-gray-100 flex items-center justify-center">
+                        <span className="text-[26px]">{cat.icon || '📦'}</span>
                       </div>
-                      <span className="text-[10px] sm:text-[11px] font-normal text-gray-600 tracking-wide text-center leading-tight max-w-full truncate px-1">
+                      <span className="text-[11px] font-medium text-gray-600 text-center leading-tight line-clamp-2 px-0.5">
                         {cat.name}
                       </span>
                     </motion.div>
@@ -221,156 +229,126 @@ function SearchContent() {
                 ))}
               </motion.div>
             ) : (
-              <div className="grid grid-cols-4 gap-y-8 gap-x-4">
+              <div className="grid grid-cols-4 gap-3">
                 {Array(8).fill(0).map((_, i) => (
-                  <div key={i} className="flex flex-col items-center gap-3">
-                    <div className="w-16 h-16 rounded-[20px] bg-gray-100 animate-pulse border border-gray-50" />
-                    <div className="w-12 h-2 bg-gray-100 animate-pulse rounded-full mt-1" />
+                  <div key={i} className="flex flex-col items-center gap-2">
+                    <div className="w-16 h-16 rounded-[22px] bg-white animate-pulse shadow-sm" />
+                    <div className="w-12 h-2 bg-gray-200 animate-pulse rounded-full" />
                   </div>
                 ))}
               </div>
             )}
           </section>
 
-
-          {/* Recommended Section (Temu Style Masonry) */}
+          {/* Recommended products */}
           <section>
-            <div className="flex items-center gap-2 mb-6">
-              <div className="w-1 h-6 bg-orange-500 rounded-full" />
-              <h3 className="text-lg font-black text-gray-900">Танд санал болгох</h3>
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-1 h-5 bg-[#FF5000] rounded-full" />
+              <h2 className="text-[17px] font-bold text-gray-900">Танд санал болгох</h2>
             </div>
 
             <motion.div
               variants={containerVariants}
               initial="hidden"
               animate="show"
-              className="grid grid-cols-2 gap-4 p-2"
+              className="grid grid-cols-2 gap-3"
             >
               {recommended.map((product, index) => (
                 <motion.div key={product.id} variants={itemVariants}>
-                  <UniversalProductCard
-                    product={product as any}
-                    index={index}
-                  />
+                  <UniversalProductCard product={product as any} index={index} />
                 </motion.div>
               ))}
-
-              {/* If no recommendations, show some placeholders or skeletons */}
               {recommended.length === 0 && Array(4).fill(0).map((_, i) => (
-                <div key={i} className="aspect-[3/4] bg-gray-100 rounded-3xl animate-pulse" />
+                <div key={i} className="aspect-[3/4] bg-white rounded-2xl animate-pulse border border-gray-100 shadow-sm" />
               ))}
             </motion.div>
 
-            <button className="w-full mt-8 py-4 bg-white border border-gray-200 rounded-2xl text-gray-500 font-bold text-sm shadow-sm active:scale-95 transition-all">
-              Илүүг үзэх
-            </button>
-          </section>
-
-          {/* Search History / Recent */}
-          <section className="bg-white/50 backdrop-blur-sm p-6 rounded-[32px] border border-white shadow-sm">
-            <h3 className="text-sm font-black text-gray-400 uppercase tracking-widest flex items-center gap-2 mb-4">
-              <Clock className="w-4 h-4" /> Сүүлд хайсан
-            </h3>
-            <div className="flex flex-wrap gap-2">
-              {recentSearches.map((h, i) => (
-                <Link key={i} href={`/search?q=${encodeURIComponent(h)}`}>
-                  <span className="text-xs font-bold text-gray-400 bg-gray-100/50 px-3 py-1.5 rounded-lg active:scale-95 transition-all cursor-pointer hover:bg-gray-200">
-                    {h}
-                  </span>
-                </Link>
-              ))}
-              {recentSearches.length === 0 && (
-                <span className="text-xs text-gray-300 italic">Түүх байхгүй</span>
-              )}
-            </div>
+            {recommended.length > 0 && (
+              <button className="w-full mt-4 py-3.5 bg-white border border-gray-200 rounded-2xl text-gray-500 font-semibold text-sm active:scale-95 transition-all">
+                Илүүг үзэх
+              </button>
+            )}
           </section>
         </div>
       </div>
     );
   }
 
+  /* ─── LOADING STATE ─── */
   if (isLoading) {
     return (
-      <div className="min-h-screen border-t border-gray-50 bg-white py-12 flex items-center justify-center">
+      <div className="min-h-screen bg-[#F2F2F7] py-12 flex items-center justify-center">
         <div className="text-center">
           <motion.div
             animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
             className="rounded-full h-12 w-12 border-b-2 border-[#FF5000] mx-auto mb-4"
           />
-          <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">{t('product', 'loading') || 'Searching...'}</p>
+          <p className="text-gray-400 text-sm font-bold uppercase tracking-widest">Хайж байна...</p>
         </div>
       </div>
     );
   }
 
+  /* ─── RESULTS VIEW ─── */
   return (
-    <div className="min-h-screen bg-[#F8F9FA] pt-4 pb-24">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#F2F2F7] pt-0 pb-28">
+      {/* Sticky search bar on results page */}
+      <div className="lg:hidden bg-white px-4 pt-3 pb-3 border-b border-gray-100 sticky top-0 z-20">
         <form
           onSubmit={(e) => {
             e.preventDefault();
             const val = (e.currentTarget.elements.namedItem('q') as HTMLInputElement).value.trim();
             if (val) router.push(`/search?q=${encodeURIComponent(val)}`);
           }}
-          className="relative mb-6 lg:hidden"
         >
-          <Search 
-             onClick={() => {
-                const input = document.querySelector('input[name="q"]') as HTMLInputElement;
-                if (input && input.value) router.push(`/search?q=${encodeURIComponent(input.value.trim())}`);
-             }}
-             className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 cursor-pointer" 
-          />
-          <input
-            name="q"
-            type="search"
-            defaultValue={q}
-            onChange={(e) => {
-              clearTimeout((window as any).mobileSearchTimeoutResults);
-              (window as any).mobileSearchTimeoutResults = setTimeout(() => {
-                const val = e.target.value.trim();
-                if (val) router.replace(`/search?q=${encodeURIComponent(val)}`);
-                else router.replace(`/search`);
-              }, 500);
-            }}
-            placeholder="Бараа хайх..."
-            className="w-full pl-11 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-medium outline-none focus:border-[#FF5000] focus:ring-2 focus:ring-[#FF5000]/10 transition-all shadow-sm"
-          />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <input
+              name="q"
+              type="search"
+              defaultValue={q}
+              onChange={(e) => {
+                clearTimeout((window as any).mobileSearchTimeoutResults);
+                (window as any).mobileSearchTimeoutResults = setTimeout(() => {
+                  const val = e.target.value.trim();
+                  if (val) router.replace(`/search?q=${encodeURIComponent(val)}`);
+                  else router.replace(`/search`);
+                }, 500);
+              }}
+              placeholder="Бараа хайх..."
+              className="w-full pl-9 pr-4 py-2.5 bg-[#F2F2F7] rounded-[10px] text-[15px] text-gray-900 outline-none placeholder-gray-400"
+            />
+          </div>
         </form>
+      </div>
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4">
         <motion.div
-          initial={{ opacity: 0, y: -10 }}
+          initial={{ opacity: 0, y: -8 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8 flex items-center justify-between"
+          className="mb-5 flex items-center justify-between"
         >
           <div>
-            <h1 className="text-2xl font-black text-gray-900 tracking-tighter">
-              &quot;{q}&quot;
-            </h1>
-            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest mt-1">
-              {products.length === 0
-                ? 'Үр дүн олдсонгүй'
-                : `${products.length} бараа олдлоо`}
+            <h1 className="text-xl font-black text-gray-900">"{q}"</h1>
+            <p className="text-gray-400 text-xs font-semibold uppercase tracking-wider mt-0.5">
+              {products.length === 0 ? 'Үр дүн олдсонгүй' : `${products.length} бараа`}
             </p>
-          </div>
-          <div className="p-2 bg-white rounded-xl shadow-sm border border-gray-100">
-            <LayoutGrid className="w-5 h-5 text-gray-400" />
           </div>
         </motion.div>
 
         {products.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-[40px] shadow-sm border border-gray-100 px-6">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Search className="w-10 h-10 text-gray-200" strokeWidth={1} />
+          <div className="text-center py-20 bg-white rounded-[28px] shadow-sm border border-gray-100 px-6">
+            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-5">
+              <Search className="w-8 h-8 text-gray-200" strokeWidth={1.5} />
             </div>
-            <p className="text-gray-800 font-black text-xl mb-2">Үр дүн олдсонгүй</p>
-            <p className="text-gray-400 text-sm max-w-[200px] mx-auto mb-8">Өөр үгээр дахин хайж үзнэ үү</p>
+            <p className="text-gray-800 font-black text-lg mb-1">Үр дүн олдсонгүй</p>
+            <p className="text-gray-400 text-sm max-w-[200px] mx-auto mb-6">Өөр үгээр дахин хайж үзнэ үү</p>
             <Link
               href="/"
-              className="inline-block px-10 py-4 bg-[#FF5000] text-white font-black rounded-full shadow-lg shadow-orange-500/30 active:scale-95 transition-all text-sm uppercase tracking-wider"
+              className="inline-block px-8 py-3 bg-[#FF5000] text-white font-bold rounded-full shadow-lg shadow-orange-500/30 active:scale-95 transition-all text-sm"
             >
-              Буцах
+              Нүүр хуудас
             </Link>
           </div>
         ) : (
@@ -378,14 +356,11 @@ function SearchContent() {
             variants={containerVariants}
             initial="hidden"
             animate="show"
-            className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 p-2"
+            className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3"
           >
             {products.map((product, index) => (
               <motion.div key={product.id} variants={itemVariants}>
-                <UniversalProductCard
-                  product={product as any}
-                  index={index}
-                />
+                <UniversalProductCard product={product as any} index={index} />
               </motion.div>
             ))}
           </motion.div>
@@ -399,8 +374,8 @@ export default function SearchPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FF7900]" />
+        <div className="min-h-screen flex items-center justify-center bg-[#F2F2F7]">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#FF5000]" />
         </div>
       }
     >

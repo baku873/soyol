@@ -24,32 +24,23 @@ export default function ProductBadge({
     const isNew = sections.includes('Шинэ');
 
     if (isNew) {
-        badgeLabel = 'ШИНЭ';
+        badgeLabel = 'Шинэ';
         badgeIcon = '✨';
-        badgeStyle = 'from-blue-500/90 to-indigo-500/90 border-blue-400/40 shadow-blue-500/30';
+        badgeStyle = 'bg-gradient-to-r from-[#007AFF] to-[#005AD6] shadow-[0_4px_12px_rgba(0,122,255,0.25)]';
     } else if (isFeatured) {
-        badgeLabel = 'ОНЦГОЙ';
+        badgeLabel = 'Онцгой';
         badgeIcon = '✨';
-        badgeStyle = 'from-orange-500/90 to-red-500/90 border-orange-400/40 shadow-orange-500/30';
+        badgeStyle = 'bg-gradient-to-r from-[#FF6B00] to-[#FF5000] shadow-[0_4px_12px_rgba(255,80,0,0.25)]';
     } else {
         return null; // No badge
     }
 
     return (
         <motion.div
-            animate={{
-                scale: [1, 1.03, 1],
-                boxShadow: [
-                    '0px 4px 10px rgba(0,0,0,0.1)',
-                    '0px 4px 15px rgba(255, 100, 0, 0.3)',
-                    '0px 4px 10px rgba(0,0,0,0.1)'
-                ]
-            }}
-            transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-            className={`px-2.5 py-1 rounded-full flex items-center gap-1 bg-gradient-to-r backdrop-blur-md border text-white shadow-lg pointer-events-auto ${badgeStyle} ${className}`}
+            className={`px-3 py-1.5 rounded-full flex items-center gap-1.5 text-white pointer-events-auto ${badgeStyle} ${className}`}
         >
-            <span className="text-[11px] leading-none mb-0.5">{badgeIcon}</span>
-            <span className="text-[9px] font-black uppercase tracking-widest leading-none mt-[1px]">
+            <span className="text-[12px] leading-none mb-0.5">{badgeIcon}</span>
+            <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider leading-none mt-[1px]">
                 {badgeLabel}
             </span>
         </motion.div>

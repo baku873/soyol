@@ -65,7 +65,8 @@ const PROVINCES = [
 const fetcher = async (url: string) => {
   const res = await fetch(url);
   if (!res.ok) throw new Error('Failed to fetch addresses');
-  return res.json();
+  const data = await res.json();
+  return data.addresses || [];
 };
 
 export default function CheckoutPage() {
@@ -78,6 +79,7 @@ export default function CheckoutPage() {
   const [deliveryMethod, setDeliveryMethod] = useState<'delivery' | 'pickup'>('delivery');
   const [addressTab, setAddressTab] = useState<'saved' | 'new'>('saved');
   const [selectedAddressId, setSelectedAddressId] = useState<string | null>(null);
+  const [isAddressSheetOpen, setIsAddressSheetOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('qpay');
 
   const { data: addresses, isLoading: isLoadingAddresses } = useSWR<Address[]>(
@@ -383,218 +385,47 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Tabs */}
-                <div className="flex p-1 bg-gray-100 rounded-xl mb-6">
-                  <button
-                    type="button"
-                    onClick={() => setAddressTab('saved')}
-                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${addressTab === 'saved' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                  >
-                    Хадгалсан хаяг
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setAddressTab('new');
-                      setFormData(prev => ({ ...prev, address: '', district: '', notes: '' }));
-                      setSelectedAddressId(null);
-                    }}
-                    className={`flex-1 py-2 text-sm font-bold rounded-lg transition-all ${addressTab === 'new' ? 'bg-white text-orange-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                  >
-                    Шинэ хаяг
-                  </button>
-                </div>
-
-                {addressTab === 'saved' ? (
-                  <div className="space-y-3">
-                    {addresses && addresses.length > 0 ? (
-                      <>
-                        {[...addresses]
-                          .reverse() // Show newest first
-                          .sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1)) // Default on top
-                          .slice(0, showAllAddresses ? undefined : 3)
-                          .map((addr) => (
-                            <div
-                              key={addr.id}
-                              onClick={() => handleAddressSelect(addr)}
-                              className={`p-4 rounded-xl border-2 cursor-pointer transition-all flex items-start gap-3 ${selectedAddressId === addr.id ? 'border-orange-500 bg-orange-50/50' : 'border-gray-100 hover:border-gray-200'}`}
-                            >
-                              <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center mt-0.5 flex-shrink-0 ${selectedAddressId === addr.id ? 'border-orange-500' : 'border-gray-300'}`}>
-                                {selectedAddressId === addr.id && <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />}
-                              </div>
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="font-bold text-gray-900">{addr.label || 'Гэрийн хаяг'}</span>
-                                  {addr.isDefault && <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Үндсэн</span>}
-                                </div>
-                                <p className="text-sm text-gray-600 leading-relaxed">
-                                  {addr.district}, {addr.khoroo}-р хороо, {addr.street}
-                                  {addr.entrance && `, Орц: ${addr.entrance}`}
-                                  {addr.floor && `, Давхар: ${addr.floor}`}
-                                  {addr.door && `, Хаалга: ${addr.door}`}
-                                </p>
-                              </div>
-                            </div>
-                          ))}
-                        {addresses.length > 3 && (
-                          <button
-                            type="button"
-                            onClick={() => setShowAllAddresses(!showAllAddresses)}
-                            className="w-full py-2 text-xs font-medium text-gray-500 hover:text-gray-700 hover:bg-gray-50 rounded-lg transition-colors"
-                          >
-                            {showAllAddresses ? 'Багасгаж харах' : `Бусад ${addresses.length - 3} хаягийг харах`}
-                          </button>
-                        )}
-                      </>
-                    ) : (
-                      <div className="text-center py-8">
-                        <MapPin className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-                        <p className="text-gray-500 mb-4">Танд хадгалсан хаяг байхгүй байна</p>
-                        <button
-                          type="button"
-                          onClick={() => setAddressTab('new')}
-                          className="text-orange-600 font-bold hover:underline"
-                        >
-                          Шинэ хаяг оруулах
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="space-y-1.5">
-                      <label className="text-xs uppercase font-bold text-gray-500 ml-1">Хаягийн нэр (Жишээ: Гэр, Ажил)</label>
-                      <input
-                        type="text"
-                        name="label"
-                        value={formData.label}
-                        onChange={handleInputChange}
-                        placeholder="Гэр, Ажил г.м"
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium text-base"
-                      />
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-xs uppercase font-bold text-gray-500 ml-1">Хот/Аймаг</label>
-                        <select
-                          name="city"
-                          value={formData.city}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium appearance-none text-base"
-                        >
-                          <option value="Улаанбаатар">Улаанбаатар</option>
-                          <option value="Орон нутаг">Орон Нутаг</option>
-                        </select>
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs uppercase font-bold text-gray-500 ml-1">
-                          {formData.city === 'Улаанбаатар' ? 'Дүүрэг' : 'Аймаг'}
-                        </label>
-                        <select
-                          name="district"
-                          value={formData.district}
-                          onChange={handleInputChange}
-                          className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium appearance-none text-base"
-                        >
-                          <option value="">Сонгох...</option>
-                          {formData.city === 'Улаанбаатар' ? (
-                            UB_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)
-                          ) : (
-                            PROVINCES.map(p => <option key={p} value={p}>{p}</option>)
-                          )}
-                        </select>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-1.5">
-                        <label className="text-xs uppercase font-bold text-gray-500 ml-1">{formData.city === 'Улаанбаатар' ? 'Хороо' : 'Баг'}</label>
-                        <input
-                          type="text"
-                          name="khoroo"
-                          value={formData.khoroo}
-                          onChange={handleInputChange}
-                          placeholder="Жишээ: 1"
-                          className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium text-base"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs uppercase font-bold text-gray-500 ml-1">Гудамж/Байр</label>
-                        <input
-                          type="text"
-                          name="street"
-                          value={formData.street}
-                          onChange={handleInputChange}
-                          placeholder="Жишээ: 12-р байр"
-                          className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium text-base"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3">
-                      <div className="space-y-1.5">
-                        <label className="text-xs uppercase font-bold text-gray-500 ml-1">Орц</label>
-                        <input
-                          type="text"
-                          name="entrance"
-                          value={formData.entrance}
-                          onChange={handleInputChange}
-                          placeholder="1"
-                          className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium text-base text-center"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs uppercase font-bold text-gray-500 ml-1">Давхар</label>
-                        <input
-                          type="text"
-                          name="floor"
-                          value={formData.floor}
-                          onChange={handleInputChange}
-                          placeholder="5"
-                          className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium text-base text-center"
-                        />
-                      </div>
-                      <div className="space-y-1.5">
-                        <label className="text-xs uppercase font-bold text-gray-500 ml-1">Хаалга</label>
-                        <input
-                          type="text"
-                          name="door"
-                          value={formData.door}
-                          onChange={handleInputChange}
-                          placeholder="24"
-                          className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium text-base text-center"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="space-y-1.5">
-                      <label className="text-xs uppercase font-bold text-gray-500 ml-1">Нэмэлт тайлбар (Заавал биш)</label>
-                      <input
-                        type="text"
-                        name="notes"
-                        value={formData.notes}
-                        onChange={handleInputChange}
-                        placeholder="Орцны код, хүргэлтийн үеийн заавар г.м"
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 transition-all outline-none font-medium text-base"
-                      />
-                    </div>
-
-                    <div className="pt-2">
-                      <label className="flex items-center gap-3 p-3 rounded-xl border border-gray-100 bg-gray-50/50 cursor-pointer hover:bg-gray-50 transition-colors">
-                        <div className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all ${saveAddress ? 'bg-orange-500 border-orange-500' : 'bg-white border-gray-300'}`}>
-                          {saveAddress && <Check className="w-3.5 h-3.5 text-white" strokeWidth={3} />}
+                {/* Selected Address Card */}
+                {selectedAddressId ? (() => {
+                  const addr = addresses?.find(a => a.id === selectedAddressId);
+                  return addr || addressTab === 'new' ? (
+                    <div 
+                      onClick={() => setIsAddressSheetOpen(true)}
+                      className="p-4 rounded-xl border border-gray-200 hover:border-orange-500 bg-white cursor-pointer transition-all flex items-center justify-between group"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0 group-hover:bg-orange-100 transition-colors">
+                          <MapPin className="w-5 h-5 text-orange-600" />
                         </div>
-                        <input
-                          type="checkbox"
-                          checked={saveAddress}
-                          onChange={(e) => setSaveAddress(e.target.checked)}
-                          className="hidden"
-                        />
-                        <span className="text-sm font-medium text-gray-700">Энэ хаягийг үндсэн хаягаар хадгалах</span>
-                      </label>
+                        <div>
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-bold text-gray-900">{addressTab === 'new' ? (formData.label || 'Шинэ хаяг') : (addr?.label || 'Гэрийн хаяг')}</span>
+                            {addr?.isDefault && <span className="text-[10px] bg-[#FF6B00] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">Үндсэн</span>}
+                            {addressTab === 'new' && <span className="text-[10px] bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full font-bold">Бүртгэлгүй хаяг</span>}
+                          </div>
+                          <p className="text-sm text-gray-600 font-medium line-clamp-2">
+                            {formData.district}, {formData.khoroo ? `${formData.khoroo}-р хороо` : ''}, {formData.street}
+                            {formData.entrance && `, Орц: ${formData.entrance}`}
+                            {formData.floor && `, Давхар: ${formData.floor}`}
+                            {formData.door && `, Хаалга: ${formData.door}`}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end gap-1">
+                        <span className="text-[11px] font-bold text-orange-600 uppercase tracking-widest">Солих</span>
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors" />
+                      </div>
                     </div>
-                  </div>
+                  ) : null;
+                })() : (
+                  <button 
+                    type="button"
+                    onClick={() => setIsAddressSheetOpen(true)}
+                    className="w-full p-5 rounded-xl border-2 border-dashed border-gray-200 hover:border-orange-500 bg-gray-50 hover:bg-orange-50/50 transition-all flex items-center justify-center gap-2 text-gray-500 hover:text-orange-600 font-bold"
+                  >
+                    <Plus className="w-5 h-5" strokeWidth={2.5} />
+                    Хаяг сонгох эсвэл нэмэх
+                  </button>
                 )}
               </motion.div>
             ) : (
@@ -771,6 +602,283 @@ export default function CheckoutPage() {
         </form>
 
       </div>
+
+      {/* Address Selection Bottom Sheet */}
+      <AnimatePresence>
+        {isAddressSheetOpen && (
+          <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setIsAddressSheetOpen(false);
+                if (!selectedAddressId) setAddressTab('saved');
+              }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            />
+            <motion.div 
+              initial={{ y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="relative bg-white w-full max-w-lg rounded-t-[30px] sm:rounded-[30px] shadow-2xl flex flex-col max-h-[90vh] overflow-hidden"
+            >
+              <div className="p-5 flex items-center justify-between border-b border-gray-100 bg-white sticky top-0 z-10">
+                <h3 className="text-lg font-bold text-gray-900">
+                  {addressTab === 'new' ? 'Шинэ хаяг нэмэх' : 'Хүргэлтийн хаяг сонгох'}
+                </h3>
+                <button 
+                  type="button"
+                  onClick={() => {
+                    if (addressTab === 'new' && addresses && addresses.length > 0) {
+                      setAddressTab('saved');
+                    } else {
+                      setIsAddressSheetOpen(false);
+                      if (!selectedAddressId) setAddressTab('saved');
+                    }
+                  }}
+                  className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-gray-900 transition-colors"
+                >
+                  <X className="w-5 h-5" strokeWidth={2.5} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-5 custom-scrollbar bg-gray-50/50">
+                {addressTab === 'saved' ? (
+                  <div className="space-y-3">
+                    {addresses && addresses.length > 0 ? (
+                      <>
+                        {[...addresses]
+                          .reverse()
+                          .sort((a, b) => (a.isDefault === b.isDefault ? 0 : a.isDefault ? -1 : 1))
+                          .map((addr) => (
+                            <div
+                              key={addr.id}
+                              onClick={() => {
+                                handleAddressSelect(addr);
+                                setAddressTab('saved');
+                                setIsAddressSheetOpen(false);
+                              }}
+                              className={`p-5 rounded-[20px] border-2 cursor-pointer transition-all flex items-start gap-4 ${
+                                selectedAddressId === addr.id 
+                                  ? 'border-orange-500 bg-orange-50/30 shadow-[0_4px_20px_rgba(249,115,22,0.1)]' 
+                                  : 'border-transparent bg-white shadow-sm hover:border-orange-200'
+                              }`}
+                            >
+                              <div className={`mt-1 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${selectedAddressId === addr.id ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-orange-50 text-orange-500'}`}>
+                                <MapPin className="w-6 h-6" strokeWidth={2.5} />
+                              </div>
+                              <div className="flex-1">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <h3 className="text-[16px] font-bold text-gray-900">{addr.label || 'Гэрийн хаяг'}</h3>
+                                  {addr.isDefault && <span className="text-[10px] bg-[#FF6B00] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">Үндсэн</span>}
+                                  {selectedAddressId === addr.id && <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold ml-auto flex items-center gap-1"><Check className="w-3 h-3"/>Сонгосон</span>}
+                                </div>
+                                <p className="text-[14px] text-gray-600 font-medium leading-[1.6]">
+                                  {addr.city}, {addr.district}, {addr.khoroo}-р хороо
+                                </p>
+                                <p className="text-[13px] text-gray-400 mt-1">
+                                  {addr.street} {addr.entrance && `, Орц: ${addr.entrance}`} {addr.floor && `, Давхар: ${addr.floor}`} {addr.door && `, Хаалга: ${addr.door}`}
+                                </p>
+                              </div>
+                            </div>
+                          ))}
+                        
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAddressTab('new');
+                            setFormData(prev => ({ ...prev, address: '', district: '', khoroo: '', street: '', entrance: '', floor: '', door: '', notes: '' }));
+                            setSelectedAddressId(null);
+                          }}
+                          className="w-full mt-4 p-5 rounded-[20px] border-2 border-dashed border-gray-200 hover:border-orange-500 bg-white hover:bg-orange-50/50 transition-all flex flex-col items-center justify-center gap-3 text-gray-500 hover:text-orange-600 group active:scale-[0.98]"
+                        >
+                          <div className="w-12 h-12 rounded-full bg-gray-50 group-hover:bg-white flex items-center justify-center transition-colors">
+                             <Plus className="w-6 h-6" strokeWidth={2.5} />
+                          </div>
+                          <span className="font-bold text-sm tracking-wide">Шинэ хаяг нэмэх</span>
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-center py-12 bg-white rounded-[20px] border border-gray-100 shadow-sm">
+                        <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-5">
+                            <MapPin className="w-10 h-10 text-orange-500" />
+                        </div>
+                        <h3 className="text-[18px] font-bold text-gray-900 mb-3">Одоогоор хаяг байхгүй байна</h3>
+                        <p className="text-[15px] text-gray-500 mb-8 max-w-[250px] mx-auto leading-relaxed">Та хүргэлтийн хаягаа нэмснээр захиалга хийхэд хялбар болох болно.</p>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAddressTab('new');
+                            setFormData(prev => ({ ...prev, address: '', district: '', notes: '' }));
+                          }}
+                          className="px-8 py-3.5 bg-[#1A1A1A] text-white text-[15px] font-bold rounded-xl active:scale-95 transition-transform"
+                        >
+                          Шинэ хаяг нэмэх
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-5 bg-white p-5 rounded-[20px] border border-gray-100 shadow-sm">
+                    {/* The new address form inputs */}
+                    <div>
+                      <label className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Хаягийн нэр</label>
+                      <input
+                        type="text"
+                        name="label"
+                        value={formData.label || ''}
+                        onChange={handleInputChange}
+                        placeholder="Гэр, Ажил г.м"
+                        className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-2 border-gray-50 focus:bg-white focus:border-orange-200 transition-all outline-none font-medium text-[15px] text-gray-900"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Хот / Аймаг</label>
+                        <select
+                          name="city"
+                          value={formData.city || 'Улаанбаатар'}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-2 border-gray-50 focus:bg-white focus:border-orange-200 transition-all outline-none font-medium text-[15px] appearance-none"
+                        >
+                          <option value="Улаанбаатар">Улаанбаатар</option>
+                          <option value="Орон нутаг">Орон Нутаг</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">
+                          {formData.city === 'Улаанбаатар' ? 'Дүүрэг' : 'Аймаг'}
+                        </label>
+                        <select
+                          name="district"
+                          value={formData.district || ''}
+                          onChange={handleInputChange}
+                          className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-2 border-gray-50 focus:bg-white focus:border-orange-200 transition-all outline-none font-medium text-[15px] appearance-none"
+                        >
+                          <option value="">Сонгох...</option>
+                          {formData.city === 'Улаанбаатар' ? (
+                            UB_DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)
+                          ) : (
+                            PROVINCES.map(p => <option key={p} value={p}>{p}</option>)
+                          )}
+                        </select>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">{formData.city === 'Улаанбаатар' ? 'Хороо' : 'Баг'}</label>
+                        <input
+                          type="text"
+                          name="khoroo"
+                          value={formData.khoroo || ''}
+                          onChange={handleInputChange}
+                          placeholder="Жишээ: 1"
+                          className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-2 border-gray-50 focus:bg-white focus:border-orange-200 transition-all outline-none font-medium text-[15px]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Гудамж, Байр</label>
+                        <input
+                          type="text"
+                          name="street"
+                          value={formData.street || ''}
+                          onChange={handleInputChange}
+                          placeholder="Жишээ: 12-р байр"
+                          className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-2 border-gray-50 focus:bg-white focus:border-orange-200 transition-all outline-none font-medium text-[15px]"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Орц</label>
+                        <input
+                          type="text"
+                          name="entrance"
+                          value={formData.entrance || ''}
+                          onChange={handleInputChange}
+                          placeholder="1"
+                          className="w-full px-3 py-3 rounded-xl bg-gray-50 border-2 border-gray-50 focus:bg-white focus:border-orange-200 transition-all outline-none font-medium text-[14px]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Давхар</label>
+                        <input
+                          type="text"
+                          name="floor"
+                          value={formData.floor || ''}
+                          onChange={handleInputChange}
+                          placeholder="5"
+                          className="w-full px-3 py-3 rounded-xl bg-gray-50 border-2 border-gray-50 focus:bg-white focus:border-orange-200 transition-all outline-none font-medium text-[14px]"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5 block">Хаалга</label>
+                        <input
+                          type="text"
+                          name="door"
+                          value={formData.door || ''}
+                          onChange={handleInputChange}
+                          placeholder="24"
+                          className="w-full px-3 py-3 rounded-xl bg-gray-50 border-2 border-gray-50 focus:bg-white focus:border-orange-200 transition-all outline-none font-medium text-[14px]"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="text-[12px] font-bold text-gray-400 uppercase tracking-wider mb-2 block">Нэмэлт тайлбар (Заавал биш)</label>
+                      <input
+                        type="text"
+                        name="notes"
+                        value={formData.notes || ''}
+                        onChange={handleInputChange}
+                        placeholder="Орцны код, хүргэлтийн үеийн заавар г.м"
+                        className="w-full px-4 py-3.5 rounded-xl bg-gray-50 border-2 border-gray-50 focus:bg-white focus:border-orange-200 transition-all outline-none font-medium text-[14px]"
+                      />
+                    </div>
+
+                    <div className="pt-2">
+                      <label className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 cursor-pointer hover:bg-orange-50/50 transition-colors border border-transparent hover:border-orange-100">
+                        <div className="flex items-center gap-3">
+                            <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${saveAddress ? 'bg-[#FF6B00]' : 'bg-gray-200'}`}>
+                              {saveAddress && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
+                            </div>
+                            <span className="text-[14px] font-bold text-gray-700">Энэ хаягийг хадгалах</span>
+                        </div>
+                        <input
+                          type="checkbox"
+                          checked={saveAddress}
+                          onChange={(e) => setSaveAddress(e.target.checked)}
+                          className="hidden"
+                        />
+                      </label>
+                    </div>
+
+                    <button 
+                        type="button"
+                        onClick={() => {
+                            if (!formData.district || !formData.street) {
+                                toast.error('Дүүрэг болон гудамж байраа оруулна уу');
+                                return;
+                            }
+                            setIsAddressSheetOpen(false);
+                            toast.success('Шинэ хаяг баталгаажлаа');
+                        }}
+                        className="w-full py-4 mt-2 bg-[#FF6B00] text-white text-[16px] font-bold rounded-2xl shadow-[0_8px_20px_rgba(255,107,0,0.25)] active:scale-[0.98] transition-all"
+                    >
+                        Батлах
+                    </button>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

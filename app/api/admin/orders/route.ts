@@ -3,6 +3,7 @@ import { getCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { auth } from '@/lib/auth';
 import { sendOrderStatusUpdate } from '@/lib/email';
+import { deductInventory } from '@/lib/inventory';
 
 // Get all orders (Admin only)
 export async function GET(request: Request) {
@@ -17,9 +18,13 @@ export async function GET(request: Request) {
 
         const ordersCollection = await getCollection('orders');
 
-        let query = {};
+        let query: any = {
+            $nor: [
+                { status: 'pending', paymentMethod: 'qpay' }
+            ]
+        };
         if (targetUserId) {
-            query = { userId: targetUserId };
+            query.userId = targetUserId;
         }
 
         const orders = await ordersCollection.find(query).sort({ createdAt: -1 }).toArray();
@@ -105,6 +110,13 @@ export async function PUT(request: Request) {
             { _id: new ObjectId(orderId) },
             { $set: updateData }
         );
+
+        // Deduct inventory if transitioning from pending to a confirmed state
+        if (status && status !== 'pending' && status !== 'cancelled' && existingOrder.status === 'pending') {
+            if (existingOrder.items && existingOrder.items.length > 0) {
+                await deductInventory(orderId, existingOrder.items);
+            }
+        }
 
         // Send notification to customer (Non-blocking)
         if (existingOrder.userId && status) {

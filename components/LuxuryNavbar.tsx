@@ -438,32 +438,32 @@ export default function LuxuryNavbar() {
 
       {/* ── MOBILE HEADER ─────────────────────────────────────────────────── */}
       <header
-        className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b border-slate-100"
+        className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-xl border-b border-[#E5E5EA]"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
-        <div className="flex items-center justify-between px-5 h-14">
+        <div className="flex items-center justify-between px-4 sm:px-5 h-[52px]">
           <Link href="/" className="flex flex-col items-start select-none">
-            <span className="text-xl font-black tracking-tighter text-[#FF5000] leading-none">Soyol</span>
-            <span className="text-[7px] font-bold tracking-[0.2em] text-slate-400 uppercase leading-none mt-0.5">Video Shop</span>
+            <span className="text-[22px] font-black tracking-tight text-[#FF5000] leading-none">Soyol</span>
+            <span className="text-[7.5px] font-bold tracking-[0.2em] text-gray-400 uppercase leading-[1.2] mt-0.5">Video Shop</span>
           </Link>
-          <div className="flex items-center gap-1.5">
-            <Link href="/search" className="p-2 text-slate-500 active:scale-90 transition-transform">
-              <Search className="w-6 h-6" strokeWidth={1.5} />
+          <div className="flex items-center gap-2">
+            <Link href="/search" className="p-1.5 text-[#1C1C1E] active:scale-90 transition-transform">
+              <Search className="w-6 h-6" strokeWidth={1.8} />
             </Link>
             <Link href="/wishlist">
               <motion.div
                 whileTap={{ scale: 0.9 }}
-                className="p-2 text-slate-500 relative"
+                className="p-1.5 text-[#1C1C1E] relative"
               >
-                <Heart className="w-6 h-6" strokeWidth={1.5} />
+                <Heart className="w-6 h-6" strokeWidth={1.8} />
                 {mounted && wishlistItemsCount > 0 && (
-                  <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-600 rounded-full border-2 border-white shadow-sm" />
+                  <span className="absolute top-1 right-1 w-2.5 h-2.5 bg-[#FF3B30] rounded-full ring-2 ring-white shadow-sm" />
                 )}
               </motion.div>
             </Link>
             <NotificationBell />
-            <button onClick={() => setMobileMenuOpen(true)} className="p-2 text-slate-600 active:scale-90 transition-transform">
-              <Menu className="w-6 h-6" strokeWidth={1.5} />
+            <button onClick={() => setMobileMenuOpen(true)} className="p-1.5 text-[#1C1C1E] active:scale-90 transition-transform cursor-pointer">
+              <Menu className="w-6 h-6" strokeWidth={1.8} />
             </button>
           </div>
         </div>
@@ -471,7 +471,7 @@ export default function LuxuryNavbar() {
 
       {/* ── SPACER ─────────────────────────────────────────────────────────── */}
       <div
-        className={`transition-all duration-300 ${scrolled ? 'h-14 lg:h-[124px]' : 'h-14 lg:h-[180px]'}`}
+        className={`transition-all duration-300 ${scrolled ? 'h-[52px] lg:h-[124px]' : 'h-[52px] lg:h-[180px]'}`}
         style={{
           marginTop: 'env(safe-area-inset-top)',
         }}

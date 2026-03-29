@@ -170,59 +170,56 @@ export default function ProfilePage() {
     .reduce((sum, o) => sum + (Number(o.total || o.totalPrice) || 0), 0);
 
   return (
-    <div className="min-h-screen bg-[#F5F5F5] pb-[120px] font-sans">
+    <div className="min-h-screen bg-[#F2F2F7] pb-[120px] font-sans">
 
       {/* ─── HEADER ─── */}
-      <div className="relative bg-gradient-to-br from-[#FF6B00] via-[#FF7700] to-[#FF8C00] pt-10 pb-16 px-4 flex flex-col items-center">
-        {/* Curved bottom */}
-        <div className="absolute bottom-[-1px] left-0 w-full overflow-hidden leading-[0]">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none" className="block w-full h-[32px]">
-            <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C59.71,118.08,130.83,121.37,189.9,109.83,235.84,101.55,278.49,76.65,321.39,56.44Z" fill="#F5F5F5" />
-          </svg>
-        </div>
+      <div className="relative bg-[#FF5000] pt-14 pb-20 px-4 flex flex-col items-center overflow-hidden">
+        {/* Subtle inner glow */}        
+        <div className="absolute inset-0 bg-gradient-to-br from-[#FF6B00] via-[#FF5000] to-[#E84800]" />
+        <div className="absolute bottom-0 left-0 w-full h-16 bg-[#F2F2F7] rounded-t-[36px]" />
 
         {/* Avatar */}
-        <div className="relative mb-3">
-          <div className="w-[88px] h-[88px] rounded-full border-[3px] border-white shadow-lg bg-white flex items-center justify-center overflow-hidden">
+        <div className="relative mb-3 z-10">
+          <div className="w-[90px] h-[90px] rounded-full border-4 border-white shadow-xl bg-white flex items-center justify-center overflow-hidden">
             {user.imageUrl ? (
-              <Image src={user.imageUrl} alt={user.name || 'User'} width={88} height={88} className="object-cover w-full h-full" />
+              <Image src={user.imageUrl} alt={user.name || 'User'} width={90} height={90} className="object-cover w-full h-full" />
             ) : (
-              <span className="text-[32px] font-extrabold text-[#FF6B00]">{initials}</span>
+              <span className="text-[34px] font-extrabold text-[#FF5000]">{initials}</span>
             )}
           </div>
-          <button className="absolute bottom-0 right-0 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-md border border-gray-100">
-            <Camera className="w-3.5 h-3.5 text-[#FF6B00]" strokeWidth={2.5} />
+          <button className="absolute bottom-0.5 right-0.5 w-7 h-7 bg-white rounded-full flex items-center justify-center shadow-lg border border-gray-100">
+            <Camera className="w-3.5 h-3.5 text-[#FF5000]" strokeWidth={2.5} />
           </button>
         </div>
 
-        <h1 className="text-[20px] font-bold text-white tracking-tight mb-0.5">{user.name || 'Хэрэглэгч'}</h1>
-        <p className="text-[13px] text-white/75 font-medium">{user.phone || user.email || ''}</p>
+        <h1 className="text-[20px] font-bold text-white tracking-tight mb-0.5 z-10">{user.name || 'Хэрэглэгч'}</h1>
+        <p className="text-[13px] text-white/80 font-medium z-10">{user.phone || user.email || ''}</p>
         {user.role === 'admin' && (
-          <span className="mt-2 px-3 py-0.5 bg-white/20 rounded-full text-white text-[11px] font-bold tracking-wider">АДМИН</span>
+          <span className="mt-2 px-3 py-1 bg-white/25 backdrop-blur-sm rounded-full text-white text-[11px] font-bold tracking-widest z-10">АДМИН</span>
         )}
       </div>
 
       {/* ─── STATS ROW ─── */}
-      <div className="relative z-20 px-4 -mt-6 mb-5">
-        <div className="bg-white rounded-[16px] shadow-[0_4px_20px_rgba(0,0,0,0.08)] p-4 grid grid-cols-3 divide-x divide-[#F0F0F0]">
-          <div className="flex flex-col items-center gap-0.5 px-2">
-            <span className="text-[22px] font-bold text-[#FF6B00]">{dataLoading ? '—' : orders.length}</span>
-            <span className="text-[11px] text-[#999] font-semibold">Захиалга</span>
+      <div className="relative z-20 px-4 -mt-4 mb-5">
+        <div className="bg-white rounded-2xl shadow-sm p-3 grid grid-cols-3 divide-x divide-gray-100">
+          <div className="flex flex-col items-center gap-0.5 py-1">
+            <span className="text-[22px] font-bold text-gray-900">{dataLoading ? '—' : orders.length}</span>
+            <span className="text-[11px] text-gray-400 font-medium">Захиалга</span>
           </div>
-          <div className="flex flex-col items-center gap-0.5 px-2">
-            <span className="text-[22px] font-bold text-[#FF6B00]">{wishlistCount}</span>
-            <span className="text-[11px] text-[#999] font-semibold">Хадгалсан</span>
+          <div className="flex flex-col items-center gap-0.5 py-1">
+            <span className="text-[22px] font-bold text-gray-900">{wishlistCount}</span>
+            <span className="text-[11px] text-gray-400 font-medium">Хадгалсан</span>
           </div>
-          <div className="flex flex-col items-center gap-0.5 px-2">
-            <span className="text-[22px] font-bold text-[#FF6B00]">{dataLoading ? '—' : addressCount}</span>
-            <span className="text-[11px] text-[#999] font-semibold">Хаяг</span>
+          <div className="flex flex-col items-center gap-0.5 py-1">
+            <span className="text-[22px] font-bold text-gray-900">{dataLoading ? '—' : addressCount}</span>
+            <span className="text-[11px] text-gray-400 font-medium">Хаяг</span>
           </div>
         </div>
       </div>
 
-      {/* ─── TAB BAR ─── */}
+      {/* ─── TAB BAR (iOS segmented control) ─── */}
       <div className="px-4 mb-4">
-        <div className="bg-white rounded-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] p-1 flex gap-1">
+        <div className="bg-[#E5E5EA] rounded-[10px] p-[3px] flex gap-0">
           {tabs.map(tab => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -230,13 +227,13 @@ export default function ProfilePage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-[10px] text-[12px] font-bold transition-all ${
+                className={`flex-1 flex items-center justify-center gap-1.5 py-[7px] rounded-[8px] text-[12px] font-semibold transition-all duration-200 ${
                   active
-                    ? 'bg-[#FF6B00] text-white shadow-sm'
-                    : 'text-[#999] hover:text-[#FF6B00]'
+                    ? 'bg-white text-gray-900 shadow-sm'
+                    : 'text-gray-500'
                 }`}
               >
-                <Icon className="w-3.5 h-3.5" strokeWidth={2.5} />
+                <Icon className="w-3.5 h-3.5" strokeWidth={2} />
                 {tab.label}
               </button>
             );
@@ -321,7 +318,7 @@ export default function ProfilePage() {
 
             {/* Menu links */}
             <div>
-              <h2 className="text-[11px] font-bold text-[#999] uppercase tracking-wider ml-1 mb-2">Холбоосууд</h2>
+              <h2 className="text-[12px] font-semibold text-gray-400 uppercase tracking-wider px-1 mb-2">Холбоосууд</h2>
               <div className="bg-white rounded-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] overflow-hidden">
                 <MenuLink icon={Package} iconBg="#FFF0E6" iconColor="#FF6B00" label="Миний захиалга" href="/orders" subtitle={`${orders.length} захиалга`} />
                 <MenuDiv />
@@ -348,7 +345,7 @@ export default function ProfilePage() {
               </button>
             </div>
 
-            <p className="text-center text-[12px] text-[#CCCCCC] font-medium">Soyol v1.0.0</p>
+            <p className="text-center text-[11px] text-gray-300 font-medium tracking-wide">Soyol v1.0</p>
           </div>
         )}
 
