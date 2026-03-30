@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "183526266798",
-    "project_id": "soyol-shop",
-    "storage_bucket": "soyol-shop.firebasestorage.app"
+    "project_number": "56065511032",
+    "project_id": "soyol-c0a5c",
+    "storage_bucket": "soyol-c0a5c.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:183526266798:android:c346e0f7c6f5f78799da3f",
+        "mobilesdk_app_id": "1:56065511032:android:9de0f5932fcb27d79a678d",
         "android_client_info": {
           "package_name": "mn.soyol.shop"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyAjUWINPbkfXE3y5ZOl5imGe350K-fJRWc"
+          "current_key": "AIzaSyBalb4LEnhTBdO2usffte8wOq2QCW8knh8"
         }
       ],
       "services": {

@@ -42,3 +42,7 @@ next-env.d.ts
 
 # prisma
 /prisma/migrations
+
+# android secrets
+android/*.json
+!android/app/google-services.json
