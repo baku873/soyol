@@ -137,8 +137,8 @@ export default function DealsPage() {
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveFilter('all')}
               className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${activeFilter === 'all'
-                  ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/30'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
             >
               <div className="flex items-center gap-2">
@@ -152,8 +152,8 @@ export default function DealsPage() {
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveFilter('ready')}
               className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${activeFilter === 'ready'
-                  ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/30'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/30'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
             >
               <div className="flex items-center gap-2">
@@ -167,8 +167,8 @@ export default function DealsPage() {
               whileTap={{ scale: 0.95 }}
               onClick={() => setActiveFilter('preorder')}
               className={`px-5 py-2.5 rounded-lg font-semibold text-sm transition-all duration-300 ${activeFilter === 'preorder'
-                  ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-md shadow-gray-500/30'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-gradient-to-r from-gray-600 to-gray-700 text-white shadow-md shadow-gray-500/30'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
             >
               <div className="flex items-center gap-2">
@@ -199,8 +199,8 @@ export default function DealsPage() {
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowPriceFilter(!showPriceFilter)}
                 className={`flex items-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-300 ${showPriceFilter || minPrice || maxPrice
-                    ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/30'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:border-purple-300'
+                  ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-md shadow-purple-500/30'
+                  : 'bg-white text-gray-700 border border-gray-200 hover:border-purple-300'
                   }`}
               >
                 <SlidersHorizontal className="w-4 h-4" strokeWidth={1.5} />
