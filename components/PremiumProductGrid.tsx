@@ -9,6 +9,7 @@ import { type Product } from '@/models/Product';
 interface PremiumProductGridProps {
   products: Product[];
   featuredProducts?: Product[];
+  disableFeaturedSeparation?: boolean;
 }
 
 const containerVariants: Variants = {
@@ -22,10 +23,17 @@ const containerVariants: Variants = {
   },
 };
 
-function PremiumProductGrid({ products, featuredProducts }: PremiumProductGridProps) {
+function PremiumProductGrid({ products, featuredProducts, disableFeaturedSeparation = false }: PremiumProductGridProps) {
   // Separate featured and regular products
-  const featured = featuredProducts || products.filter(p => p.featured);
-  const regular = products.filter(p => !p.featured);
+  let featured: Product[] = [];
+  let regular: Product[] = [];
+
+  if (disableFeaturedSeparation) {
+    regular = products;
+  } else {
+    featured = featuredProducts || products.filter(p => p.featured);
+    regular = products.filter(p => !p.featured);
+  }
 
   return (
     <>

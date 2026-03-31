@@ -251,7 +251,7 @@ export default function DealsPage() {
           </div>
         ) : sortedProducts.length > 0 ? (
           <motion.div key={`${activeFilter}-${sortBy}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.3 }}>
-            <PremiumProductGrid products={sortedProducts as any} />
+            <PremiumProductGrid products={sortedProducts as any} disableFeaturedSeparation />
           </motion.div>
         ) : (
           <div className="text-center py-20 text-gray-500">{t('product', 'noProducts')}</div>

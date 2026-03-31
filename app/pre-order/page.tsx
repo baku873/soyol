@@ -273,7 +273,7 @@ export default function PreOrderPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
           >
-            <PremiumProductGrid products={sortedProducts as any} />
+            <PremiumProductGrid products={sortedProducts as any} disableFeaturedSeparation />
           </motion.div>
         ) : (
           <div className="text-center py-20 text-gray-500">
