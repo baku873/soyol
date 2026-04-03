@@ -1,32 +1,40 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { Sparkles, Package, Clock, ArrowUpDown, SlidersHorizontal, X, Tag } from 'lucide-react';
+import Link from "next/link";
+import {
+  Sparkles,
+  Package,
+  Clock,
+  ArrowUpDown,
+  SlidersHorizontal,
+  X,
+  Tag,
+} from "lucide-react";
 
-import PremiumProductGrid from '@/components/PremiumProductGrid';
-import BannerSlider from '@/components/BannerSlider';
-import SpecialProductsCarousel from '@/components/SpecialProductsCarousel';
-import MobileFeaturedCarousel from '@/components/MobileFeaturedCarousel';
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useLanguage } from '@/context/LanguageContext';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useProducts } from '@/lib/hooks/useProducts';
-import { type Product } from '@/models/Product';
-import MobileHero from '@/components/MobileHero';
-import MobileProductGrid from '@/components/MobileProductGrid';
-import InfiniteScrollTrigger from '@/components/InfiniteScrollTrigger';
+import PremiumProductGrid from "@/components/PremiumProductGrid";
+import BannerSlider from "@/components/BannerSlider";
+import SpecialProductsCarousel from "@/components/SpecialProductsCarousel";
+import MobileFeaturedCarousel from "@/components/MobileFeaturedCarousel";
+import { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { useLanguage } from "@/context/LanguageContext";
+import { useTranslation } from "@/hooks/useTranslation";
+import { useProducts } from "@/lib/hooks/useProducts";
+import { type Product } from "@/models/Product";
+import MobileHero from "@/components/MobileHero";
+import MobileProductGrid from "@/components/MobileProductGrid";
+import InfiniteScrollTrigger from "@/components/InfiniteScrollTrigger";
 
-type FilterType = 'all' | 'Бэлэн' | 'Захиалга';
-type SortType = 'newest' | 'price-low' | 'price-high' | 'name-az';
+type FilterType = "all" | "Бэлэн" | "Захиалга";
+type SortType = "newest" | "price-low" | "price-high" | "name-az";
 
 export default function HomePage() {
   const { currency, convertPrice } = useLanguage();
   const { t } = useTranslation();
-  const [activeFilter, setActiveFilter] = useState<FilterType>('all');
-  const [sortBy, setSortBy] = useState<SortType>('name-az');
-  const [minPrice, setMinPrice] = useState<string>('');
-  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [activeFilter, setActiveFilter] = useState<FilterType>("all");
+  const [sortBy, setSortBy] = useState<SortType>("name-az");
+  const [minPrice, setMinPrice] = useState<string>("");
+  const [maxPrice, setMaxPrice] = useState<string>("");
   const [showPriceFilter, setShowPriceFilter] = useState(false);
   // Scroll-hide filter bar
   const [filterBarVisible, setFilterBarVisible] = useState(true);
@@ -45,29 +53,67 @@ export default function HomePage() {
       }
       lastScrollY.current = currentY;
     };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Convert UI filter to API stockStatus
-  const stockStatus = activeFilter === 'Бэлэн' ? 'in-stock' : activeFilter === 'Захиалга' ? 'pre-order' : undefined;
-
-  const { products: allProducts, isLoading: loading, isLoadingMore, isReachingEnd, size, setSize, error } = useProducts({
-    stockStatus,
+  // Home filter should follow business category tags first (sections: Бэлэн / Захиалга)
+  // and fallback to stockStatus only when sections are missing.
+  const {
+    products: allProducts,
+    isLoading: loading,
+    isLoadingMore,
+    isReachingEnd,
+    size,
+    setSize,
+    error,
+  } = useProducts({
     minPrice: minPrice || undefined,
-    maxPrice: maxPrice || undefined
+    maxPrice: maxPrice || undefined,
   });
 
   // Fetch featured products separately for carousels to keep them consistent across tabs
-  const { products: featuredProducts, isLoading: loadingFeatured } = useProducts({ featured: true });
+  const { products: featuredProducts, isLoading: loadingFeatured } =
+    useProducts({ featured: true });
 
-  // Client-side mapping is now simplified since the server handles the core filtering
-  let filteredProducts = [...allProducts];
+  // Normalize products by intended home categories:
+  // - section "Бэлэн" / "Захиалга" has priority
+  // - fallback to stockStatus when sections are missing
+  const hasSection = (p: Product, label: string) =>
+    Array.isArray((p as any).sections) && (p as any).sections.includes(label);
 
-  // If there are other client-side specific sections (like 'Шинэ' which might not be a stock status)
-  // we can still keep this fallback, but for 'Бэлэн' and 'Захиалга' it's already handled by the API.
-  if (activeFilter !== 'all' && activeFilter !== 'Бэлэн' && activeFilter !== 'Захиалга') {
-    filteredProducts = allProducts.filter((p: Product) => p.sections?.includes(activeFilter as string));
+  const isReadyProduct = (p: Product) =>
+    hasSection(p, "Бэлэн") ||
+    (!hasSection(p, "Захиалга") && p.stockStatus === "in-stock");
+
+  const isPreOrderProduct = (p: Product) =>
+    hasSection(p, "Захиалга") ||
+    (!hasSection(p, "Бэлэн") && p.stockStatus === "pre-order");
+
+  const normalizedProducts = allProducts.map((p) => {
+    const ready = isReadyProduct(p);
+    const preorder = isPreOrderProduct(p);
+
+    // If both labels exist, respect current filter on UI; default to ready in "all"
+    if (ready && preorder) {
+      if (activeFilter === "Захиалга")
+        return { ...p, stockStatus: "pre-order" as any };
+      return { ...p, stockStatus: "in-stock" as any };
+    }
+
+    if (ready) return { ...p, stockStatus: "in-stock" as any };
+    if (preorder) return { ...p, stockStatus: "pre-order" as any };
+
+    // Final fallback
+    return p;
+  });
+
+  let filteredProducts = [...normalizedProducts];
+
+  if (activeFilter === "Бэлэн") {
+    filteredProducts = normalizedProducts.filter((p) => isReadyProduct(p));
+  } else if (activeFilter === "Захиалга") {
+    filteredProducts = normalizedProducts.filter((p) => isPreOrderProduct(p));
   }
 
   // Apply price filter
@@ -75,8 +121,8 @@ export default function HomePage() {
   const maxPriceNum = maxPrice ? parseFloat(maxPrice) : Infinity;
 
   if (minPrice || maxPrice) {
-    filteredProducts = filteredProducts.filter(p =>
-      p.price >= minPriceNum && p.price <= maxPriceNum
+    filteredProducts = filteredProducts.filter(
+      (p) => p.price >= minPriceNum && p.price <= maxPriceNum,
     );
   }
 
@@ -84,28 +130,41 @@ export default function HomePage() {
   let sortedProducts: Product[];
   const sortFunction = (a: Product, b: Product) => {
     switch (sortBy) {
-      case 'price-low':
+      case "price-low":
         return a.price - b.price;
-      case 'price-high':
+      case "price-high":
         return b.price - a.price;
-      case 'name-az':
+      case "name-az":
         return a.name.localeCompare(b.name);
-      case 'newest':
+      case "newest":
       default:
-        return (new Date(b.createdAt || 0).getTime()) - (new Date(a.createdAt || 0).getTime());
+        return (
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+        );
     }
   };
 
-  if (activeFilter === 'all') {
+  if (activeFilter === "all") {
     sortedProducts = [...filteredProducts].sort(sortFunction);
   } else {
     sortedProducts = [...filteredProducts].sort(sortFunction);
   }
 
   // Get min and max prices for the current filter (converted to current currency)
-  const prices = filteredProducts.map(p => convertPrice(p.price));
-  const suggestedMin = prices.length > 0 ? Math.floor(Math.min(...prices) / (currency === 'USD' ? 10 : 1000)) * (currency === 'USD' ? 10 : 1000) : 0;
-  const suggestedMax = prices.length > 0 ? Math.ceil(Math.max(...prices) / (currency === 'USD' ? 10 : 1000)) * (currency === 'USD' ? 10 : 1000) : (currency === 'USD' ? 1000 : 1000000);
+  const prices = filteredProducts.map((p) => convertPrice(p.price));
+  const suggestedMin =
+    prices.length > 0
+      ? Math.floor(Math.min(...prices) / (currency === "USD" ? 10 : 1000)) *
+        (currency === "USD" ? 10 : 1000)
+      : 0;
+  const suggestedMax =
+    prices.length > 0
+      ? Math.ceil(Math.max(...prices) / (currency === "USD" ? 10 : 1000)) *
+        (currency === "USD" ? 10 : 1000)
+      : currency === "USD"
+        ? 1000
+        : 1000000;
 
   return (
     <div className="min-h-screen bg-slate-50/30 relative selection:bg-orange-500 selection:text-white pb-20 lg:pb-0">
@@ -128,11 +187,8 @@ export default function HomePage() {
       </div>
 
       {/* Hero Section with Filter Tabs */}
-      <section
-        className="pt-0 pb-4 sm:pt-0 sm:pb-8 relative z-10"
-      >
+      <section className="pt-0 pb-4 sm:pt-0 sm:pb-8 relative z-10">
         <div className="max-w-7xl mx-auto px-1 sm:px-4 md:px-6 lg:px-8">
-
           {/* Banner Slider - Always Visible on Desktop, Hidden on Mobile as we have MobileHero */}
           <div className="mb-12 hidden lg:block">
             <BannerSlider />
@@ -144,32 +200,39 @@ export default function HomePage() {
           )}
 
           {/* === MOBILE: Native-style Category Tabs + Sort === */}
-          <div className="lg:hidden sticky z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100"
-            style={{ top: 'calc(52px + env(safe-area-inset-top, 0px))' }}
+          <div
+            className="lg:hidden sticky z-30 bg-white/95 backdrop-blur-sm border-b border-gray-100"
+            style={{ top: "calc(52px + env(safe-area-inset-top, 0px))" }}
           >
             {/* Category Tabs Row */}
             <div className="flex items-center gap-2 px-4 pt-3 pb-1 overflow-x-auto scrollbar-hide">
-              {(['all', 'Бэлэн', 'Захиалга'] as const).map((f) => (
+              {(["all", "Бэлэн", "Захиалга"] as const).map((f) => (
                 <button
                   key={f}
                   onClick={() => setActiveFilter(f as FilterType)}
-                  className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${activeFilter === f
-                      ? 'bg-[#FF5000] text-white shadow-sm'
-                      : 'bg-gray-100 text-gray-500'
-                    }`}
+                  className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
+                    activeFilter === f
+                      ? "bg-[#FF5000] text-white shadow-sm"
+                      : "bg-gray-100 text-gray-500"
+                  }`}
                 >
-                  {f === 'all' ? 'Бүгд' : f}
+                  {f === "all" ? "Бүгд" : f}
                 </button>
               ))}
             </div>
 
             {/* Sort + Filter Row */}
             <div className="flex items-center gap-2 px-4 py-2">
-              <span className="text-xs text-gray-400 font-medium">{sortedProducts.length} бараа</span>
+              <span className="text-xs text-gray-400 font-medium">
+                {sortedProducts.length} бараа
+              </span>
               <div className="flex-1" />
               {/* Sort select — styled natively */}
               <div className="flex items-center gap-1.5 bg-gray-100 rounded-full px-3 py-1.5">
-                <ArrowUpDown className="w-3.5 h-3.5 text-gray-500" strokeWidth={2} />
+                <ArrowUpDown
+                  className="w-3.5 h-3.5 text-gray-500"
+                  strokeWidth={2}
+                />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortType)}
@@ -184,13 +247,14 @@ export default function HomePage() {
               {/* Price filter button */}
               <button
                 onClick={() => setShowPriceFilter(!showPriceFilter)}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${showPriceFilter || minPrice || maxPrice
-                    ? 'bg-[#FF5000] text-white'
-                    : 'bg-gray-100 text-gray-700'
-                  }`}
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                  showPriceFilter || minPrice || maxPrice
+                    ? "bg-[#FF5000] text-white"
+                    : "bg-gray-100 text-gray-700"
+                }`}
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={2} />
-                Үнэ{(minPrice || maxPrice) ? ' •' : ''}
+                Үнэ{minPrice || maxPrice ? " •" : ""}
               </button>
             </div>
 
@@ -199,7 +263,7 @@ export default function HomePage() {
               {showPriceFilter && (
                 <motion.div
                   initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
+                  animate={{ height: "auto", opacity: 1 }}
                   exit={{ height: 0, opacity: 0 }}
                   transition={{ duration: 0.2 }}
                   className="overflow-hidden border-t border-gray-100 bg-white"
@@ -207,7 +271,9 @@ export default function HomePage() {
                   <div className="px-4 py-3 space-y-3">
                     <div className="grid grid-cols-2 gap-2">
                       <div>
-                        <p className="text-[10px] text-gray-400 font-semibold uppercase mb-1">Доод</p>
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase mb-1">
+                          Доод
+                        </p>
                         <input
                           type="number"
                           value={minPrice}
@@ -217,7 +283,9 @@ export default function HomePage() {
                         />
                       </div>
                       <div>
-                        <p className="text-[10px] text-gray-400 font-semibold uppercase mb-1">Дээд</p>
+                        <p className="text-[10px] text-gray-400 font-semibold uppercase mb-1">
+                          Дээд
+                        </p>
                         <input
                           type="number"
                           value={maxPrice}
@@ -229,7 +297,10 @@ export default function HomePage() {
                     </div>
                     <div className="flex gap-2">
                       <button
-                        onClick={() => { setMinPrice(''); setMaxPrice(''); }}
+                        onClick={() => {
+                          setMinPrice("");
+                          setMaxPrice("");
+                        }}
                         className="flex-1 py-2 text-sm font-semibold bg-gray-100 text-gray-600 rounded-xl"
                       >
                         Арилгах
@@ -250,28 +321,35 @@ export default function HomePage() {
           {/* === DESKTOP: Old Filter Bar (unchanged) === */}
           <div
             className="hidden lg:flex items-center justify-between gap-4 mb-6 px-3 lg:px-0 flex-wrap sticky top-[52px] z-30 bg-white/80 backdrop-blur-md lg:bg-transparent py-2 lg:py-0 rounded-2xl lg:rounded-none"
-            style={{ top: 'calc(52px + env(safe-area-inset-top))' }}
+            style={{ top: "calc(52px + env(safe-area-inset-top))" }}
           >
             <div className="flex items-center gap-2 lg:gap-3 flex-wrap overflow-x-auto scrollbar-hide pb-1 lg:pb-0">
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => setActiveFilter('all')}
-                className={`px-4 py-2 lg:px-5 lg:py-2.5 rounded-2xl font-bold text-xs lg:text-sm transition-all duration-300 whitespace-nowrap ${activeFilter === 'all'
-                  ? 'bg-[#FF5000] text-white shadow-lg shadow-orange-500/30'
-                  : 'bg-white/50 text-gray-600 hover:bg-white border border-gray-100'
-                  }`}
+                onClick={() => setActiveFilter("all")}
+                className={`px-4 py-2 lg:px-5 lg:py-2.5 rounded-2xl font-bold text-xs lg:text-sm transition-all duration-300 whitespace-nowrap ${
+                  activeFilter === "all"
+                    ? "bg-[#FF5000] text-white shadow-lg shadow-orange-500/30"
+                    : "bg-white/50 text-gray-600 hover:bg-white border border-gray-100"
+                }`}
               >
                 <div className="flex items-center gap-1.5 lg:gap-2">
-                  <Sparkles className="w-3 h-3 lg:w-3.5 lg:h-3.5" strokeWidth={1.2} />
+                  <Sparkles
+                    className="w-3 h-3 lg:w-3.5 lg:h-3.5"
+                    strokeWidth={1.2}
+                  />
                   <span>Бүгд</span>
                 </div>
               </motion.button>
 
-              {['Бэлэн', 'Захиалга'].map((section) => {
-                const Icon = section === 'Бэлэн' ? Package
-                  : section === 'Захиалга' ? Clock
-                    : Tag;
+              {["Бэлэн", "Захиалга"].map((section) => {
+                const Icon =
+                  section === "Бэлэн"
+                    ? Package
+                    : section === "Захиалга"
+                      ? Clock
+                      : Tag;
                 const isActive = activeFilter === section;
 
                 return (
@@ -280,13 +358,17 @@ export default function HomePage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setActiveFilter(section as any)}
-                    className={`px-4 py-2 lg:px-5 lg:py-2.5 rounded-2xl font-bold text-xs lg:text-sm transition-all duration-300 whitespace-nowrap ${isActive
-                      ? 'bg-[#FF5000] text-white shadow-lg shadow-orange-500/30'
-                      : 'bg-white/50 text-gray-600 hover:bg-white border border-gray-100'
-                      }`}
+                    className={`px-4 py-2 lg:px-5 lg:py-2.5 rounded-2xl font-bold text-xs lg:text-sm transition-all duration-300 whitespace-nowrap ${
+                      isActive
+                        ? "bg-[#FF5000] text-white shadow-lg shadow-orange-500/30"
+                        : "bg-white/50 text-gray-600 hover:bg-white border border-gray-100"
+                    }`}
                   >
                     <div className="flex items-center gap-1.5 lg:gap-2">
-                      <Icon className="w-3 h-3 lg:w-3.5 lg:h-3.5" strokeWidth={1.2} />
+                      <Icon
+                        className="w-3 h-3 lg:w-3.5 lg:h-3.5"
+                        strokeWidth={1.2}
+                      />
                       <span>{section}</span>
                     </div>
                   </motion.button>
@@ -296,15 +378,22 @@ export default function HomePage() {
 
             <div className="flex items-center gap-2 lg:gap-3 ml-auto">
               <div className="flex items-center gap-2">
-                <ArrowUpDown className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
+                <ArrowUpDown
+                  className="w-4 h-4 text-gray-400"
+                  strokeWidth={1.5}
+                />
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value as SortType)}
                   className="px-3 py-2 lg:px-4 lg:py-2.5 text-xs lg:text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:border-orange-300 focus:border-orange-500 focus:ring-2 focus:ring-orange-100 outline-none transition-all duration-300 cursor-pointer"
                 >
-                  <option value="name-az">{t('filters', 'nameAZ')}</option>
-                  <option value="price-low">{t('filters', 'priceLowHigh')}</option>
-                  <option value="price-high">{t('filters', 'priceHighLow')}</option>
+                  <option value="name-az">{t("filters", "nameAZ")}</option>
+                  <option value="price-low">
+                    {t("filters", "priceLowHigh")}
+                  </option>
+                  <option value="price-high">
+                    {t("filters", "priceHighLow")}
+                  </option>
                 </select>
               </div>
 
@@ -313,15 +402,23 @@ export default function HomePage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowPriceFilter(!showPriceFilter)}
-                  className={`flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 text-xs lg:text-sm font-bold rounded-2xl transition-all duration-300 ${showPriceFilter || minPrice || maxPrice
-                    ? 'bg-[#FF5000] text-white shadow-lg shadow-orange-500/30'
-                    : 'bg-white text-gray-700 border border-gray-200 hover:border-[#FF5000]/30'
-                    }`}
+                  className={`flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 text-xs lg:text-sm font-bold rounded-2xl transition-all duration-300 ${
+                    showPriceFilter || minPrice || maxPrice
+                      ? "bg-[#FF5000] text-white shadow-lg shadow-orange-500/30"
+                      : "bg-white text-gray-700 border border-gray-200 hover:border-[#FF5000]/30"
+                  }`}
                 >
-                  <SlidersHorizontal className="w-3.5 h-3.5 lg:w-4 lg:h-4" strokeWidth={1.2} />
-                  <span className="hidden sm:inline">{t('filters', 'price')}</span>
+                  <SlidersHorizontal
+                    className="w-3.5 h-3.5 lg:w-4 lg:h-4"
+                    strokeWidth={1.2}
+                  />
+                  <span className="hidden sm:inline">
+                    {t("filters", "price")}
+                  </span>
                   {(minPrice || maxPrice) && (
-                    <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded-full text-[10px]">1</span>
+                    <span className="ml-1 px-1.5 py-0.5 bg-white/20 rounded-full text-[10px]">
+                      1
+                    </span>
                   )}
                 </motion.button>
 
@@ -336,43 +433,85 @@ export default function HomePage() {
                     >
                       <div className="flex items-center justify-between mb-4">
                         <h3 className="text-sm font-bold text-gray-900 flex items-center gap-2">
-                          <SlidersHorizontal className="w-4 h-4 text-orange-500" strokeWidth={1.5} />
-                          {t('filters', 'priceFilter')}
+                          <SlidersHorizontal
+                            className="w-4 h-4 text-orange-500"
+                            strokeWidth={1.5}
+                          />
+                          {t("filters", "priceFilter")}
                         </h3>
-                        <button onClick={() => setShowPriceFilter(false)} className="p-1 hover:bg-gray-100 rounded-full transition">
-                          <X className="w-4 h-4 text-gray-400" strokeWidth={1.5} />
+                        <button
+                          onClick={() => setShowPriceFilter(false)}
+                          className="p-1 hover:bg-gray-100 rounded-full transition"
+                        >
+                          <X
+                            className="w-4 h-4 text-gray-400"
+                            strokeWidth={1.5}
+                          />
                         </button>
                       </div>
 
                       <div className="space-y-4 lg:space-y-5">
                         <div className="flex items-center justify-between px-1">
                           <div className="flex flex-col">
-                            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">{t('filters', 'minPrice')}</span>
+                            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                              {t("filters", "minPrice")}
+                            </span>
                             <span className="text-base lg:text-lg font-bold text-gray-900">
-                              {currency === 'USD' ? '$' : ''}{minPrice || suggestedMin.toLocaleString()}{currency === 'MNT' ? '₮' : ''}
+                              {currency === "USD" ? "$" : ""}
+                              {minPrice || suggestedMin.toLocaleString()}
+                              {currency === "MNT" ? "₮" : ""}
                             </span>
                           </div>
                           <div className="w-8 h-0.5 bg-gradient-to-r from-orange-400 to-orange-600 mx-2" />
                           <div className="flex flex-col items-end">
-                            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">{t('filters', 'maxPrice')}</span>
+                            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                              {t("filters", "maxPrice")}
+                            </span>
                             <span className="text-base lg:text-lg font-bold text-gray-900">
-                              {currency === 'USD' ? '$' : ''}{maxPrice || suggestedMax.toLocaleString()}{currency === 'MNT' ? '₮' : ''}
+                              {currency === "USD" ? "$" : ""}
+                              {maxPrice || suggestedMax.toLocaleString()}
+                              {currency === "MNT" ? "₮" : ""}
                             </span>
                           </div>
                         </div>
 
                         <div className="grid grid-cols-2 gap-3">
                           <div className="relative">
-                            <input type="number" value={minPrice} onChange={(e) => setMinPrice(e.target.value)} placeholder={suggestedMin.toLocaleString()} className="w-full px-3 py-2 text-sm border rounded-lg" />
+                            <input
+                              type="number"
+                              value={minPrice}
+                              onChange={(e) => setMinPrice(e.target.value)}
+                              placeholder={suggestedMin.toLocaleString()}
+                              className="w-full px-3 py-2 text-sm border rounded-lg"
+                            />
                           </div>
                           <div className="relative">
-                            <input type="number" value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} placeholder={suggestedMax.toLocaleString()} className="w-full px-3 py-2 text-sm border rounded-lg" />
+                            <input
+                              type="number"
+                              value={maxPrice}
+                              onChange={(e) => setMaxPrice(e.target.value)}
+                              placeholder={suggestedMax.toLocaleString()}
+                              className="w-full px-3 py-2 text-sm border rounded-lg"
+                            />
                           </div>
                         </div>
 
                         <div className="flex gap-2 pt-2 border-t border-gray-100">
-                          <button onClick={() => { setMinPrice(''); setMaxPrice(''); }} className="flex-1 px-3 py-2 text-xs lg:text-sm font-medium bg-gray-100 rounded-lg">{t('filters', 'clear')}</button>
-                          <button onClick={() => setShowPriceFilter(false)} className="flex-1 px-3 py-2 text-xs lg:text-sm font-bold text-white bg-orange-500 rounded-lg">{t('filters', 'apply')}</button>
+                          <button
+                            onClick={() => {
+                              setMinPrice("");
+                              setMaxPrice("");
+                            }}
+                            className="flex-1 px-3 py-2 text-xs lg:text-sm font-medium bg-gray-100 rounded-lg"
+                          >
+                            {t("filters", "clear")}
+                          </button>
+                          <button
+                            onClick={() => setShowPriceFilter(false)}
+                            className="flex-1 px-3 py-2 text-xs lg:text-sm font-bold text-white bg-orange-500 rounded-lg"
+                          >
+                            {t("filters", "apply")}
+                          </button>
                         </div>
                       </div>
                     </motion.div>
@@ -389,16 +528,21 @@ export default function HomePage() {
             </div>
           ) : loading ? (
             <div className="grid grid-cols-2 gap-3 px-3 lg:hidden">
-              {Array(6).fill(0).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl overflow-hidden border border-gray-100/50">
-                  <div className="aspect-square bg-slate-100 animate-pulse" />
-                  <div className="p-3 space-y-2">
-                    <div className="h-3 bg-slate-100 rounded animate-pulse w-3/4" />
-                    <div className="h-3 bg-slate-100 rounded animate-pulse w-1/2" />
-                    <div className="h-5 bg-slate-100 rounded animate-pulse w-2/3" />
+              {Array(6)
+                .fill(0)
+                .map((_, i) => (
+                  <div
+                    key={i}
+                    className="bg-white rounded-2xl overflow-hidden border border-gray-100/50"
+                  >
+                    <div className="aspect-square bg-slate-100 animate-pulse" />
+                    <div className="p-3 space-y-2">
+                      <div className="h-3 bg-slate-100 rounded animate-pulse w-3/4" />
+                      <div className="h-3 bg-slate-100 rounded animate-pulse w-1/2" />
+                      <div className="h-5 bg-slate-100 rounded animate-pulse w-2/3" />
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           ) : sortedProducts.length === 0 ? (
             <div className="text-center py-20">
@@ -408,12 +552,30 @@ export default function HomePage() {
             <>
               {/* Desktop Grid - Unified with featured first */}
               <div className="hidden lg:block">
-                <PremiumProductGrid products={sortedProducts.filter(p => !p.featured)} />
+                <PremiumProductGrid
+                  products={sortedProducts.filter((p) => !p.featured)}
+                  statusBadgeMode={
+                    activeFilter === "Бэлэн"
+                      ? "ready"
+                      : activeFilter === "Захиалга"
+                        ? "preorder"
+                        : "ready"
+                  }
+                />
               </div>
 
               {/* Mobile Grid - Regular products only (featured shown in carousel) */}
               <div className="lg:hidden">
-                <MobileProductGrid products={sortedProducts.filter(p => !p.featured)} />
+                <MobileProductGrid
+                  products={sortedProducts.filter((p) => !p.featured)}
+                  statusBadgeMode={
+                    activeFilter === "Бэлэн"
+                      ? "ready"
+                      : activeFilter === "Захиалга"
+                        ? "preorder"
+                        : "ready"
+                  }
+                />
               </div>
 
               {/* Infinite Scroll Trigger */}
@@ -428,12 +590,10 @@ export default function HomePage() {
       </section>
 
       {/* Footer CTA (Desktop only or adjusted) */}
-      <section
-        className="py-10 sm:py-12 bg-gray-50 border-t border-gray-200 mb-16 lg:mb-0"
-      >
+      <section className="py-10 sm:py-12 bg-gray-50 border-t border-gray-200 mb-16 lg:mb-0">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
-            {t('footer', 'title')}
+            {t("footer", "title")}
           </h3>
           {/* ... footer links */}
         </div>

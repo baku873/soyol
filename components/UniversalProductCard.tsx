@@ -173,7 +173,7 @@ export default function UniversalProductCard({
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
                   <div className="w-1.5 h-1.5 rounded-full bg-[#34C759] animate-pulse" />
                   <span className="text-[10px] sm:text-[11px] font-bold text-[#34C759] uppercase tracking-wider leading-none mt-[1px]">
-                    Бэлэн бараа
+                    Бэлэн
                   </span>
                 </div>
               )}
@@ -184,7 +184,7 @@ export default function UniversalProductCard({
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
                   <Clock className="w-3 h-3 text-[#FF9500]" strokeWidth={2.5} />
                   <span className="text-[10px] sm:text-[11px] font-bold text-[#FF9500] uppercase tracking-wider leading-none mt-[1px]">
-                    Захиалгын бараа
+                    Захиалга
                   </span>
                 </div>
               )}
@@ -193,7 +193,7 @@ export default function UniversalProductCard({
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
                   <span className="text-[11px] leading-none">✨</span>
                   <span className="text-[10px] sm:text-[11px] font-bold text-[#007AFF] uppercase tracking-wider leading-none mt-[1px]">
-                    Шинэ бараа
+                    Шинэ
                   </span>
                 </div>
               )}
