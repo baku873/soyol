@@ -1,87 +1,113 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { revalidatePath } from 'next/cache';
-import { auth } from '@/lib/auth';
-export const dynamic = 'force-dynamic';
+import { NextRequest, NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
+import { auth } from "@/lib/auth";
+export const dynamic = "force-dynamic";
 export const revalidate = 60;
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { id } = await params;
     if (!id) {
-      return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Product ID required" },
+        { status: 400 },
+      );
     }
 
-    const { getCollection } = await import('@/lib/mongodb');
-    const { ObjectId } = await import('mongodb');
+    const { getCollection } = await import("@/lib/mongodb");
+    const { ObjectId } = await import("mongodb");
 
-    const products = await getCollection('products');
+    const products = await getCollection("products");
     let query = {};
     try {
       query = { _id: new ObjectId(id) };
     } catch {
-      return NextResponse.json({ error: 'Invalid Product ID' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid Product ID" },
+        { status: 400 },
+      );
     }
 
     const product = await products.findOne(query);
 
     if (!product) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
     return NextResponse.json(product, {
       headers: {
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=120',
+        "Cache-Control": "no-store, max-age=0",
       },
     });
   } catch (error) {
-    console.error('Error fetching product:', error);
+    console.error("Error fetching product:", error);
     return NextResponse.json(
-      { error: 'Failed to fetch product' },
-      { status: 500 }
+      { error: "Failed to fetch product" },
+      { status: 500 },
     );
   }
 }
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     const { userId, role } = await auth();
-    if (!userId || role !== 'admin') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    if (!userId || role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
     const { id } = await params;
     if (!id) {
-      return NextResponse.json({ error: 'Product ID required' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Product ID required" },
+        { status: 400 },
+      );
     }
 
     const body = await request.json();
-    const { getCollection } = await import('@/lib/mongodb');
-    const { ObjectId } = await import('mongodb');
+    const { getCollection } = await import("@/lib/mongodb");
+    const { ObjectId } = await import("mongodb");
 
-    const products = await getCollection('products');
+    const products = await getCollection("products");
 
     let objectId: InstanceType<typeof ObjectId>;
     try {
       objectId = new ObjectId(id);
     } catch {
-      return NextResponse.json({ error: 'Invalid Product ID' }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid Product ID" },
+        { status: 400 },
+      );
     }
 
     // Only allow specific fields to be updated
     // Only allow specific fields to be updated
     const allowedFields = [
-      'featured', 'stockStatus', 'inventory',
-      'name', 'description', 'price', 'originalPrice', 'discountPercent',
-      'category', 'image', 'images',
-      'brand', 'model', 'delivery', 'paymentMethods',
-      'sections', 'attributes', 'wholesale',
-      'options', 'variants'
+      "featured",
+      "stockStatus",
+      "inventory",
+      "name",
+      "description",
+      "price",
+      "originalPrice",
+      "discountPercent",
+      "category",
+      "image",
+      "images",
+      "brand",
+      "model",
+      "delivery",
+      "paymentMethods",
+      "sections",
+      "attributes",
+      "wholesale",
+      "options",
+      "variants",
     ];
     const updateData: Record<string, any> = {};
     for (const key of allowedFields) {
@@ -91,28 +117,34 @@ export async function PATCH(
     }
 
     if (Object.keys(updateData).length === 0) {
-      return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 });
+      return NextResponse.json(
+        { error: "No valid fields to update" },
+        { status: 400 },
+      );
     }
 
     updateData.updatedAt = new Date();
 
     const result = await products.updateOne(
       { _id: objectId },
-      { $set: updateData }
+      { $set: updateData },
     );
 
     // Revalidate
     revalidatePath(`/product/${id}`);
-    revalidatePath('/');
-    revalidatePath('/admin/products');
+    revalidatePath("/");
+    revalidatePath("/admin/products");
 
     if (result.matchedCount === 0) {
-      return NextResponse.json({ error: 'Product not found' }, { status: 404 });
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, updated: updateData });
   } catch (error) {
-    console.error('Error updating product:', error);
-    return NextResponse.json({ error: 'Failed to update product' }, { status: 500 });
+    console.error("Error updating product:", error);
+    return NextResponse.json(
+      { error: "Failed to update product" },
+      { status: 500 },
+    );
   }
 }
