@@ -227,7 +227,7 @@ export default function AdminProductsPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="font-bold text-white text-sm leading-tight line-clamp-2">
-                      {product.name}
+                      {product.name} {product.isCargo && " + Карго"}
                     </p>
                     <p className="text-xs text-slate-500 mt-0.5">
                       {product.category}
@@ -331,7 +331,7 @@ export default function AdminProductsPage() {
                           href={`/admin/products/${p._id}`}
                           className="text-sm font-bold text-white hover:text-amber-400 transition-colors line-clamp-1"
                         >
-                          {p.name}
+                          {p.name} {p.isCargo && " + Карго"}
                         </Link>
                         <div className="text-xs text-slate-500 mt-1">
                           {categories.find((c: any) => c.id === p.category)

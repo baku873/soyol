@@ -15,6 +15,7 @@ type Product = {
   category: string;
   stockStatus: string;
   featured?: boolean;
+  isCargo?: boolean;
   createdAt: Date;
 };
 
@@ -175,7 +176,9 @@ export default function ProductInventoryTable({ products }: { products: Product[
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-slate-900 truncate">{product.name}</p>
+                      <p className="font-medium text-slate-900 truncate">
+                        {product.name} {product.isCargo && " + Карго"}
+                      </p>
                       {product.description && (
                         <p className="text-sm text-slate-500 truncate max-w-xs">
                           {product.description}

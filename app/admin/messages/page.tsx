@@ -32,6 +32,7 @@ export default function AdminMessagesPage() {
     // Call State
     const [callRoom, setCallRoom] = useState('');
     const [isCallActive, setIsCallActive] = useState(false);
+    const [isVoiceCall, setIsVoiceCall] = useState(false);
     const [callDuration, setCallDuration] = useState(0);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -79,7 +80,7 @@ export default function AdminMessagesPage() {
         return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     };
 
-    const handleStartCall = async () => {
+    const startCall = async (isVoice: boolean = false) => {
         if (!selectedUser) return;
 
         const room = `call-${Date.now()}`;
@@ -89,19 +90,25 @@ export default function AdminMessagesPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     receiverId: selectedUser.userId,
-                    content: `📹 Видео дуудлага эхэллээ: ${room}`,
+                    content: isVoice 
+                        ? `📞 Дуут дуудлага эхэллээ: ${room}`
+                        : `📹 Видео дуудлага эхэллээ: ${room}`,
                     type: 'call_invite',
                     roomName: room
                 })
             });
 
             setCallRoom(room);
+            setIsVoiceCall(isVoice);
             setIsCallActive(true);
             setMobileView('call');
         } catch (e) {
             console.error(e);
         }
     };
+
+    const handleStartCall = () => startCall(false);
+    const handleStartVoiceCall = () => startCall(true);
 
     const onDisconnected = () => {
         setIsCallActive(false);
@@ -166,13 +173,18 @@ export default function AdminMessagesPage() {
                             flex-1 h-full flex-col relative
                         `}>
                             {isCallActive ? (
-                                <VideoCall prefilledRoom={callRoom} onDisconnected={onDisconnected} />
+                                <VideoCall 
+                                    prefilledRoom={callRoom} 
+                                    onDisconnected={onDisconnected}
+                                    initialVideoDisabled={isVoiceCall}
+                                />
                             ) : (
                                 <div className="flex-1 h-full bg-slate-950/30 flex flex-col">
                                     {selectedUser ? (
                                         <ChatWindow
                                             otherUser={selectedUser}
                                             onStartCall={handleStartCall}
+                                            onStartVoiceCall={handleStartVoiceCall}
                                             onBack={() => setMobileView('list')}
                                         />
                                     ) : (

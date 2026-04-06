@@ -16,10 +16,10 @@ export async function generateMetadata({
     const product = await products.findOne({ _id: new ObjectId(id) });
     if (!product) return {};
     return {
-      title: product.name,
+      title: product.isCargo ? `${product.name} + Карго` : product.name,
       description: product.description || product.name,
       openGraph: {
-        title: product.name,
+        title: product.isCargo ? `${product.name} + Карго` : product.name,
         description: product.description || product.name,
         images: product.images?.[0]
           ? [{ url: product.images[0] }]
@@ -65,6 +65,7 @@ export default async function ProductDetailPage({
       category: p.category,
       featured: p.featured,
       stockStatus: p.stockStatus,
+      isCargo: p.isCargo || false,
       inventory: p.inventory
     }));
 
@@ -93,6 +94,7 @@ export default async function ProductDetailPage({
       sizeGuideUrl: product.sizeGuideUrl || undefined,
       wholesale: product.wholesale || false,
       featured: product.featured || false,
+      isCargo: product.isCargo || false,
       deliveryFee: product.deliveryFee ?? 0,
       createdAt: product.createdAt ? new Date(product.createdAt).toISOString() : new Date().toISOString(),
       updatedAt: product.updatedAt ? new Date(product.updatedAt).toISOString() : new Date().toISOString(),

@@ -41,6 +41,7 @@ export interface Product {
   attributes?: Record<string, string>;
   options?: ProductOption[];
   variants?: ProductVariant[];
+  isCargo?: boolean;
   rating?: number;
   createdAt?: string | Date;
   updatedAt?: string | Date;

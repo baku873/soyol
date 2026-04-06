@@ -26,6 +26,7 @@ interface ChatWindowProps {
     otherUser: User;
     guestId?: string;
     onStartCall: () => void;
+    onStartVoiceCall: () => void;
     onBack: () => void;
 }
 
@@ -34,7 +35,7 @@ const fetcher = ([url, guestId]: [string, string | undefined]) =>
         headers: guestId ? { 'x-guest-id': guestId } : {}
     }).then((res) => res.json());
 
-export default function ChatWindow({ otherUser, guestId, onStartCall, onBack }: ChatWindowProps) {
+export default function ChatWindow({ otherUser, guestId, onStartCall, onStartVoiceCall, onBack }: ChatWindowProps) {
     const { user } = useUser();
     const { t } = useTranslation();
     const [newMessage, setNewMessage] = useState('');
@@ -124,7 +125,11 @@ export default function ChatWindow({ otherUser, guestId, onStartCall, onBack }: 
                     >
                         <Video className="w-5 h-5" strokeWidth={1.2} />
                     </button>
-                    <button className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 transition-colors border border-white/5">
+                    <button
+                        onClick={onStartVoiceCall}
+                        className="p-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-emerald-400 transition-colors border border-white/5"
+                        title="Start Voice Call"
+                    >
                         <Phone className="w-5 h-5" strokeWidth={1.2} />
                     </button>
                 </div>
@@ -134,21 +139,38 @@ export default function ChatWindow({ otherUser, guestId, onStartCall, onBack }: 
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
                 {/* Large Video Call Action for Admins */}
                 {otherUser.role !== 'admin' && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-6"
-                    >
-                        <button
-                            onClick={onStartCall}
-                            className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-orange-500/20 flex items-center justify-center gap-3 group hover:scale-[1.02] transition-all active:scale-95 border border-white/10"
+                    <div className="flex flex-col gap-3 mb-6">
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
                         >
-                            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:animate-pulse">
-                                <Video className="w-4 h-4 fill-white" />
-                            </div>
-                            <span>📹 {otherUser.name || 'Хэрэглэгч'}-тэй видео дуудлага эхлүүлэх</span>
-                        </button>
-                    </motion.div>
+                            <button
+                                onClick={onStartCall}
+                                className="w-full py-4 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-orange-500/20 flex items-center justify-center gap-3 group hover:scale-[1.02] transition-all active:scale-95 border border-white/10"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:animate-pulse">
+                                    <Video className="w-4 h-4 fill-white" />
+                                </div>
+                                <span>📹 {otherUser.name || 'Хэрэглэгч'}-тэй видео дуудлага эхлүүлэх</span>
+                            </button>
+                        </motion.div>
+
+                        <motion.div
+                            initial={{ opacity: 0, y: -20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.1 }}
+                        >
+                            <button
+                                onClick={onStartVoiceCall}
+                                className="w-full py-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-2xl font-black text-sm shadow-xl shadow-emerald-500/20 flex items-center justify-center gap-3 group hover:scale-[1.02] transition-all active:scale-95 border border-white/10"
+                            >
+                                <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center group-hover:animate-pulse">
+                                    <Phone className="w-4 h-4 fill-white" />
+                                </div>
+                                <span>📞 {otherUser.name || 'Хэрэглэгч'}-тэй дуут дуудлага эхлүүлэх</span>
+                            </button>
+                        </motion.div>
+                    </div>
                 )}
 
                 {Array.isArray(messages) && messages.map((msg) => {

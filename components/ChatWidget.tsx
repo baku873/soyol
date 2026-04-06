@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, ArrowLeft, Video, MessageCircle, Loader2 } from 'lucide-react';
+import { X, ArrowLeft, Video, Phone, MessageCircle, Loader2 } from 'lucide-react';
 import ChatWindow from '@/components/Chat/ChatWindow';
 import AIChatWindow from '@/components/Chat/AIChatWindow';
 import AdminSelector from '@/components/Chat/AdminSelector';
@@ -45,6 +45,7 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
     const [selectedAdmin, setSelectedAdmin] = useState<AdminUser | null>(null);
     const [viewMode, setViewMode] = useState<'menu' | 'chat_selection' | 'video_selection' | 'chat' | 'video_call' | 'ai_chat'>('menu');
     const [connectingMode, setConnectingMode] = useState<'chat' | 'video_call' | null>(null);
+    const [isVoiceCall, setIsVoiceCall] = useState(false);
 
     const connectToAdmin = async (mode: 'chat' | 'video_call') => {
         setConnectingMode(mode);
@@ -187,12 +188,38 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
                                         <p className="text-sm text-slate-400">{t('chat', 'joinByCode')}</p>
                                     </div>
                                 </button>
+
+                                <button
+                                    onClick={() => {
+                                        setIsVoiceCall(true);
+                                        connectToAdmin('video_call');
+                                    }}
+                                    disabled={connectingMode !== null}
+                                    className="flex items-center gap-4 p-4 rounded-2xl bg-slate-800 hover:bg-slate-700 border border-white/5 transition-all group text-left relative overflow-hidden"
+                                >
+                                    <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 flex items-center justify-center group-hover:bg-emerald-500 transition-colors relative z-10">
+                                        {connectingMode === 'video_call' && isVoiceCall ? (
+                                            <Loader2 className="w-6 h-6 text-white animate-spin" strokeWidth={1.5} />
+                                        ) : (
+                                            <Phone className="w-6 h-6 text-emerald-500 group-hover:text-white" strokeWidth={1.2} />
+                                        )}
+                                    </div>
+                                    <div className="relative z-10">
+                                        <h4 className="font-bold text-white text-lg">{t('chat', 'voiceCall')}</h4>
+                                        <p className="text-sm text-slate-400">{t('chat', 'joinByCode')}</p>
+                                    </div>
+                                </button>
                             </div>
                         ) : viewMode === 'chat' && selectedAdmin ? (
                             <ChatWindow
                                 otherUser={selectedAdmin}
                                 guestId={guestId}
                                 onStartCall={() => {
+                                    setIsVoiceCall(false);
+                                    setViewMode('video_call');
+                                }}
+                                onStartVoiceCall={() => {
+                                    setIsVoiceCall(true);
                                     setViewMode('video_call');
                                 }}
                                 onBack={handleBack}
@@ -204,6 +231,7 @@ export default function ChatWidget({ isOpen, onClose }: ChatWidgetProps) {
                                 <VideoCall
                                     prefilledRoom={`call-${effectiveUser.id}-${selectedAdmin._id}`}
                                     onBack={handleBack}
+                                    initialVideoDisabled={isVoiceCall}
                                 />
                             </div>
                         ) : (

@@ -17,9 +17,15 @@ export interface VideoCallProps {
   prefilledRoom?: string;
   onBack?: () => void;
   onDisconnected?: () => void;
+  initialVideoDisabled?: boolean;
 }
 
-export default function VideoCall({ prefilledRoom, onBack, onDisconnected }: VideoCallProps) {
+export default function VideoCall({ 
+  prefilledRoom, 
+  onBack, 
+  onDisconnected,
+  initialVideoDisabled = false
+}: VideoCallProps) {
   const [room, setRoom] = useState(prefilledRoom || '');
   const [inCall, setInCall] = useState(false);
   const [connecting, setConnecting] = useState(false);
@@ -62,7 +68,7 @@ export default function VideoCall({ prefilledRoom, onBack, onDisconnected }: Vid
     return (
       <div className="fixed inset-0 z-[200] bg-black">
         <LiveKitRoom
-          video={true}
+          video={!initialVideoDisabled}
           audio={true}
           token={token}
           serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
@@ -97,9 +103,15 @@ export default function VideoCall({ prefilledRoom, onBack, onDisconnected }: Vid
         )}
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-orange-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            <Video className="w-8 h-8 text-orange-500" />
+            {initialVideoDisabled ? (
+              <Phone className="w-8 h-8 text-orange-500" />
+            ) : (
+              <Video className="w-8 h-8 text-orange-500" />
+            )}
           </div>
-          <h1 className="text-2xl font-bold text-slate-900 mb-2">Видео дуудлага</h1>
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">
+            {initialVideoDisabled ? 'Дуут дуудлага' : 'Видео дуудлага'}
+          </h1>
           <p className="text-slate-600">Өрөөний нэр оруулж дуудлага эхлүүлнэ үү</p>
         </div>
 

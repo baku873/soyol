@@ -3,8 +3,8 @@
 import { memo } from "react";
 import { motion, Variants } from "framer-motion";
 import UniversalProductCard from "./UniversalProductCard";
-
 import { type Product } from "@/models/Product";
+import { useAuth } from "@/context/AuthContext";
 
 interface PremiumProductGridProps {
   products: Product[];
@@ -30,6 +30,7 @@ function PremiumProductGrid({
   disableFeaturedSeparation = false,
   statusBadgeMode = "default",
 }: PremiumProductGridProps) {
+  const { isAdmin } = useAuth();
   // Separate featured and regular products
   let featured: Product[] = [];
   let regular: Product[] = [];
@@ -55,31 +56,33 @@ function PremiumProductGrid({
           {featured.map((product, index) => (
             <UniversalProductCard
               key={product.id}
+              isAdmin={isAdmin}
+              statusBadgeMode={statusBadgeMode}
               product={
                 statusBadgeMode === "default"
                   ? product
                   : ({
-                      ...product,
-                      stockStatus:
-                        statusBadgeMode === "ready"
-                          ? "in-stock"
-                          : statusBadgeMode === "preorder"
-                            ? "pre-order"
-                            : product.stockStatus,
-                      sections:
-                        statusBadgeMode === "new"
+                    ...product,
+                    stockStatus:
+                      statusBadgeMode === "ready"
+                        ? "in-stock"
+                        : statusBadgeMode === "preorder"
+                          ? "pre-order"
+                          : product.stockStatus,
+                    sections:
+                      statusBadgeMode === "new"
+                        ? Array.from(
+                          new Set([...(product.sections || []), "Шинэ"]),
+                        )
+                        : statusBadgeMode === "sale"
                           ? Array.from(
-                              new Set([...(product.sections || []), "Шинэ"]),
-                            )
-                          : statusBadgeMode === "sale"
-                            ? Array.from(
-                                new Set([
-                                  ...(product.sections || []),
-                                  "Хямдрал",
-                                ]),
-                              )
-                            : product.sections,
-                    } as Product)
+                            new Set([
+                              ...(product.sections || []),
+                              "Хямдрал",
+                            ]),
+                          )
+                          : product.sections,
+                  } as Product)
               }
               index={index}
             />
@@ -109,31 +112,33 @@ function PremiumProductGrid({
           {regular.map((product, index) => (
             <UniversalProductCard
               key={product.id}
+              isAdmin={isAdmin}
+              statusBadgeMode={statusBadgeMode}
               product={
                 statusBadgeMode === "default"
                   ? product
                   : ({
-                      ...product,
-                      stockStatus:
-                        statusBadgeMode === "ready"
-                          ? "in-stock"
-                          : statusBadgeMode === "preorder"
-                            ? "pre-order"
-                            : product.stockStatus,
-                      sections:
-                        statusBadgeMode === "new"
+                    ...product,
+                    stockStatus:
+                      statusBadgeMode === "ready"
+                        ? "in-stock"
+                        : statusBadgeMode === "preorder"
+                          ? "pre-order"
+                          : product.stockStatus,
+                    sections:
+                      statusBadgeMode === "new"
+                        ? Array.from(
+                          new Set([...(product.sections || []), "Шинэ"]),
+                        )
+                        : statusBadgeMode === "sale"
                           ? Array.from(
-                              new Set([...(product.sections || []), "Шинэ"]),
-                            )
-                          : statusBadgeMode === "sale"
-                            ? Array.from(
-                                new Set([
-                                  ...(product.sections || []),
-                                  "Хямдрал",
-                                ]),
-                              )
-                            : product.sections,
-                    } as Product)
+                            new Set([
+                              ...(product.sections || []),
+                              "Хямдрал",
+                            ]),
+                          )
+                          : product.sections,
+                  } as Product)
               }
               index={index + featured.length}
             />

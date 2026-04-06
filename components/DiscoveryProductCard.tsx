@@ -212,7 +212,7 @@ export default function DiscoveryProductCard({
       <div className="p-3 flex-1 flex flex-col justify-between">
         <div className="space-y-1">
           <h3 className="text-sm font-medium text-zinc-900 line-clamp-2 leading-snug group-hover:text-orange-600 transition-colors h-10 overflow-hidden">
-            {product.name}
+            {product.name} {product.isCargo && " + Карго"}
           </h3>
           <div className="flex items-center justify-between">
             <p className="text-base font-bold text-zinc-900 tracking-tight">

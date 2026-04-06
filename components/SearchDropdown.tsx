@@ -14,6 +14,7 @@ export type SearchResultProduct = {
   images?: string[];
   image?: string | null;
   category?: string;
+  isCargo?: boolean;
 };
 
 interface SearchDropdownProps {
@@ -81,7 +82,7 @@ const SearchDropdown = ({
                     </div>
                     <div className="flex flex-col min-w-0 flex-1">
                       <span className="font-medium text-sm text-gray-900 line-clamp-2 leading-snug">
-                        {product.name}
+                        {product.name} {product.isCargo && " + Карго"}
                       </span>
                       <span className="text-[#FF5000] font-bold text-sm mt-1">
                         {formatPrice(product.price)}

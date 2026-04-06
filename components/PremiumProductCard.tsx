@@ -4,11 +4,13 @@ import { useState, useRef } from 'react';
 import { motion, Variants, AnimatePresence } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { Heart, Star, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useWishlistStore } from '@/store/wishlistStore';
 import toast from 'react-hot-toast';
 import { useLanguage } from '@/context/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useAuth } from '@/context/AuthContext';
 import ProductBadge from '@/components/ProductBadge';
 
 interface Product {
@@ -29,6 +31,7 @@ interface Product {
     inventory?: number;
     rating?: number;
     featured?: boolean;
+    isCargo?: boolean;
 }
 
 const itemVariants: Variants = {
@@ -50,6 +53,8 @@ export default function PremiumProductCard({ product, isFeatured = false }: { pr
     const { addItem: addToWishlist, removeItem: removeFromWishlist, isInWishlist } = useWishlistStore();
     const { formatPrice: formatPriceWithCurrency } = useLanguage();
     const { t } = useTranslation();
+    const router = useRouter();
+    const { user, isAuthenticated, isAdmin } = useAuth();
     const [activeIdx, setActiveIdx] = useState(0);
     const isDragging = useRef(false);
 
@@ -90,7 +95,7 @@ export default function PremiumProductCard({ product, isFeatured = false }: { pr
                                 isFeatured={product.featured}
                                 className="z-10"
                             />
-                            {product.stockStatus === 'in-stock' && (
+                            {(!product.sections?.includes('Захиалга') || product.sections?.includes('Бэлэн')) && (
                                 <div className="px-2.5 py-1 bg-emerald-50/90 backdrop-blur-md border border-emerald-200/50 rounded-lg flex items-center shadow-sm">
                                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5 animate-pulse" />
                                     <span className="text-[9px] sm:text-[10px] font-extrabold tracking-widest text-emerald-700 uppercase">
@@ -98,7 +103,7 @@ export default function PremiumProductCard({ product, isFeatured = false }: { pr
                                     </span>
                                 </div>
                             )}
-                            {product.stockStatus === 'pre-order' && (
+                            {product.sections?.includes('Захиалга') && (
                                 <div className="px-2.5 py-1 bg-blue-50/90 backdrop-blur-md border border-blue-200/50 rounded-lg flex items-center shadow-sm">
                                     <span className="text-[9px] sm:text-[10px] font-extrabold tracking-widest text-blue-700 uppercase">
                                         ЗАХИАЛГА
@@ -212,8 +217,14 @@ export default function PremiumProductCard({ product, isFeatured = false }: { pr
                     {/* Content Section */}
                     <div className="p-4 sm:p-5 flex flex-col flex-1">
                         <h3 className="text-base sm:text-lg font-black text-gray-900 leading-[1.1] mb-3 line-clamp-2 tracking-tight group-hover:text-orange-600 transition-colors">
-                            {product.name}
+                            {product.name} {product.isCargo && " + Карго"}
                         </h3>
+
+                        {product.isCargo && (
+                            <div className="mt-[-4px] mb-2 sm:mt-[-6px]">
+                                <span className="text-[10px] sm:text-[11px] font-bold text-[#FF5000] bg-[#FF5000]/10 px-2 py-0.5 rounded-md inline-block">📦 Карго</span>
+                            </div>
+                        )}
 
                         <div className="mt-auto mb-4">
                             <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -237,8 +248,8 @@ export default function PremiumProductCard({ product, isFeatured = false }: { pr
 
                         <div className="w-full">
                             <div className="relative w-full py-2.5 sm:py-3 rounded-xl bg-gray-50 border border-gray-100 text-gray-900 font-bold text-xs sm:text-sm shadow-sm group-hover:bg-gray-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 overflow-hidden">
-                                <span className="relative z-10">Дэлгэрэнгүй</span>
-                                <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />
+                                <span className="relative z-10">{isAdmin ? '✏️ Засварлах' : 'Дэлгэрэнгүй'}</span>
+                                {!isAdmin && <ArrowRight className="w-4 h-4 relative z-10 group-hover:translate-x-1 transition-transform" />}
                             </div>
                         </div>
                     </div>

@@ -38,6 +38,7 @@ export type ProductFormData = {
     image?: string;
   }[];
   featured?: boolean;
+  isCargo?: boolean;
 };
 
 export async function createProduct(data: ProductFormData) {
@@ -75,7 +76,7 @@ export async function createProduct(data: ProductFormData) {
     return { success: true, productId: result.insertedId.toString() };
   } catch (error) {
     console.error('Error creating product:', error);
-    return { success: false, error: 'Failed to create product' };
+    return { success: false, error: error instanceof Error ? error.message : 'Failed to create product' };
   }
 }
 

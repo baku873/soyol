@@ -132,7 +132,7 @@ export default function MobileProductCard({ product }: MobileProductCardProps) {
                 <div className="p-4 pt-2 flex flex-col flex-1 justify-between gap-3">
                     <div className="space-y-1.5">
                         <h3 className="text-[15px] font-medium text-gray-800 line-clamp-2 leading-snug tracking-tight">
-                            {product.name}
+                            {product.name} {product.isCargo && " + Карго"}
                         </h3>
                     </div>
 

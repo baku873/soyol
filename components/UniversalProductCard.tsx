@@ -4,6 +4,7 @@ import { useState, useRef } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Heart, ShoppingCart, Clock } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { useWishlistStore } from "@/store/wishlistStore";
@@ -18,6 +19,7 @@ interface UniversalProductCardProps {
   index?: number;
   disableInitialAnimation?: boolean;
   statusBadgeMode?: "default" | "ready" | "preorder" | "new" | "sale";
+  isAdmin?: boolean;
 }
 
 export default function UniversalProductCard({
@@ -25,7 +27,9 @@ export default function UniversalProductCard({
   index = 0,
   disableInitialAnimation = false,
   statusBadgeMode = "default",
+  isAdmin = false,
 }: UniversalProductCardProps) {
+  const router = useRouter();
   const product = originalProduct;
 
   const { isAuthenticated } = useAuth();
@@ -56,9 +60,9 @@ export default function UniversalProductCard({
   const discount =
     product.originalPrice && product.originalPrice > product.price
       ? Math.round(
-          ((product.originalPrice - product.price) / product.originalPrice) *
-            100,
-        )
+        ((product.originalPrice - product.price) / product.originalPrice) *
+        100,
+      )
       : (product.discountPercent ?? 0);
 
   const handleAddToCart = (e: React.MouseEvent) => {
@@ -106,11 +110,12 @@ export default function UniversalProductCard({
       className="group relative"
       style={{ touchAction: "manipulation" }}
     >
-      <Link
-        href={`/product/${product.id}`}
-        className="block"
+      <div
+        className="block cursor-pointer"
         onClick={(e) => {
-          if (isDragging.current) e.preventDefault();
+          if (!isDragging.current) {
+            router.push(`/product/${product.id}`);
+          }
         }}
       >
         <div className="bg-white rounded-[20px] sm:rounded-[2rem] overflow-hidden shadow-[0_4px_16px_rgba(0,0,0,0.04)] transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] hover:-translate-y-1">
@@ -166,28 +171,33 @@ export default function UniversalProductCard({
 
             {/* ── Top-left badges ───────────────────────── */}
             <div className="absolute top-3 left-3 z-10 flex flex-col gap-1.5 items-start">
-              {/* Page-context status badge */}
+              {/* Ready Badge */}
               {(statusBadgeMode === "ready" ||
-                (statusBadgeMode === "default" &&
-                  product.stockStatus === "in-stock")) && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-                  <div className="w-1.5 h-1.5 rounded-full bg-[#34C759] animate-pulse" />
-                  <span className="text-[10px] sm:text-[11px] font-bold text-[#34C759] uppercase tracking-wider leading-none mt-[1px]">
-                    Бэлэн
-                  </span>
-                </div>
-              )}
+                (statusBadgeMode === "default" && (
+                  product.sections?.includes("Бэлэн") ||
+                  (!product.sections?.includes("Захиалга") && product.stockStatus === "in-stock")
+                ))) && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                    <div className="w-1.5 h-1.5 rounded-full bg-[#34C759] animate-pulse" />
+                    <span className="text-[10px] sm:text-[11px] font-bold text-[#34C759] uppercase tracking-wider leading-none mt-[1px]">
+                      Бэлэн
+                    </span>
+                  </div>
+                )}
 
+              {/* Order Badge */}
               {(statusBadgeMode === "preorder" ||
-                (statusBadgeMode === "default" &&
-                  product.stockStatus === "pre-order")) && (
-                <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
-                  <Clock className="w-3 h-3 text-[#FF9500]" strokeWidth={2.5} />
-                  <span className="text-[10px] sm:text-[11px] font-bold text-[#FF9500] uppercase tracking-wider leading-none mt-[1px]">
-                    Захиалга
-                  </span>
-                </div>
-              )}
+                (statusBadgeMode === "default" && (
+                  product.sections?.includes("Захиалга") ||
+                  (!product.sections?.includes("Бэлэн") && product.stockStatus === "pre-order")
+                ))) && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
+                    <Clock className="w-3 h-3 text-[#FF9500]" strokeWidth={2.5} />
+                    <span className="text-[10px] sm:text-[11px] font-bold text-[#FF9500] uppercase tracking-wider leading-none mt-[1px]">
+                      Захиалга
+                    </span>
+                  </div>
+                )}
 
               {statusBadgeMode === "new" && (
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
@@ -225,11 +235,10 @@ export default function UniversalProductCard({
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
               onClick={handleWishlist}
-              className={`absolute top-3 right-3 z-10 flex items-center justify-center transition-all w-6 h-6 sm:w-9 sm:h-9 sm:rounded-full sm:border ${
-                isWishlisted
+              className={`absolute top-3 right-3 z-10 flex items-center justify-center transition-all w-6 h-6 sm:w-9 sm:h-9 sm:rounded-full sm:border ${isWishlisted
                   ? "text-[#FF5722] sm:bg-red-50 sm:border-red-100 sm:text-red-500"
                   : "text-[#AAAAAA] sm:bg-white/90 sm:backdrop-blur-sm sm:border-black/[0.04] sm:text-black/30 hover:text-[#FF5722] sm:hover:text-red-500 sm:shadow-sm"
-              }`}
+                }`}
             >
               {/* Mobile Heart */}
               <Heart
@@ -248,7 +257,7 @@ export default function UniversalProductCard({
           <div className="px-3.5 pt-3 pb-3.5 sm:px-5 sm:pt-5 sm:pb-5 flex flex-col gap-2.5 sm:gap-4">
             {/* Product name */}
             <h3 className="text-[14px] sm:text-[16px] font-semibold text-[#1C1C1E] leading-snug line-clamp-2 min-h-[42px] sm:min-h-[48px] tracking-tight group-hover:text-[#FF5000] transition-colors">
-              {product.name}
+            {product.name} {product.isCargo && " + Карго"}
             </h3>
 
             {/* Footer Container (Pushed to bottom) */}
@@ -287,9 +296,19 @@ export default function UniversalProductCard({
 
               {/* Desktop: Footer buttons row */}
               <div className="hidden sm:flex items-center gap-2">
-                <div className="hidden lg:flex flex-1 items-center justify-center py-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-900 font-bold text-xs uppercase tracking-wider group-hover:bg-gray-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
-                  Дэлгэрэнгүй
-                </div>
+                {isAdmin ? (
+                  <Link
+                    href={`/admin/products/${product.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    className="hidden lg:flex flex-1 items-center justify-center py-2.5 rounded-xl bg-amber-50 border border-amber-100 text-amber-900 font-bold text-xs uppercase tracking-wider hover:bg-amber-500 hover:text-white hover:shadow-lg transition-all duration-300"
+                  >
+                    Засах
+                  </Link>
+                ) : (
+                  <div className="hidden lg:flex flex-1 items-center justify-center py-2.5 rounded-xl bg-gray-50 border border-gray-100 text-gray-900 font-bold text-xs uppercase tracking-wider group-hover:bg-gray-900 group-hover:text-white group-hover:shadow-lg transition-all duration-300">
+                    Дэлгэрэнгүй
+                  </div>
+                )}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.9 }}
@@ -327,10 +346,11 @@ export default function UniversalProductCard({
                   </motion.button>
                 </div>
               </div>
+              </div>
             </div>
           </div>
         </div>
-      </Link>
-    </motion.div>
+      </motion.div>
   );
 }
+

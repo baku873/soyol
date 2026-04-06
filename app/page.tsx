@@ -559,7 +559,7 @@ export default function HomePage() {
                       ? "ready"
                       : activeFilter === "Захиалга"
                         ? "preorder"
-                        : "ready"
+                        : "default"
                   }
                 />
               </div>
@@ -573,7 +573,7 @@ export default function HomePage() {
                       ? "ready"
                       : activeFilter === "Захиалга"
                         ? "preorder"
-                        : "ready"
+                        : "default"
                   }
                 />
               </div>

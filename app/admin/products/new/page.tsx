@@ -37,6 +37,7 @@ export default function NewProductPage() {
             dispatchTime: data.dispatchTime || undefined,
             sizeGuideUrl: data.sizeGuideUrl || undefined,
             featured: data.featured || false,
+            isCargo: data.isCargo || false,
             brand: data.brand || '',
             model: data.model || '',
             delivery: data.delivery || 'Үнэгүй',
@@ -44,6 +45,13 @@ export default function NewProductPage() {
             paymentMethods: data.paymentMethods || 'QPay, SocialPay, Card',
             attributes: data.attributes || {}
         };
+
+        // Next.js Server Actions do not support undefined values in objects
+        Object.keys(payload).forEach((key) => {
+            if (payload[key as keyof typeof payload] === undefined) {
+                delete payload[key as keyof typeof payload];
+            }
+        });
 
         try {
             const result = await createProduct(payload);

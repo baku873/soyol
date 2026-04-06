@@ -60,6 +60,7 @@ export type ProductDetailData = {
   updatedAt?: string;
   sections?: string[];
   featured?: boolean;
+  isCargo?: boolean;
   relatedProducts?: Product[];
   attributes?: Record<string, any>;
   reviews?: any[];
@@ -77,7 +78,7 @@ export default function ProductDetailClient({
   initialReviews: any[];
 }) {
   const router = useRouter();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, isAdmin } = useAuth();
 
   const { data: categoriesData } = useSWR("/api/categories", (url) =>
     fetch(url).then((r) => r.json()),
@@ -159,9 +160,9 @@ export default function ProductDetailClient({
   const discount =
     product.originalPrice && product.originalPrice > displayPrice
       ? Math.round(
-          ((product.originalPrice - displayPrice) / product.originalPrice) *
-            100,
-        )
+        ((product.originalPrice - displayPrice) / product.originalPrice) *
+        100,
+      )
       : 0;
 
   const categoryObj = categories.find((c: any) => c.id === product.category);
@@ -196,7 +197,7 @@ export default function ProductDetailClient({
           title: product.name,
           url: window.location.href,
         });
-      } catch {}
+      } catch { }
     } else {
       navigator.clipboard.writeText(window.location.href);
       toast.success("Холбоос хуулагдлаа", {
@@ -439,21 +440,47 @@ export default function ProductDetailClient({
                   )}
                 </div>
 
-                <div className="absolute top-4 left-4">
-                  {product.stockStatus === "in-stock" ? (
-                    <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-full border border-black/[0.06] shadow-sm">
+                <div className="absolute top-4 left-4 flex flex-col gap-2">
+                  {/* Ready Badge */}
+                  {product.sections?.includes("Бэлэн") && (
+                    <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full border border-black/[0.06] shadow-sm">
                       <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                       <span className="text-[10px] font-semibold text-emerald-700 tracking-wide uppercase">
                         Бэлэн
                       </span>
                     </div>
-                  ) : (
-                    <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-full border border-black/[0.06] shadow-sm">
+                  )}
+                  
+                  {/* Order Badge */}
+                  {product.sections?.includes("Захиалга") && (
+                    <div className="flex items-center gap-1.5 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-full border border-black/[0.06] shadow-sm">
                       <Clock className="w-3 h-3 text-amber-500" />
                       <span className="text-[10px] font-semibold text-amber-700 tracking-wide uppercase">
-                        Захиалгаар
+                        Захиалга
                       </span>
                     </div>
+                  )}
+
+                  {/* Fallback if no sections but stockStatus set */}
+                  {!product.sections?.includes("Бэлэн") && !product.sections?.includes("Захиалга") && (
+                    <>
+                      {product.stockStatus === "in-stock" && (
+                        <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-full border border-black/[0.06] shadow-sm">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                          <span className="text-[10px] font-semibold text-emerald-700 tracking-wide uppercase">
+                            Бэлэн
+                          </span>
+                        </div>
+                      )}
+                      {product.stockStatus === "pre-order" && (
+                        <div className="flex items-center gap-1.5 bg-white px-2.5 py-1 rounded-full border border-black/[0.06] shadow-sm">
+                          <Clock className="w-3 h-3 text-amber-500" />
+                          <span className="text-[10px] font-semibold text-amber-700 tracking-wide uppercase">
+                            Захиалга
+                          </span>
+                        </div>
+                      )}
+                    </>
                   )}
                 </div>
 
@@ -507,23 +534,31 @@ export default function ProductDetailClient({
                 </p>
 
                 <h1 className="text-[18px] lg:text-[20px] font-semibold text-black leading-snug mb-4 tracking-tight">
-                  {product.name}
+                  {product.name} {product.isCargo && " + Карго"}
                 </h1>
 
-                <div className="flex items-baseline gap-3 mb-6 pb-6 border-b border-black/[0.06]">
-                  <span className="text-[28px] font-bold text-black tracking-tight leading-none">
-                    {formatPrice(displayPrice * quantity)}
-                  </span>
-                  {product.originalPrice &&
-                    product.originalPrice > displayPrice && (
-                      <span className="text-sm text-black/30 line-through font-medium">
-                        {formatPrice(product.originalPrice)}
+                <div className="mb-6 pb-6 border-b border-black/[0.06]">
+                  <div className="flex items-baseline gap-3">
+                    <span className="text-[28px] font-bold text-black tracking-tight leading-none">
+                      {formatPrice(displayPrice * quantity)}
+                    </span>
+                    {product.originalPrice &&
+                      product.originalPrice > displayPrice && (
+                        <span className="text-sm text-black/30 line-through font-medium">
+                          {formatPrice(product.originalPrice)}
+                        </span>
+                      )}
+                    {quantity > 1 && (
+                      <span className="text-xs text-black/40 font-medium">
+                        {quantity}ш × {formatPrice(displayPrice)}
                       </span>
                     )}
-                  {quantity > 1 && (
-                    <span className="text-xs text-black/40 font-medium">
-                      {quantity}ш × {formatPrice(displayPrice)}
-                    </span>
+                  </div>
+                  {product.isCargo && (
+                    <div className="mt-2 text-[#FF5000] text-[11px] font-bold flex items-center gap-1.5 uppercase tracking-wider">
+                      <div className="w-1.5 h-1.5 rounded-full bg-[#FF5000] animate-pulse" />
+                      <span>📦 Карго бараа - Хүргэлт тусдаа тооцогдоно</span>
+                    </div>
                   )}
                 </div>
 
@@ -666,6 +701,14 @@ export default function ProductDetailClient({
                     Шууд авах{" "}
                     <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
                   </motion.button>
+                  {isAdmin && (
+                    <Link
+                      href={`/admin/products/${product.id}`}
+                      className="flex items-center justify-center gap-2 h-12 px-4 rounded-xl bg-slate-800 text-white font-semibold text-[14px] hover:bg-slate-900 transition-colors shadow-lg whitespace-nowrap"
+                    >
+                      ✏️ Засварлах
+                    </Link>
+                  )}
                 </div>
 
                 <div className="flex flex-col gap-3">
@@ -673,7 +716,7 @@ export default function ProductDetailClient({
                     {
                       icon: Truck,
                       label:
-                        product.stockStatus === "in-stock"
+                        (!product.sections?.includes('Захиалга') || product.sections?.includes('Бэлэн'))
                           ? "Хурдан хүргэлт"
                           : "7–14 хоногт хүргэнэ",
                       sub: "Монгол даяар",
@@ -685,8 +728,8 @@ export default function ProductDetailClient({
                     },
                     {
                       icon: RotateCcw,
-                      label: "Найдвартай төлбөр",
-                      sub: "100% хамгаалагдсан",
+                      label: "Хялбар төлбөр",
+                      sub: "Хамгийн хямд үнээр",
                     },
                   ].map(({ icon: Icon, label, sub }) => (
                     <div key={label} className="flex items-center gap-3">
@@ -710,7 +753,7 @@ export default function ProductDetailClient({
                   <p className="text-[10px] font-semibold text-black/30 uppercase tracking-widest mr-1">
                     Төлбөр
                   </p>
-                  {["QPay", "SocialPay", "Карт"].map((m) => (
+                  {["QPay", "Карт"].map((m) => (
                     <span
                       key={m}
                       className="text-[10px] font-medium text-black/50 bg-black/[0.04] px-2 py-0.5 rounded-md"
@@ -771,7 +814,7 @@ export default function ProductDetailClient({
                         transition={{ duration: 0.15 }}
                       >
                         {product.attributes &&
-                        Object.keys(product.attributes).length > 0 ? (
+                          Object.keys(product.attributes).length > 0 ? (
                           <div className="flex flex-col divide-y divide-black/[0.05]">
                             {Object.entries(product.attributes).map(
                               ([k, v]) => (

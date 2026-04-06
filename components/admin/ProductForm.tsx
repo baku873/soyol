@@ -57,7 +57,8 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting }: Pro
         featured: initialData?.featured || false,
         attributes: initialData?.attributes || {},
         options: initialData?.options || [],
-        variants: initialData?.variants || []
+        variants: initialData?.variants || [],
+        isCargo: initialData?.isCargo || false
     });
 
     const [attributeRows, setAttributeRows] = useState<{ key: string, value: string }[]>(
@@ -593,7 +594,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting }: Pro
                         <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
                             <Star className="w-4 h-4 text-amber-500" /> Онцгой Бараа
                         </h3>
-                        <label className="flex items-center justify-between cursor-pointer group">
+                        <label className="flex items-center justify-between cursor-pointer group mb-4">
                             <span className="text-sm text-slate-300 font-medium group-hover:text-white transition-colors">Нүүр хуудсанд харуулах</span>
                             <div className="relative">
                                 <input
@@ -604,6 +605,23 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting }: Pro
                                 />
                                 <div className={`block w-10 h-6 rounded-full transition-colors ${formData.featured ? 'bg-amber-500' : 'bg-slate-700'}`}></div>
                                 <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.featured ? 'transform translate-x-4' : ''}`}></div>
+                            </div>
+                        </label>
+
+                        <h3 className="text-sm font-bold text-white flex items-center gap-2 mb-4">
+                            <Box className="w-4 h-4 text-amber-500" /> Карго бараа
+                        </h3>
+                        <label className="flex items-center justify-between cursor-pointer group">
+                            <span className="text-sm text-slate-300 font-medium group-hover:text-white transition-colors">📦 Карго</span>
+                            <div className="relative">
+                                <input
+                                    type="checkbox"
+                                    className="sr-only"
+                                    checked={formData.isCargo}
+                                    onChange={(e) => handleChange('isCargo', e.target.checked)}
+                                />
+                                <div className={`block w-10 h-6 rounded-full transition-colors ${formData.isCargo ? 'bg-amber-500' : 'bg-slate-700'}`}></div>
+                                <div className={`absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform ${formData.isCargo ? 'transform translate-x-4' : ''}`}></div>
                             </div>
                         </label>
                     </div>
