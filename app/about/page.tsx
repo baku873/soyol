@@ -20,7 +20,7 @@ import {
   TrendingUp,
   Globe
 } from 'lucide-react';
-import { SITE_CONFIG } from '@lib/constants';
+import { SITE_CONFIG } from '../../lib/constants';
 
 export default function AboutPage() {
   const features = [

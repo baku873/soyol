@@ -4,7 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search } from 'lucide-react';
-import { formatPrice } from '@/lib/utils';
+import { formatPrice } from '../lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 
 export type SearchResultProduct = {

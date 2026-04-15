@@ -5,10 +5,10 @@ import {
     Loader2, BarChart3, Package, ShoppingCart, MessageCircle, Tag, Layers,
     Video, Phone
 } from 'lucide-react';
-import UserList from '@/components/Chat/UserList';
-import ChatWindow from '@/components/Chat/ChatWindow';
+import UserList from '../../../components/Chat/UserList';
+import ChatWindow from '../../../components/Chat/ChatWindow';
 import { motion } from 'framer-motion';
-import VideoCall from '@/components/VideoCall';
+import VideoCall from '../../../components/VideoCall';
 
 interface User {
     _id: string;
@@ -90,7 +90,7 @@ export default function AdminMessagesPage() {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     receiverId: selectedUser.userId,
-                    content: isVoice 
+                    content: isVoice
                         ? `📞 Дуут дуудлага эхэллээ: ${room}`
                         : `📹 Видео дуудлага эхэллээ: ${room}`,
                     type: 'call_invite',
@@ -173,8 +173,8 @@ export default function AdminMessagesPage() {
                             flex-1 h-full flex-col relative
                         `}>
                             {isCallActive ? (
-                                <VideoCall 
-                                    prefilledRoom={callRoom} 
+                                <VideoCall
+                                    prefilledRoom={callRoom}
                                     onDisconnected={onDisconnected}
                                     initialVideoDisabled={isVoiceCall}
                                 />

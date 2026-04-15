@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ArrowLeft, Video, Phone, MessageCircle, Loader2 } from 'lucide-react';
-import ChatWindow from '@/components/Chat/ChatWindow';
-import AIChatWindow from '@/components/Chat/AIChatWindow';
-import AdminSelector from '@/components/Chat/AdminSelector';
-import VideoCall from '@/components/VideoCall';
-import { useUser } from '@/context/AuthContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import ChatWindow from '../components/Chat/ChatWindow';
+import AIChatWindow from '../components/Chat/AIChatWindow';
+import AdminSelector from '../components/Chat/AdminSelector';
+import VideoCall from '../components/VideoCall';
+import { useUser } from '../context/AuthContext';
+import { useTranslation } from '../hooks/useTranslation';
 
 interface ChatWidgetProps {
     isOpen: boolean;

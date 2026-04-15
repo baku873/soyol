@@ -6,12 +6,12 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { Heart, Star, ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useWishlistStore } from '@/store/wishlistStore';
+import { useWishlistStore } from '../store/wishlistStore';
 import toast from 'react-hot-toast';
-import { useLanguage } from '@/context/LanguageContext';
-import { useTranslation } from '@/hooks/useTranslation';
-import { useAuth } from '@/context/AuthContext';
-import ProductBadge from '@/components/ProductBadge';
+import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from '../hooks/useTranslation';
+import { useAuth } from '../context/AuthContext';
+import ProductBadge from '../components/ProductBadge';
 
 interface Product {
     id: string;

@@ -6,13 +6,13 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Heart, ShoppingCart, Clock } from "lucide-react";
-import { useCartStore } from "@/store/cartStore";
-import { useWishlistStore } from "@/store/wishlistStore";
-import { useAuth } from "@/context/AuthContext";
-import { formatPrice } from "@/lib/utils";
+import { useCartStore } from "../store/cartStore";
+import { useWishlistStore } from "../store/wishlistStore";
+import { useAuth } from "../context/AuthContext";
+import { formatPrice } from "../lib/utils";
 import toast from "react-hot-toast";
-import type { Product } from "@/models/Product";
-import ProductBadge from "@/components/ProductBadge";
+import type { Product } from "../models/Product";
+import ProductBadge from "../components/ProductBadge";
 
 interface UniversalProductCardProps {
   product: Product;
@@ -68,7 +68,7 @@ export default function UniversalProductCard({
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
-    addItem(product);
+    addItem(product as any);
     toast.success("Сагсанд нэмлээ", {
       style: {
         borderRadius: "10px",
@@ -236,8 +236,8 @@ export default function UniversalProductCard({
               whileTap={{ scale: 0.9 }}
               onClick={handleWishlist}
               className={`absolute top-3 right-3 z-10 flex items-center justify-center transition-all w-6 h-6 sm:w-9 sm:h-9 sm:rounded-full sm:border ${isWishlisted
-                  ? "text-[#FF5722] sm:bg-red-50 sm:border-red-100 sm:text-red-500"
-                  : "text-[#AAAAAA] sm:bg-white/90 sm:backdrop-blur-sm sm:border-black/[0.04] sm:text-black/30 hover:text-[#FF5722] sm:hover:text-red-500 sm:shadow-sm"
+                ? "text-[#FF5722] sm:bg-red-50 sm:border-red-100 sm:text-red-500"
+                : "text-[#AAAAAA] sm:bg-white/90 sm:backdrop-blur-sm sm:border-black/[0.04] sm:text-black/30 hover:text-[#FF5722] sm:hover:text-red-500 sm:shadow-sm"
                 }`}
             >
               {/* Mobile Heart */}
@@ -257,7 +257,7 @@ export default function UniversalProductCard({
           <div className="px-3.5 pt-3 pb-3.5 sm:px-5 sm:pt-5 sm:pb-5 flex flex-col gap-2.5 sm:gap-4">
             {/* Product name */}
             <h3 className="text-[14px] sm:text-[16px] font-semibold text-[#1C1C1E] leading-snug line-clamp-2 min-h-[42px] sm:min-h-[48px] tracking-tight group-hover:text-[#FF5000] transition-colors">
-            {product.name} {product.isCargo && " + Карго"}
+              {product.name} {product.isCargo && " + Карго"}
             </h3>
 
             {/* Footer Container (Pushed to bottom) */}
@@ -346,11 +346,11 @@ export default function UniversalProductCard({
                   </motion.button>
                 </div>
               </div>
-              </div>
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
+    </motion.div>
   );
 }
 

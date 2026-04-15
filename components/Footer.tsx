@@ -9,8 +9,8 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { useLanguage } from '@/context/LanguageContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from '../hooks/useTranslation';
 import { useState, useEffect } from 'react';
 import { Capacitor } from '@capacitor/core';
 

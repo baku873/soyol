@@ -24,15 +24,15 @@ import {
   Check,
 } from "lucide-react";
 import useSWR from "swr";
-import { useAuth } from "@/context/AuthContext";
-import { formatPrice } from "@/lib/utils";
-import { Product } from "@/models/Product";
-import { useCartStore } from "@/store/cartStore";
+import { useAuth } from "../context/AuthContext";
+import { formatPrice } from "../lib/utils";
+import { Product } from "../models/Product";
+import { useCartStore } from "../store/cartStore";
 import toast from "react-hot-toast";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useTranslation } from "../hooks/useTranslation";
 import RelatedProducts from "./RelatedProducts";
 import ProductReviews from "./ProductReviews";
-import { openExternalLink } from "@/lib/openExternalLink";
+import { openExternalLink } from "../lib/openExternalLink";
 
 export type ProductDetailData = {
   id: string;
@@ -157,9 +157,9 @@ export default function ProductDetailClient({
   const discount =
     product.originalPrice && product.originalPrice > displayPrice
       ? Math.round(
-          ((product.originalPrice - displayPrice) / product.originalPrice) *
-            100,
-        )
+        ((product.originalPrice - displayPrice) / product.originalPrice) *
+        100,
+      )
       : 0;
 
   const categoryObj = categories.find((c: any) => c.id === product.category);
@@ -194,7 +194,7 @@ export default function ProductDetailClient({
           title: product.name,
           url: window.location.href,
         });
-      } catch {}
+      } catch { }
     } else {
       navigator.clipboard.writeText(window.location.href);
       toast.success("Холбоос хуулагдлаа", {
@@ -228,7 +228,7 @@ export default function ProductDetailClient({
         price: displayPrice,
         variantId: selectedVariant?.id,
         selectedOptions: product.options?.length ? selectedOptions : undefined,
-      },
+      } as any,
       quantity,
       false,
     );
@@ -271,7 +271,7 @@ export default function ProductDetailClient({
         price: displayPrice,
         variantId: selectedVariant?.id,
         selectedOptions: product.options?.length ? selectedOptions : undefined,
-      },
+      } as any,
       quantity,
       true,
     );
@@ -721,7 +721,7 @@ export default function ProductDetailClient({
                       icon: Truck,
                       label:
                         !product.sections?.includes("Захиалга") ||
-                        product.sections?.includes("Бэлэн")
+                          product.sections?.includes("Бэлэн")
                           ? "Хурдан хүргэлт"
                           : "7–14 хоногт хүргэнэ",
                       sub: "Улаанбаатар хотын А, Б бүсэд",
@@ -821,7 +821,7 @@ export default function ProductDetailClient({
                         transition={{ duration: 0.15 }}
                       >
                         {product.attributes &&
-                        Object.keys(product.attributes).length > 0 ? (
+                          Object.keys(product.attributes).length > 0 ? (
                           <div className="flex flex-col divide-y divide-black/[0.05]">
                             {Object.entries(product.attributes).map(
                               ([k, v]) => (
@@ -874,7 +874,7 @@ export default function ProductDetailClient({
         {/* FIXED MOBILE PAYMENT BAR - FIXED POSITIONING */}
         <div
           className="fixed left-0 right-0 z-[60] md:hidden bg-white border-t border-black/[0.06]"
-          style={{ 
+          style={{
             bottom: "calc(56px + env(safe-area-inset-bottom, 0px))"   // ← IMPORTANT: lifts it above bottom nav
           }}
         >

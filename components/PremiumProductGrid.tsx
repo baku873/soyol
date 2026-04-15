@@ -3,8 +3,8 @@
 import { memo } from "react";
 import { motion, Variants } from "framer-motion";
 import UniversalProductCard from "./UniversalProductCard";
-import { type Product } from "@/models/Product";
-import { useAuth } from "@/context/AuthContext";
+import { type Product } from "../models/Product";
+import { useAuth } from "../context/AuthContext";
 
 interface PremiumProductGridProps {
   products: Product[];

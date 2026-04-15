@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useTransition } from 'react';
-import { deleteProduct } from '@/app/actions/products';
+import { deleteProduct } from '../app/actions/products';
 import toast from 'react-hot-toast';
 import { Trash2, Loader2, AlertCircle, Star } from 'lucide-react';
 import Image from 'next/image';
@@ -217,8 +217,8 @@ export default function ProductInventoryTable({ products }: { products: Product[
                     onClick={() => handleToggleFeatured(product.id)}
                     disabled={togglingId === product.id}
                     className={`p-2 rounded-lg transition-all duration-200 ${featuredMap[product.id]
-                        ? 'bg-amber-50 hover:bg-amber-100 text-amber-500'
-                        : 'bg-slate-50 hover:bg-slate-100 text-slate-300 hover:text-slate-400'
+                      ? 'bg-amber-50 hover:bg-amber-100 text-amber-500'
+                      : 'bg-slate-50 hover:bg-slate-100 text-slate-300 hover:text-slate-400'
                       } disabled:opacity-50`}
                     title={featuredMap[product.id] ? 'Онцгой-оос хасах' : 'Онцгой болгох'}
                   >

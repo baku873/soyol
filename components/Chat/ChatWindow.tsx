@@ -2,12 +2,12 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Video, Phone, ArrowLeft, History } from 'lucide-react';
-import { Message } from '@/models/Message';
+import { Message } from '../../models/Message';
 import Image from 'next/image';
 import useSWR from 'swr';
 import { motion } from 'framer-motion';
-import { useUser } from '@/context/AuthContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useUser } from '../../context/AuthContext';
+import { useTranslation } from '../../hooks/useTranslation';
 import UserStatus from './UserStatus';
 import UserHistorySidebar from './UserHistorySidebar';
 
