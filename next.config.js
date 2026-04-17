@@ -14,9 +14,14 @@ const nextConfig = {
     ];
   },
   images: {
+    // Custom loader delegates Cloudinary images to Cloudinary's own CDN
+    // This prevents /_next/image proxy timeouts (7s) on remote images
+    loader: 'custom',
+    loaderFile: './lib/imageLoader.ts',
     dangerouslyAllowSVG: true,
     contentDispositionType: 'attachment',
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    minimumCacheTTL: 3600, // Cache optimized images for 1 hour
     remotePatterns: [
       {
         protocol: 'https',

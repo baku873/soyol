@@ -83,6 +83,7 @@ export default function Footer() {
                   src="https://res.cloudinary.com/dc127wztz/image/upload/q_auto/f_auto/v1775638954/soyol-footer-logo_wuxvpt.png"
                   alt="Soyol Video Shop"
                   fill
+                  sizes="384px"
                   className="object-contain object-left"
                 />
               </div>
