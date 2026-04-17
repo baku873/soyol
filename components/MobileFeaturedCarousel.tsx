@@ -4,12 +4,12 @@ import { motion, useAnimationFrame, useMotionValue, useTransform } from 'framer-
 import Image from 'next/image';
 import Link from 'next/link';
 import { Star, ShoppingCart } from 'lucide-react';
-import { useCartStore } from '@/store/cartStore';
-import { useLanguage } from '@/context/LanguageContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useCartStore } from '../store/cartStore';
+import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from '../hooks/useTranslation';
 import toast from 'react-hot-toast';
 import { useEffect, useState, useRef, useMemo } from 'react';
-import ProductBadge from '@/components/ProductBadge';
+import ProductBadge from './ProductBadge';
 import UniversalProductCard from './UniversalProductCard';
 interface Product {
     id: string;

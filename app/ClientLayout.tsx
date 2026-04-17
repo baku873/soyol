@@ -1,10 +1,10 @@
 'use client';
 
 import { SWRConfig } from 'swr';
-import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { ErrorBoundary } from '../components/ErrorBoundary';
 import { Toaster } from 'react-hot-toast';
-import { LanguageProvider } from '@/context/LanguageContext';
-import { AuthProvider } from '@/context/AuthContext';
+import { LanguageProvider } from '../context/LanguageContext';
+import { AuthProvider } from '../context/AuthContext';
 
 import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
@@ -15,8 +15,8 @@ const swrDefaults = {
   errorRetryCount: 2,
 };
 
-import FloatingChatButton from '@/components/FloatingChatButton';
-import { usePushNotifications } from '@/hooks/usePushNotifications';
+import FloatingChatButton from '../components/FloatingChatButton';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

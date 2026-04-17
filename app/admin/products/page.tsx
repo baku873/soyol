@@ -41,7 +41,16 @@ export default function AdminProductsPage() {
   const { data: categoriesData } = useSWR("/api/categories", fetcher);
 
   const products = productsData?.products || [];
-  const categories = categoriesData?.categories || [];
+  const categories = (() => {
+    const raw = categoriesData?.categories || [];
+    const seen = new Set<string>();
+    return raw.filter((cat: any) => {
+      const id = String(cat?.id ?? "").trim();
+      if (!id || id === "-" || seen.has(id)) return false;
+      seen.add(id);
+      return true;
+    });
+  })();
   const loading = !productsData;
 
   const searchParams = useSearchParams();
@@ -189,9 +198,9 @@ export default function AdminProductsPage() {
             >
               Ангилал бүгд
             </button>
-            {categories.map((cat: any) => (
+            {categories.map((cat: any, idx: number) => (
               <button
-                key={cat.id}
+                key={cat._id || cat.id || `cat-${idx}`}
                 onClick={() => setFilterCategory(cat.id)}
                 className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${filterCategory === cat.id ? "bg-amber-500 text-slate-950" : "bg-slate-800 text-slate-400 hover:text-white"}`}
               >

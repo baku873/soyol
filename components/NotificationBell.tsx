@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
 import { Bell, X } from 'lucide-react';
-import { useUser } from '@/context/AuthContext';
+import { useUser } from '../context/AuthContext';
 
 export type Notification = {
   id: string;

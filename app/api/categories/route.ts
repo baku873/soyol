@@ -36,11 +36,22 @@ export async function GET() {
       }
     ]).toArray();
 
-    const formattedCategories = categories.map((cat: any) => ({
-      ...cat,
-      id: cat.id || cat._id.toString(),
-      _id: cat._id.toString()
-    }));
+    const seenIds = new Set<string>();
+    const formattedCategories = categories
+      .map((cat: any) => {
+        const rawId = typeof cat.id === "string" ? cat.id.trim() : "";
+        const id = rawId && rawId !== "-" ? rawId : cat._id?.toString?.() || "";
+        return {
+          ...cat,
+          id,
+          _id: cat._id?.toString?.() || id,
+        };
+      })
+      .filter((cat: any) => {
+        if (!cat.id || seenIds.has(cat.id)) return false;
+        seenIds.add(cat.id);
+        return true;
+      });
 
     if (formattedCategories.length === 0) {
       // Fallback mock categories if DB is empty

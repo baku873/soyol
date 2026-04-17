@@ -1,8 +1,31 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCollection } from "@/lib/mongodb";
 
-export const dynamic = "force-dynamic";
+// Note: removed `export const dynamic = "force-dynamic"` so Next.js Data Cache
+// can cache per-URL for `revalidate` seconds. Combined with the s-maxage
+// CDN header below, this cuts Mongo query volume dramatically.
 export const revalidate = 60;
+
+// Projection for list views — omit heavy fields (variants, options, full
+// description, attributes). Detail route fetches the full document separately.
+const LIST_PROJECTION = {
+  name: 1,
+  price: 1,
+  originalPrice: 1,
+  discountPercent: 1,
+  discount: 1,
+  image: 1,
+  images: 1,
+  category: 1,
+  subcategory: 1,
+  stockStatus: 1,
+  inventory: 1,
+  featured: 1,
+  sections: 1,
+  rating: 1,
+  salesCount: 1,
+  createdAt: 1,
+} as const;
 
 export async function GET(request: NextRequest) {
   try {
@@ -51,14 +74,10 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Full-text search — uses the `products_text_search` index.
+    // Replaces the old unanchored $regex which forced a collection scan.
     if (q) {
-      conditions.push({
-        $or: [
-          { name: { $regex: q, $options: "i" } },
-          { description: { $regex: q, $options: "i" } },
-          { brand: { $regex: q, $options: "i" } },
-        ],
-      });
+      filter.$text = { $search: q };
     }
 
     if (conditions.length > 0) {
@@ -71,7 +90,6 @@ export async function GET(request: NextRequest) {
       if (maxPrice) (filter.price as any).$lte = parseFloat(maxPrice);
     }
 
-    // Dynamic Attribute Filtering
     searchParams.forEach((value, key) => {
       if (key.startsWith("attr_") && value) {
         const attributeId = key.replace("attr_", "");
@@ -82,32 +100,58 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(parseInt(searchParams.get("limit") || "20"), 200);
     const cursor = searchParams.get("cursor");
 
-    if (cursor) {
-      // For cursor-based pagination with descending createdAt, we need a stable sort
-      // If we use _id as cursor, we assume sorting by _id (which is roughly by time)
-      const { ObjectId } = await import("mongodb");
-      filter._id = { $lt: new ObjectId(cursor) };
-    }
-
-    const cursorQuery = products.find(filter).sort({ _id: -1 });
+    let items: any[];
+    let hasMore: boolean;
+    let nextCursor: string | null = null;
 
     if (q) {
-      // With regex search, sorting by default (_id: -1) which handles the latest
-      (cursorQuery as any).sort({ _id: -1 });
+      // Text search mode — sort by relevance score. Cursor pagination on
+      // _id doesn't combine with score sort, so we use offset here.
+      // Users rarely paginate search past page 1-2.
+      const page = cursor ? parseInt(cursor, 10) || 0 : 0;
+      const skip = page * limit;
+
+      const results = await products
+        .find(filter, {
+          projection: {
+            ...LIST_PROJECTION,
+            score: { $meta: "textScore" },
+          },
+        })
+        .sort({ score: { $meta: "textScore" } })
+        .skip(skip)
+        .limit(limit + 1)
+        .toArray();
+
+      hasMore = results.length > limit;
+      items = hasMore ? results.slice(0, limit) : results;
+      nextCursor = hasMore ? String(page + 1) : null;
+    } else {
+      // Normal browse mode — cursor pagination on _id descending (newest first).
+      if (cursor) {
+        const { ObjectId } = await import("mongodb");
+        filter._id = { $lt: new ObjectId(cursor) };
+      }
+
+      const results = await products
+        .find(filter, { projection: LIST_PROJECTION })
+        .sort({ _id: -1 })
+        .limit(limit + 1)
+        .toArray();
+
+      hasMore = results.length > limit;
+      items = hasMore ? results.slice(0, limit) : results;
+      nextCursor = hasMore ? items[items.length - 1]._id.toString() : null;
     }
 
-    const results = await cursorQuery.limit(limit + 1).toArray();
+    const mappedResults = items.map((product) => {
+      const { score, ...rest } = product;
+      return {
+        ...rest,
+        id: product._id.toString(),
+      };
+    });
 
-    const hasMore = results.length > limit;
-    const items = hasMore ? results.slice(0, limit) : results;
-    const nextCursor = hasMore ? items[items.length - 1]._id.toString() : null;
-
-    const mappedResults = items.map((product) => ({
-      ...product,
-      id: product._id.toString(),
-    }));
-
-    // Cache Control Logic
     const isAdmin = searchParams.get("admin") === "true";
     const headers: Record<string, string> = {
       "Cache-Control": isAdmin

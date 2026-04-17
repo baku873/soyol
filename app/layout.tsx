@@ -1,10 +1,10 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import LuxuryNavbar from '@components/LuxuryNavbar';
-import Footer from '@components/Footer';
+import LuxuryNavbar from '../components/LuxuryNavbar';
+import Footer from '../components/Footer';
 import ClientLayout from './ClientLayout';
-import { SITE_CONFIG } from '@lib/constants';
+import { SITE_CONFIG } from '../lib/constants';
 import { GoogleOAuthProvider } from '@react-oauth/google';
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],

@@ -27,7 +27,16 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting }: Pro
     const router = useRouter();
     const { data: categoriesData } = useSWR('/api/categories', fetcher);
 
-    const categories = categoriesData?.categories || [];
+    const categories = (() => {
+        const raw = categoriesData?.categories || [];
+        const seen = new Set<string>();
+        return raw.filter((cat: any) => {
+            const id = String(cat?.id ?? "").trim();
+            if (!id || id === "-" || seen.has(id)) return false;
+            seen.add(id);
+            return true;
+        });
+    })();
 
     const [activeTab, setActiveTab] = useState('basic');
 
@@ -639,8 +648,8 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting }: Pro
                             }}
                             className="w-full px-4 py-3 mb-4 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-amber-500/50 appearance-none text-sm transition-colors"
                         >
-                            {categories.map((cat: any) => (
-                                <option key={cat.id} value={cat.id}>{cat.name}</option>
+                            {categories.map((cat: any, idx: number) => (
+                                <option key={cat._id || cat.id || `cat-${idx}`} value={cat.id}>{cat.name}</option>
                             ))}
                         </select>
                         
@@ -656,8 +665,8 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting }: Pro
                                             className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white focus:outline-none focus:border-amber-500/50 appearance-none text-sm transition-colors"
                                         >
                                             <option value="">Сонгох...</option>
-                                            {selectedCat.subcategories.map((subcat: any) => (
-                                                <option key={subcat.id} value={subcat.id}>{subcat.name}</option>
+                                            {selectedCat.subcategories.map((subcat: any, idx: number) => (
+                                                <option key={subcat.id || subcat._id || `subcat-${idx}`} value={subcat.id}>{subcat.name}</option>
                                             ))}
                                         </select>
                                     </>

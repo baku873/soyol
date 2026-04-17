@@ -5,12 +5,12 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ChevronLeft, ChevronRight, Star, ShoppingCart, Flame } from 'lucide-react';
-import { useCartStore } from '@/store/cartStore';
-import { useLanguage } from '@/context/LanguageContext';
-import { useTranslation } from '@/hooks/useTranslation';
+import { useCartStore } from '../store/cartStore';
+import { useLanguage } from '../context/LanguageContext';
+import { useTranslation } from '../hooks/useTranslation';
 import toast from 'react-hot-toast';
 
-import ProductBadge from '@/components/ProductBadge';
+import ProductBadge from './ProductBadge';
 import UniversalProductCard from './UniversalProductCard';
 
 interface Product {

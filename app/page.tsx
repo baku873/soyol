@@ -11,19 +11,19 @@ import {
   Tag,
 } from "lucide-react";
 
-import PremiumProductGrid from "@/components/PremiumProductGrid";
-import BannerSlider from "@/components/BannerSlider";
-import SpecialProductsCarousel from "@/components/SpecialProductsCarousel";
-import MobileFeaturedCarousel from "@/components/MobileFeaturedCarousel";
+import PremiumProductGrid from "../components/PremiumProductGrid";
+import BannerSlider from "../components/BannerSlider";
+import SpecialProductsCarousel from "../components/SpecialProductsCarousel";
+import MobileFeaturedCarousel from "../components/MobileFeaturedCarousel";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useLanguage } from "@/context/LanguageContext";
-import { useTranslation } from "@/hooks/useTranslation";
-import { useProducts } from "@/lib/hooks/useProducts";
-import { type Product } from "@/models/Product";
-import MobileHero from "@/components/MobileHero";
-import MobileProductGrid from "@/components/MobileProductGrid";
-import InfiniteScrollTrigger from "@/components/InfiniteScrollTrigger";
+import { useLanguage } from "../context/LanguageContext";
+import { useTranslation } from "../hooks/useTranslation";
+import { useProducts } from "../lib/hooks/useProducts";
+import { type Product } from "../models/Product";
+import MobileHero from "../components/MobileHero";
+import MobileProductGrid from "../components/MobileProductGrid";
+import InfiniteScrollTrigger from "../components/InfiniteScrollTrigger";
 
 type FilterType = "all" | "Бэлэн" | "Захиалга";
 type SortType = "newest" | "price-low" | "price-high" | "name-az";
@@ -156,12 +156,12 @@ export default function HomePage() {
   const suggestedMin =
     prices.length > 0
       ? Math.floor(Math.min(...prices) / (currency === "USD" ? 10 : 1000)) *
-        (currency === "USD" ? 10 : 1000)
+      (currency === "USD" ? 10 : 1000)
       : 0;
   const suggestedMax =
     prices.length > 0
       ? Math.ceil(Math.max(...prices) / (currency === "USD" ? 10 : 1000)) *
-        (currency === "USD" ? 10 : 1000)
+      (currency === "USD" ? 10 : 1000)
       : currency === "USD"
         ? 1000
         : 1000000;
@@ -210,11 +210,10 @@ export default function HomePage() {
                 <button
                   key={f}
                   onClick={() => setActiveFilter(f as FilterType)}
-                  className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${
-                    activeFilter === f
+                  className={`shrink-0 px-4 py-1.5 rounded-full text-sm font-semibold transition-all duration-200 ${activeFilter === f
                       ? "bg-[#FF5000] text-white shadow-sm"
                       : "bg-gray-100 text-gray-500"
-                  }`}
+                    }`}
                 >
                   {f === "all" ? "Бүгд" : f}
                 </button>
@@ -247,11 +246,10 @@ export default function HomePage() {
               {/* Price filter button */}
               <button
                 onClick={() => setShowPriceFilter(!showPriceFilter)}
-                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-                  showPriceFilter || minPrice || maxPrice
+                className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${showPriceFilter || minPrice || maxPrice
                     ? "bg-[#FF5000] text-white"
                     : "bg-gray-100 text-gray-700"
-                }`}
+                  }`}
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" strokeWidth={2} />
                 Үнэ{minPrice || maxPrice ? " •" : ""}
@@ -328,11 +326,10 @@ export default function HomePage() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setActiveFilter("all")}
-                className={`px-4 py-2 lg:px-5 lg:py-2.5 rounded-2xl font-bold text-xs lg:text-sm transition-all duration-300 whitespace-nowrap ${
-                  activeFilter === "all"
+                className={`px-4 py-2 lg:px-5 lg:py-2.5 rounded-2xl font-bold text-xs lg:text-sm transition-all duration-300 whitespace-nowrap ${activeFilter === "all"
                     ? "bg-[#FF5000] text-white shadow-lg shadow-orange-500/30"
                     : "bg-white/50 text-gray-600 hover:bg-white border border-gray-100"
-                }`}
+                  }`}
               >
                 <div className="flex items-center gap-1.5 lg:gap-2">
                   <Sparkles
@@ -358,11 +355,10 @@ export default function HomePage() {
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={() => setActiveFilter(section as any)}
-                    className={`px-4 py-2 lg:px-5 lg:py-2.5 rounded-2xl font-bold text-xs lg:text-sm transition-all duration-300 whitespace-nowrap ${
-                      isActive
+                    className={`px-4 py-2 lg:px-5 lg:py-2.5 rounded-2xl font-bold text-xs lg:text-sm transition-all duration-300 whitespace-nowrap ${isActive
                         ? "bg-[#FF5000] text-white shadow-lg shadow-orange-500/30"
                         : "bg-white/50 text-gray-600 hover:bg-white border border-gray-100"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-1.5 lg:gap-2">
                       <Icon
@@ -402,11 +398,10 @@ export default function HomePage() {
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowPriceFilter(!showPriceFilter)}
-                  className={`flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 text-xs lg:text-sm font-bold rounded-2xl transition-all duration-300 ${
-                    showPriceFilter || minPrice || maxPrice
+                  className={`flex items-center gap-2 px-3 py-2 lg:px-4 lg:py-2.5 text-xs lg:text-sm font-bold rounded-2xl transition-all duration-300 ${showPriceFilter || minPrice || maxPrice
                       ? "bg-[#FF5000] text-white shadow-lg shadow-orange-500/30"
                       : "bg-white text-gray-700 border border-gray-200 hover:border-[#FF5000]/30"
-                  }`}
+                    }`}
                 >
                   <SlidersHorizontal
                     className="w-3.5 h-3.5 lg:w-4 lg:h-4"

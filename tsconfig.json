@@ -16,7 +16,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "esModuleInterop": true,
-    "baseUrl": "https://localhost:3000",
+    "baseUrl": ".",
     "paths": {
       "@/*": [
         "./*"

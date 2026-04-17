@@ -35,7 +35,7 @@ if (process.env.MONGODB_URI) {
 } else {
   // Provide a dummy promise that will reject if actually awaited,
   // but won't crash the server during build-time module evaluation.
-  clientPromise = Promise.reject(new Error('Please add your Mongo URI to .env.local'));
+  clientPromise = Promise.reject(new Error('MONGODB_URI is not set. Add it to .env (Next.js) or preload with `import "dotenv/config"` / `node --env-file=.env` when running standalone scripts.'));
   // Catch the rejection immediately so Node doesn't log unhandled promise warnings
   clientPromise.catch(() => { });
 }
