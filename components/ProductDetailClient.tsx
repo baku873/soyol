@@ -557,7 +557,7 @@ export default function ProductDetailClient({
                   {product.isCargo && (
                     <div className="mt-2 text-[#FF5000] text-[11px] font-bold flex items-center gap-1.5 uppercase tracking-wider">
                       <div className="w-1.5 h-1.5 rounded-full bg-[#FF5000] animate-pulse" />
-                      <span>📦 Карго бараа - Хүргэлт тусдаа тооцогдоно</span>
+                      <span>📦 Карго ,хүргэлт 2 тусдаа тооцогдоно</span>
                     </div>
                   )}
                 </div>
@@ -759,7 +759,7 @@ export default function ProductDetailClient({
                   <p className="text-[10px] font-semibold text-black/30 uppercase tracking-widest mr-1">
                     Төлбөр
                   </p>
-                  {["QPay", "Карт"].map((m) => (
+                  {["QPay"].map((m) => (
                     <span
                       key={m}
                       className="text-[10px] font-medium text-black/50 bg-black/[0.04] px-2 py-0.5 rounded-md"

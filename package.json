@@ -28,6 +28,7 @@
     "@types/canvas-confetti": "^1.9.0",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.36.3",
+    "ably": "^2.21.0",
     "ai": "^6.0.97",
     "bcryptjs": "^3.0.3",
     "canvas-confetti": "^1.9.4",

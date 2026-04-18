@@ -101,10 +101,7 @@ export default function DashboardPage() {
               </div>
 
               <nav className="space-y-1">
-                <button onClick={() => setActiveTab('overview')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'overview' ? 'bg-orange-50 text-orange-600' : 'text-slate-700 hover:bg-slate-50'}`}>
-                  <TrendingUp className="w-5 h-5" strokeWidth={2} />
-                  <span className="font-medium">Хянах самбар</span>
-                </button>
+
                 <button onClick={() => setActiveTab('orders')} className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'orders' ? 'bg-orange-50 text-orange-600' : 'text-slate-700 hover:bg-slate-50'}`}>
                   <Package className="w-5 h-5" strokeWidth={2} />
                   <span className="font-medium">Захиалгын түүх</span>
@@ -128,65 +125,6 @@ export default function DashboardPage() {
           </motion.div>
 
           <div className="lg:col-span-3">
-            {activeTab === 'overview' && (
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <div className="mb-8">
-                  <h1 className="text-3xl font-bold text-slate-900 mb-2">Сайн байна уу, {userName}?</h1>
-                  <p className="text-slate-600">Таны бүртгэлийн хянах самбарт тавтай морил</p>
-                </div>
-                <div className="grid md:grid-cols-3 gap-6 mb-8">
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center"><Package className="w-6 h-6 text-orange-600" strokeWidth={2} /></div>
-                      <span className="text-3xl font-bold text-slate-900">{orders.length}</span>
-                    </div>
-                    <h3 className="text-sm font-medium text-slate-600">Нийт захиалга</h3>
-                  </div>
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-red-50 rounded-xl flex items-center justify-center"><Heart className="w-6 h-6 text-red-600" strokeWidth={2} /></div>
-                      <span className="text-3xl font-bold text-slate-900">{wishlistItemsCount}</span>
-                    </div>
-                    <h3 className="text-sm font-medium text-slate-600">Хадгалсан бараа</h3>
-                  </div>
-                  <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center"><ShoppingBag className="w-6 h-6 text-blue-600" strokeWidth={2} /></div>
-                      <span className="text-3xl font-bold text-slate-900">{cartItemsCount}</span>
-                    </div>
-                    <h3 className="text-sm font-medium text-slate-600">Сагсанд байгаа</h3>
-                  </div>
-                </div>
-                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                  <h2 className="text-xl font-bold text-slate-900 mb-6">Сүүлийн үйлдлүүд</h2>
-                  {orders.length === 0 ? (
-                    <div className="text-center py-12">
-                      <Package className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-                      <p className="text-slate-600">Та хараахан захиалга өгөөгүй байна</p>
-                      <Link href="/"><button className="mt-4 px-6 py-2.5 bg-gradient-to-r from-orange-500 to-orange-600 text-white rounded-full font-medium hover:from-orange-600 hover:to-orange-700 transition-all">Худалдан авалт хийх</button></Link>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      {orders.slice(0, 3).map((order) => (
-                        <div key={order._id} className="flex items-center justify-between p-4 bg-slate-50 rounded-xl hover:bg-slate-100 transition-colors">
-                          <div className="flex items-center gap-4">
-                            {getStatusIcon(order.status)}
-                            <div>
-                              <p className="font-semibold text-slate-900">Захиалга #{order._id.slice(0, 8)}</p>
-                              <p className="text-sm text-slate-600">{new Date(order.createdAt).toLocaleDateString('mn-MN')}</p>
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold text-slate-900">{formatPrice(order.totalPrice)}</p>
-                            <p className="text-sm text-slate-600">{getStatusText(order.status)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
             {activeTab === 'orders' && (
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }} className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
                 <h2 className="text-2xl font-bold text-slate-900 mb-6">Захиалгын түүх</h2>

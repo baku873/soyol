@@ -1,13 +1,12 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, Suspense } from 'react';
 import useSWR from 'swr';
 import { useUser } from '@/context/AuthContext';
 import { Send, Video, Phone, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useSearchParams, useRouter } from 'next/navigation';
 import AdminSelector from '@/components/Chat/AdminSelector';
-import Image from 'next/image';
 import VideoCall from '@/components/VideoCall';
 
 interface Message {
@@ -22,7 +21,7 @@ interface Message {
 
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
-export default function ClientMessagesPage() {
+function MessagesContent() {
     const { user, isLoaded } = useUser();
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -77,7 +76,7 @@ export default function ClientMessagesPage() {
     const onDisconnected = () => {
         setIsCallActive(false);
         setCallRoom('');
-    }
+    };
 
     const handleSelectAdmin = (admin: { userId: string }) => {
         router.push(`/messages?adminId=${admin.userId}`);
@@ -174,3 +173,14 @@ export default function ClientMessagesPage() {
     );
 }
 
+export default function ClientMessagesPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-slate-900 flex items-center justify-center">
+                <Loader2 className="animate-spin text-amber-500" />
+            </div>
+        }>
+            <MessagesContent />
+        </Suspense>
+    );
+}

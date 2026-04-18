@@ -112,24 +112,7 @@ function SuccessContent() {
 
           {/* Info Cards */}
           <div className="grid md:grid-cols-2 gap-4 mb-8">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 0.6 }}
-              className="bg-gray-50 rounded-2xl p-6 text-left"
-            >
-              <div className="flex items-start gap-4">
-                <div className="p-3 bg-soyol/10 rounded-xl">
-                  <Package className="w-6 h-6 text-soyol" />
-                </div>
-                <div>
-                  <h3 className="font-bold text-gray-900 mb-2">Хүргэлт</h3>
-                  <p className="text-sm text-gray-600">
-                    Бид таны захиалгыг 1-3 хоногийн дотор хүргэнэ
-                  </p>
-                </div>
-              </div>
-            </motion.div>
+
 
             <motion.div
               initial={{ opacity: 0, x: 20 }}
@@ -144,7 +127,7 @@ function SuccessContent() {
                 <div>
                   <h3 className="font-bold text-gray-900 mb-2">Холбоо барих</h3>
                   <p className="text-sm text-gray-600">
-                    Асуулт байвал 85552229 дугаараар залгана уу
+                    Асуулт байвал 77181818 дугаараар залгана уу
                   </p>
                 </div>
               </div>
@@ -152,16 +135,7 @@ function SuccessContent() {
           </div>
 
           {/* Message */}
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.8 }}
-            className="text-gray-600 mb-8 leading-relaxed"
-          >
-            Таны захиалга баталгаажсан бөгөөд манай ажилтан тантай{' '}
-            <span className="font-bold text-soyol">удахгүй холбогдох</span> болно.
-            Та захиалгын мэдээллийг өөрийн утсаар хянах боломжтой.
-          </motion.p>
+
 
           {/* Actions */}
           <div className="flex flex-col sm:flex-row gap-4">
@@ -205,32 +179,7 @@ function SuccessContent() {
           </motion.div>
         </motion.div>
 
-        {/* Additional Info */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 1.2 }}
-          className="mt-8 bg-gradient-to-r from-soyol/5 to-yellow-400/5 rounded-2xl p-6 border border-soyol/20"
-        >
-          <h3 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-soyol" />
-            Дараагийн алхам:
-          </h3>
-          <ul className="space-y-2 text-sm text-gray-600">
-            <li className="flex items-start gap-2">
-              <span className="text-soyol font-bold">1.</span>
-              <span>Манай ажилтан таны утас руу захиалга баталгаажуулах дуудлага хийнэ</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-soyol font-bold">2.</span>
-              <span>Хүргэлтийн хугацаа болон төлбөрийн мэдээллийг танилцуулна</span>
-            </li>
-            <li className="flex items-start gap-2">
-              <span className="text-soyol font-bold">3.</span>
-              <span>Бараа хүргэгдэх үед төлбөр төлж, бараагаа хүлээн авна</span>
-            </li>
-          </ul>
-        </motion.div>
+
       </div>
     </div>
   );

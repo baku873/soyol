@@ -1,3 +1,9 @@
+/**
+ * LiveKit Token API — Legacy GET endpoint
+ * Kept for backward compatibility with existing ChatWidget/messages flows.
+ * The primary endpoint is /api/livekit/token (POST).
+ */
+
 import { AccessToken } from 'livekit-server-sdk';
 import { NextResponse } from 'next/server';
 
@@ -27,16 +33,23 @@ export async function GET(request: Request) {
 
     const at = new AccessToken(apiKey, apiSecret, {
       identity: username,
-      ttl: '10m', // Token expires in 10 minutes
+      ttl: '1h',
     });
 
-    at.addGrant({ roomJoin: true, room, canPublish: true, canSubscribe: true });
+    at.addGrant({
+      roomJoin: true,
+      room,
+      canPublish: true,
+      canSubscribe: true,
+      canPublishData: true,
+    });
 
     const token = await at.toJwt();
 
     return NextResponse.json({ token });
-  } catch (err: any) {
-    console.error('LiveKit Token Error:', err);
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Unknown error';
+    console.error('LiveKit Token Error:', message);
     return NextResponse.json({ error: 'Failed to generate token' }, { status: 500 });
   }
 }
