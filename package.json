@@ -6,7 +6,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "db:seed": "tsx scripts/seed.ts"
+    "db:seed": "tsx scripts/seed.ts",
+    "db:notification-indexes": "tsx scripts/create-notification-indexes.ts"
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.30",
@@ -23,6 +24,7 @@
     "@livekit/components-react": "^2.9.19",
     "@livekit/components-styles": "^1.2.0",
     "@openrouter/ai-sdk-provider": "^2.3.1",
+    "@react-email/components": "^1.0.12",
     "@react-oauth/google": "^0.13.4",
     "@types/canvas-confetti": "^1.9.0",
     "@upstash/ratelimit": "^2.0.8",

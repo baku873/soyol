@@ -173,6 +173,49 @@ export async function PATCH(
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
+    // --- Notification Hooks ---
+    setImmediate(() => {
+      import("@/services/notification.dispatcher").then(({ dispatchToAllUsers }) => {
+        // Coming Soon
+        if (updateData.stockStatus === "pre-order" && existing.stockStatus !== "pre-order") {
+          dispatchToAllUsers({
+            type: "product_coming_soon",
+            title: "Тун удахгүй! ⏰",
+            body: `${existing.name} удахгүй ирнэ! Урьдчилсан захиалга өгөх боломжтой.`,
+            data: { productId: id, url: `/product/${id}` },
+            productData: {
+              name: existing.name,
+              image: existing.image || existing.images?.[0],
+              productId: id,
+            }
+          }).catch(console.error);
+        }
+        
+        // On Sale
+        if (updateData.discountPercent > 0 && existing.discountPercent !== updateData.discountPercent) {
+          const originalPrice = existing.price || 0;
+          const discountPercent = updateData.discountPercent;
+          const salePrice = originalPrice - (originalPrice * (discountPercent / 100));
+          dispatchToAllUsers({
+            type: "product_on_sale",
+            priority: "high",
+            title: `🔥 ${existing.name} хямдарлаа!`,
+            body: `Одоо ${discountPercent}% хямдралтай байна.`,
+            data: { productId: id, url: `/product/${id}` },
+            productData: {
+              name: existing.name,
+              image: existing.image || existing.images?.[0],
+              productId: id,
+              originalPrice,
+              salePrice,
+              discountPercent
+            }
+          }).catch(console.error);
+        }
+      });
+    });
+    // --------------------------
+
     // Build invalidation tags from BEFORE + AFTER snapshots to prevent stale category/store pages.
     const nextCategory = updateData.category ?? existing.category ?? null;
     const nextStoreId = updateData.storeId ?? existing.storeId ?? null;

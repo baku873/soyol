@@ -1,99 +1,85 @@
-
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
-import { getCollection } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
+import { createNotification, getUserNotifications } from '@/services/notification.service';
+import { NotificationType, NOTIFICATION_TYPES } from '@/types/Notification';
 
+/**
+ * GET /api/notifications
+ * Paginated notification list for the authenticated user.
+ *
+ * Query params:
+ *   page  — page number (default 1)
+ *   limit — items per page (default 20, max 100)
+ */
 export async function GET(req: Request) {
-    try {
-        const { userId } = await auth();
-        if (!userId) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const { searchParams } = new URL(req.url);
-        const queryUserId = searchParams.get('userId');
-
-        if (userId !== queryUserId) {
-            // Optional: Allow admins to view others, but for now strict check
-            // return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
-        }
-
-        const notificationsCollection = await getCollection('notifications');
-        const notifications = await notificationsCollection
-            .find({ userId })
-            .sort({ createdAt: -1 })
-            .limit(20)
-            .toArray();
-
-        return NextResponse.json({ notifications });
-    } catch (error) {
-        console.error('Error fetching notifications:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    const { searchParams } = new URL(req.url);
+    const page = Math.max(1, parseInt(searchParams.get('page') || '1', 10));
+    const limit = Math.min(100, Math.max(1, parseInt(searchParams.get('limit') || '20', 10)));
+
+    const result = await getUserNotifications(userId, page, limit);
+
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error('[GET /api/notifications]', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }
 
+/**
+ * POST /api/notifications
+ * Create a notification (admin only).
+ *
+ * Body: { recipientId, type, title, body, data?, channels?, priority? }
+ */
 export async function POST(req: Request) {
-    try {
-        const { userId, role } = await auth(); 
-        if (!userId) { 
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 }); 
-        } 
-        if (role !== 'admin') { 
-            return NextResponse.json({ error: 'Forbidden' }, { status: 403 }); 
-        }
-
-        const body = await req.json();
-        const { recipientId, title, message, type, link } = body;
-
-        if (!recipientId || !title || !message) {
-            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-        }
-
-        const notificationsCollection = await getCollection('notifications');
-        const newNotification = {
-            userId: recipientId,
-            title,
-            message,
-            type: type || 'system',
-            isRead: false,
-            link,
-            createdAt: new Date(),
-        };
-
-        const result = await notificationsCollection.insertOne(newNotification);
-
-        return NextResponse.json({ success: true, notificationId: result.insertedId });
-
-    } catch (error) {
-        console.error('Error creating notification:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  try {
+    const { userId, role } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-}
-
-export async function PATCH(req: Request) {
-    try {
-        const { userId } = await auth();
-        if (!userId) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-        }
-
-        const body = await req.json();
-        const { notificationId } = body;
-
-        if (!notificationId) {
-            return NextResponse.json({ error: 'Missing notificationId' }, { status: 400 });
-        }
-
-        const notificationsCollection = await getCollection('notifications');
-        await notificationsCollection.updateOne(
-            { _id: new ObjectId(notificationId), userId },
-            { $set: { isRead: true } }
-        );
-
-        return NextResponse.json({ success: true });
-    } catch (error) {
-        console.error('Error updating notification:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    if (role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
     }
+
+    const body = await req.json();
+    const { recipientId, type, title, body: notifBody, data, channels, priority } = body;
+
+    if (!recipientId || !title || !notifBody) {
+      return NextResponse.json(
+        { error: 'Missing required fields: recipientId, title, body' },
+        { status: 400 },
+      );
+    }
+
+    if (type && !(NOTIFICATION_TYPES as readonly string[]).includes(type)) {
+      return NextResponse.json(
+        { error: `Invalid notification type: ${type}` },
+        { status: 400 },
+      );
+    }
+
+    const notification = await createNotification({
+      recipientId,
+      type: (type as NotificationType) || 'admin_message_received',
+      title,
+      body: notifBody,
+      data,
+      channels,
+      priority,
+    });
+
+    return NextResponse.json({
+      success: true,
+      notificationId: notification._id,
+    });
+  } catch (error) {
+    console.error('[POST /api/notifications]', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
 }

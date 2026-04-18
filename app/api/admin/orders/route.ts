@@ -118,49 +118,74 @@ export async function PUT(request: Request) {
             }
         }
 
-        // Send notification to customer (Non-blocking)
-        if (existingOrder.userId && status) {
-            try {
-                let title = '';
-                let message = '';
+        // Send notification to customer via dispatcher (Non-blocking)
+        if (existingOrder.userId && existingOrder.userId !== 'guest' && status) {
+            setImmediate(() => {
+                import('@/services/notification.dispatcher').then(({ dispatchToUser }) => {
+                    const shortId = orderId.slice(-6).toUpperCase();
+                    const userId = existingOrder.userId;
+                    
+                    const orderData = {
+                        id: orderId,
+                        fullName: existingOrder.shipping?.fullName || 'Хэрэглэгч',
+                        items: existingOrder.items || [],
+                        subtotal: existingOrder.totalPrice,
+                        shippingCost: 0,
+                        total: existingOrder.totalPrice,
+                        address: existingOrder.shipping?.address || '',
+                        city: existingOrder.shipping?.city || '',
+                        estimatedDelivery: deliveryEstimate || existingOrder.deliveryEstimate,
+                        refundAmount: existingOrder.totalPrice
+                    };
 
-                if (status === 'confirmed') {
-                    title = '✅ Захиалга баталгаажлаа!';
-                    message = `Таны захиалга баталгаажлаа. Хүргэлт: ${deliveryEstimate || existingOrder.deliveryEstimate || 'Тодорхойлогдоно'}`;
-                } else if (status === 'delivered') {
-                    title = '🚚 Захиалга хүргэгдлээ!';
-                    message = 'Таны захиалга амжилттай хүргэгдлээ. Баярлалаа!';
-                }
-
-                if (title && message) {
-                    const notificationsCollection = await getCollection('notifications');
-                    await notificationsCollection.insertOne({
-                        userId: existingOrder.userId,
-                        title,
-                        message,
-                        type: 'order',
-                        isRead: false,
-                        link: '/orders',
-                        createdAt: new Date()
-                    });
-                }
-                // Send Email (Non-blocking)
-                (async () => {
-                    try {
-                        const usersCollection = await getCollection('users');
-                        const owner = await usersCollection.findOne({ _id: new ObjectId(existingOrder.userId) });
-                        if (owner?.email) {
-                            await sendOrderStatusUpdate(
-                                { ...existingOrder, deliveryEstimate: deliveryEstimate || existingOrder.deliveryEstimate },
-                                owner.email,
-                                status
-                            );
-                        }
-                    } catch (e) { console.error('Status update email error:', e); }
-                })();
-            } catch (notifError) {
-                console.error('Failed to send customer notification:', notifError);
-            }
+                    if (status === 'confirmed') {
+                        dispatchToUser(userId, {
+                            type: 'order_confirmed',
+                            title: '✅ Захиалга батлагдлаа!',
+                            body: `Таны #${shortId} захиалга батлагдлаа. Хүргэлт: ${orderData.estimatedDelivery || 'Тодорхойлогдоно'}`,
+                            data: { orderId, url: `/orders` }
+                        }).catch(console.error);
+                    } else if (status === 'shipped') {
+                        dispatchToUser(userId, {
+                            type: 'order_shipped',
+                            priority: 'high',
+                            title: '🚚 Захиалга хүргэлтэнд гарлаа!',
+                            body: `Таны #${shortId} захиалга хүргэлтэнд гарлаа.`,
+                            data: { orderId, url: `/orders` },
+                            orderData: {
+                                order: orderData,
+                                tracking: {
+                                    trackingNumber: existingOrder.trackingNumber || 'Бүртгэгдээгүй',
+                                    carrierName: existingOrder.carrierName || 'Soyol Хүргэлт',
+                                    estimatedDelivery: orderData.estimatedDelivery
+                                }
+                            }
+                        }).catch(console.error);
+                    } else if (status === 'delivered') {
+                        dispatchToUser(userId, {
+                            type: 'order_delivered',
+                            priority: 'high',
+                            title: '🎉 Захиалга хүргэгдлээ!',
+                            body: `Таны #${shortId} захиалга амжилттай хүргэгдлээ.`,
+                            data: { orderId, url: `/orders` },
+                            orderData
+                        }).catch(console.error);
+                    } else if (status === 'cancelled') {
+                        dispatchToUser(userId, {
+                            type: 'order_cancelled',
+                            title: '❌ Захиалга цуцлагдлаа',
+                            body: `Таны #${shortId} захиалга цуцлагдлаа.`,
+                            data: { orderId, url: `/orders` },
+                            orderData: {
+                                id: orderId,
+                                fullName: orderData.fullName,
+                                refundAmount: orderData.refundAmount,
+                                reason: existingOrder.cancelReason || 'Удирдах ажилтан цуцалсан'
+                            }
+                        }).catch(console.error);
+                    }
+                }).catch(console.error);
+            });
         }
 
         return NextResponse.json({ success: true });

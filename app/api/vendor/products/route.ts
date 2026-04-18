@@ -40,17 +40,26 @@ export async function POST(req: NextRequest) {
 
         const result = await productsCollection.insertOne(newProduct);
 
-        // Send Push Notification in background
-        sendPushToAllUsers({
-            title: '🆕 Шинэ бараа нэмэгдлээ!',
-            body: `${newProduct.name}${newProduct.price ? ` — ${newProduct.price}₮` : ''}`,
-            imageUrl: newProduct.image,
-            data: {
-                url: `/products/${result.insertedId.toString()}`,
-                productId: result.insertedId.toString(),
-                type: 'new_product'
-            }
-        }).catch(err => console.error('FCM: Background send error:', err));
+        // Dispatch notifications in background
+        setImmediate(() => {
+            import('@/services/notification.dispatcher').then(({ dispatchToAllUsers }) => {
+                dispatchToAllUsers({
+                    type: 'product_added',
+                    title: '🆕 Шинэ бараа нэмэгдлээ!',
+                    body: `${newProduct.name}${newProduct.price ? ` — ${newProduct.price}₮` : ''}`,
+                    data: {
+                        url: `/products/${result.insertedId.toString()}`,
+                        productId: result.insertedId.toString()
+                    },
+                    productData: {
+                        name: newProduct.name,
+                        image: newProduct.image || newProduct.images?.[0],
+                        price: newProduct.price,
+                        productId: result.insertedId.toString()
+                    }
+                }).catch(console.error);
+            });
+        });
 
         return NextResponse.json({ success: true, productId: result.insertedId.toString() }, { status: 201 });
     } catch (error) {

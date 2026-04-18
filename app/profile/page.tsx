@@ -160,7 +160,6 @@ export default function ProfilePage() {
     : (user.phone || '?')[0];
 
   const tabs: { id: Tab; label: string; icon: any }[] = [
-    { id: 'overview', label: 'Хянах самбар', icon: TrendingUp },
     { id: 'orders', label: 'Захиалгууд', icon: Package },
     { id: 'password', label: 'Нууц үг', icon: KeyRound },
   ];
@@ -174,7 +173,7 @@ export default function ProfilePage() {
 
       {/* ─── HEADER ─── */}
       <div className="relative bg-[#FF5000] pt-14 pb-20 px-4 flex flex-col items-center overflow-hidden">
-        {/* Subtle inner glow */}        
+        {/* Subtle inner glow */}
         <div className="absolute inset-0 bg-gradient-to-br from-[#FF6B00] via-[#FF5000] to-[#E84800]" />
         <div className="absolute bottom-0 left-0 w-full h-16 bg-[#F2F2F7] rounded-t-[36px]" />
 
@@ -227,11 +226,10 @@ export default function ProfilePage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 flex items-center justify-center gap-1.5 py-[7px] rounded-[8px] text-[12px] font-semibold transition-all duration-200 ${
-                  active
+                className={`flex-1 flex items-center justify-center gap-1.5 py-[7px] rounded-[8px] text-[12px] font-semibold transition-all duration-200 ${active
                     ? 'bg-white text-gray-900 shadow-sm'
                     : 'text-gray-500'
-                }`}
+                  }`}
               >
                 <Icon className="w-3.5 h-3.5" strokeWidth={2} />
                 {tab.label}
@@ -527,18 +525,18 @@ interface LinkedAccounts {
   facebook: { linked: boolean; email?: string };
 }
 
-function GoogleLinkButton({ 
-  isLinked, 
-  email, 
-  isBusy, 
-  onConnect, 
-  onUnlink 
-}: { 
-  isLinked: boolean; 
-  email?: string; 
-  isBusy: boolean; 
-  onConnect: () => void; 
-  onUnlink: () => void; 
+function GoogleLinkButton({
+  isLinked,
+  email,
+  isBusy,
+  onConnect,
+  onUnlink
+}: {
+  isLinked: boolean;
+  email?: string;
+  isBusy: boolean;
+  onConnect: () => void;
+  onUnlink: () => void;
 }) {
   const googleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
@@ -601,7 +599,7 @@ function ConnectedAccounts() {
     fetch('/api/user/link-social')
       .then(r => r.ok ? r.json() : null)
       .then(data => data && setLinked(data))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const handleConnect = async (provider: 'google' | 'facebook') => {
@@ -707,12 +705,12 @@ function ConnectedAccounts() {
               </div>
 
               {p.key === 'google' ? (
-                <GoogleLinkButton 
-                  isLinked={!!isLinked} 
-                  email={email} 
-                  isBusy={isBusy} 
-                  onConnect={() => {}} 
-                  onUnlink={() => setConfirmUnlink('google')} 
+                <GoogleLinkButton
+                  isLinked={!!isLinked}
+                  email={email}
+                  isBusy={isBusy}
+                  onConnect={() => { }}
+                  onUnlink={() => setConfirmUnlink('google')}
                 />
               ) : isBusy ? (
                 <Loader2 className="w-5 h-5 text-[#999] animate-spin shrink-0" />
