@@ -1,6 +1,6 @@
 "use client";
 
-import { type Product } from "@/models/Product";
+import { type Product } from "@/types/Product";
 import UniversalProductCard from "./UniversalProductCard";
 
 interface MobileProductGridProps {

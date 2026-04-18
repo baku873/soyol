@@ -20,7 +20,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useLanguage } from "../context/LanguageContext";
 import { useTranslation } from "../hooks/useTranslation";
 import { useProducts } from "../lib/hooks/useProducts";
-import { type Product } from "../models/Product";
+import { Product } from "@/types/Product";
 import MobileHero from "../components/MobileHero";
 import MobileProductGrid from "../components/MobileProductGrid";
 import InfiniteScrollTrigger from "../components/InfiniteScrollTrigger";

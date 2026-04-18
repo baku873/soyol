@@ -1,8 +1,16 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
+import { requireCsrf } from '@/lib/csrf';
+import { clearAuthCookie } from '@/lib/authCookies';
 
-export async function POST() {
-  const cookieStore = await cookies();
-  cookieStore.delete('auth_token');
-  return NextResponse.json({ success: true });
+export async function DELETE(request: Request) {
+  try {
+    requireCsrf(request);
+    const res = NextResponse.json({ success: true });
+    clearAuthCookie(res);
+    return res;
+  } catch (err: any) {
+    const status = err?.status || 500;
+    const message = status === 403 ? 'CSRF validation failed' : 'Internal Server Error';
+    return NextResponse.json({ error: message }, { status });
+  }
 }

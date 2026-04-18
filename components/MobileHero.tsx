@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
-import { Banner } from '@/models/Banner';
+import { Banner } from '@/types/Banner';
 
 const AUTO_PLAY_MS = 5000;
 
@@ -126,72 +126,6 @@ export default function MobileHero() {
             </div>
 
             {/* ── Below-card row: dots left, CTA right ───────────────────────── */}
-            <div className="flex items-center justify-between px-4 pt-3 pb-1">
-
-                {/* Slide indicators */}
-                <div
-                    className="flex items-center gap-1.5"
-                    role="tablist"
-                    aria-label="Слайд сонгох"
-                >
-                    {banners.map((b, i) => {
-                        const isActive = i === currentIndex;
-                        return (
-                            <button
-                                key={b.id}
-                                role="tab"
-                                aria-selected={isActive}
-                                aria-label={`Слайд ${i + 1}`}
-                                onClick={() => { goTo(i); setIsPaused(false); }}
-                                className={[
-                                    'relative rounded-full overflow-hidden transition-all duration-500 ease-out',
-                                    'focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F57E20]',
-                                    isActive
-                                        ? 'w-6 h-[5px] bg-[#F57E20]/30'
-                                        : 'w-[5px] h-[5px] bg-gray-200 hover:bg-gray-300',
-                                ].join(' ')}
-                            >
-                                {isActive && !isPaused && (
-                                    <motion.div
-                                        key={`prog-${currentIndex}`}
-                                        initial={{ scaleX: 0 }}
-                                        animate={{ scaleX: 1 }}
-                                        transition={{ duration: AUTO_PLAY_MS / 1000, ease: 'linear' }}
-                                        className="absolute inset-0 bg-[#F57E20] rounded-full origin-left"
-                                        aria-hidden="true"
-                                    />
-                                )}
-                                {isActive && isPaused && (
-                                    <div className="absolute inset-0 bg-[#F57E20] rounded-full" aria-hidden="true" />
-                                )}
-                            </button>
-                        );
-                    })}
-                </div>
-
-                {/* CTA — only when banner has a link or title */}
-                {(banner?.link || banner?.title) && (
-                    <motion.div
-                        key={`cta-${currentIndex}`}
-                        initial={{ opacity: 0, x: 8 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.3, ease: 'easeOut' }}
-                    >
-                        <Link
-                            href={banner.link || '/'}
-                            className="group inline-flex items-center gap-1.5 rounded-full bg-[#F57E20] px-4 py-2 text-[12px] font-bold text-white tracking-wide shadow-[0_4px_14px_rgba(245,126,32,0.38)] hover:bg-[#E06B12] active:scale-95 transition-all duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#F57E20] focus-visible:ring-offset-2"
-                            aria-label={banner.title || 'Дэлгэрэнгүй'}
-                        >
-                            {banner.title || 'Дэлгэрэнгүй'}
-                            <ArrowRight
-                                className="w-3 h-3 text-white/80 group-hover:translate-x-0.5 transition-transform duration-150"
-                                strokeWidth={2.5}
-                                aria-hidden="true"
-                            />
-                        </Link>
-                    </motion.div>
-                )}
-            </div>
 
             {/* ── Quick-action category row ───────────────────────────────────── */}
             <div
@@ -200,10 +134,10 @@ export default function MobileHero() {
                 aria-label="Ангилал"
             >
                 {[
-                    { name: 'Шинэ',     icon: '🔥', href: '/new-arrivals',  bg: 'bg-orange-50',  ring: 'ring-orange-100'  },
-                    { name: 'Бэлэн',    icon: '📦', href: '/ready-to-ship', bg: 'bg-sky-50',     ring: 'ring-sky-100'     },
-                    { name: 'Захиалга', icon: '🌍', href: '/pre-order',     bg: 'bg-violet-50',  ring: 'ring-violet-100'  },
-                    { name: 'Хямдрал',  icon: '🏷️', href: '/sale',          bg: 'bg-emerald-50', ring: 'ring-emerald-100' },
+                    { name: 'Шинэ', icon: '🔥', href: '/new-arrivals', bg: 'bg-orange-50', ring: 'ring-orange-100' },
+                    { name: 'Бэлэн', icon: '📦', href: '/ready-to-ship', bg: 'bg-sky-50', ring: 'ring-sky-100' },
+                    { name: 'Захиалга', icon: '🌍', href: '/pre-order', bg: 'bg-violet-50', ring: 'ring-violet-100' },
+                    { name: 'Хямдрал', icon: '🏷️', href: '/sale', bg: 'bg-emerald-50', ring: 'ring-emerald-100' },
                 ].map((item) => (
                     <motion.a
                         key={item.name}

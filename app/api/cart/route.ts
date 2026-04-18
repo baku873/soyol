@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getCollection } from '@/lib/mongodb';
-import { auth } from '@/lib/auth';
-import { ObjectId } from 'mongodb';
+import { NextRequest, NextResponse } from "next/server";
+
+import { ObjectId } from "mongodb";
+
+import { auth } from "@/lib/auth";
+import { getCollection } from "@/lib/mongodb";
 
 // GET /api/cart - Fetch user's cart
 export async function GET() {

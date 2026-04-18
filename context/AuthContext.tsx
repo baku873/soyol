@@ -4,20 +4,17 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCartStore } from "../store/cartStore";
 import { useWishlistStore } from "../store/wishlistStore";
+import { apiClient } from "@/lib/apiClient";
 //its replace
 interface User {
   id: string;
-  phone: string;
-  role: "admin" | "user";
-  status: "available" | "in-call";
-  name?: string;
-  fullName?: string;
-  firstName?: string;
+  name: string;
   email?: string;
-  image?: string;
+  avatar?: string;
   imageUrl?: string;
-  primaryEmailAddress?: { emailAddress: string };
-  publicMetadata?: { role?: string };
+  provider: "local" | "google" | "facebook";
+  role?: "admin" | "user" | "vendor";
+  phone?: string;
 }
 
 interface AuthContextType {
@@ -49,18 +46,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const res = await fetch("/api/auth/me");
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user);
-          setCartAuth(true);
-        } else {
-          setUser(null);
-          setCartAuth(false);
-        }
+        const data = await apiClient<{ user: User }>("/api/auth/me");
+        setUser(data.user);
+        setCartAuth(true);
       } catch (error) {
-        console.error("Auth check failed:", error);
         setUser(null);
+        setCartAuth(false);
       } finally {
         setIsLoading(false);
       }
@@ -76,11 +67,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
+      await apiClient("/api/auth/logout", { method: "DELETE" });
       setUser(null);
       setCartAuth(false);
       clearWishlist();
-      router.push("/sign-in");
+      clearCart();
+      router.push("/login");
       router.refresh();
     } catch (error) {
       console.error("Logout failed:", error);

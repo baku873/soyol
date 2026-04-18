@@ -24,6 +24,7 @@ import {
   MessageCircle,
   LayoutGrid,
   ChevronRight,
+  Info,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -762,6 +763,27 @@ export default function LuxuryNavbar() {
                     );
                   })}
                 </div>
+
+                {/* About link — always visible */}
+                <Link
+                  href="/about"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-4 py-4 border-b border-slate-50 transition-colors active:bg-slate-50`}
+                >
+                  <Info
+                    className={`w-5 h-5 shrink-0 ${pathname === "/about" ? "text-[#FF5000]" : "text-slate-400"}`}
+                    strokeWidth={pathname === "/about" ? 2 : 1.5}
+                  />
+                  <span
+                    className={`font-semibold text-[15px] flex-1 ${pathname === "/about" ? "text-[#FF5000]" : "text-slate-800"}`}
+                  >
+                    Бидний тухай
+                  </span>
+                  <ChevronRight
+                    className={`w-4 h-4 ${pathname === "/about" ? "text-[#FF5000]" : "text-slate-300"}`}
+                    strokeWidth={2}
+                  />
+                </Link>
 
                 {isLoggedIn && (
                   <div className="mt-4 pb-10">

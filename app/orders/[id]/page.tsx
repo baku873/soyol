@@ -1,14 +1,18 @@
 'use client';
 
-import { useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import useSWR from 'swr';
-import { toast } from 'react-hot-toast';
-import Image from 'next/image';
-import Link from 'next/link';
-import { ChevronLeft, Clock, Package, Truck, CheckCircle2, XCircle, MapPin, Phone, Loader2 } from 'lucide-react';
-import { formatPrice } from '@/lib/utils';
-import { motion } from 'framer-motion';
+import { useState } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+
+import { motion } from "framer-motion";
+import { ChevronLeft, Clock, Package, Truck, CheckCircle2, XCircle, MapPin, Phone, Loader2 } from "lucide-react";
+import { toast } from "react-hot-toast";
+import useSWR from "swr";
+
+import { CANCELLABLE_STATUSES, type OrderStatus } from "@/types/Order";
+
+import { formatPrice } from "@/lib/utils";
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -37,6 +41,17 @@ export default function OrderDetailPage() {
     const handleCancel = async () => {
         if (!confirm('Та энэ захиалгыг цуцлахдаа итгэлтэй байна уу?')) return;
         setIsCancelling(true);
+
+        // Optimistic update
+        const previousData = data;
+        mutate(
+            {
+                ...data,
+                order: data?.order ? { ...data.order, status: 'cancelled' } : undefined,
+            },
+            false
+        );
+
         try {
             const res = await fetch('/api/orders', {
                 method: 'PATCH',
@@ -47,10 +62,12 @@ export default function OrderDetailPage() {
                 toast.success('Захиалга амжилттай цуцлагдлаа');
                 mutate();
             } else {
-                const data = await res.json();
-                toast.error(data.error || 'Цуцлахад алдаа гарлаа');
+                mutate(previousData, false);
+                const errData = await res.json();
+                toast.error(errData.error || 'Цуцлахад алдаа гарлаа');
             }
         } catch (e) {
+            mutate(previousData, false);
             toast.error('Алдаа гарлаа');
         } finally {
             setIsCancelling(false);
@@ -165,7 +182,7 @@ export default function OrderDetailPage() {
                 )}
 
                 {/* Cancel Button */}
-                {order.status === 'pending' && (
+                {CANCELLABLE_STATUSES.includes(order.status as OrderStatus) && (
                     <div className="pt-4 pb-8">
                         <button
                             onClick={handleCancel}

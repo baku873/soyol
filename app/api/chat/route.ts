@@ -4,8 +4,8 @@ import { z } from 'zod';
 import { getCollection } from '@/lib/mongodb';
 import { auth } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
-import { User } from '@/models/User';
-import { Product } from '@/models/Product';
+import { User } from '@/types/User';
+import { Product } from '@/types/Product';
 
 const openrouter = createOpenAI({
   baseURL: 'https://openrouter.ai/api/v1',

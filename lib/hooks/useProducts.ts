@@ -1,6 +1,6 @@
 import useSWRInfinite from 'swr/infinite';
 import { useEffect } from 'react';
-import { Product } from '@/models/Product';
+import { Product } from '@/types/Product';
 
 interface ProductsResponse {
   products: Product[];

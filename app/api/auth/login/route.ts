@@ -1,67 +1,77 @@
 import { NextResponse } from 'next/server';
-import { getCollection } from '@/lib/mongodb';
+import { z } from 'zod';
 import bcrypt from 'bcryptjs';
-import { SignJWT } from 'jose';
+import { requireCsrf } from '@/lib/csrf';
+import { rateLimitLogin } from '@/lib/rateLimit';
+import { findUserByEmail, toPublicUser } from '@/lib/users';
+import { signAuthJwt } from '@/lib/jwt';
+import { setAuthCookie } from '@/lib/authCookies';
 
-if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET env variable is not set');
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+const LoginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(1),
+});
+
+function getClientIp(req: Request): string {
+  const forwarded = req.headers.get('x-forwarded-for');
+  if (forwarded) return forwarded.split(',')[0].trim();
+  return req.headers.get('x-real-ip') || '127.0.0.1';
+}
 
 export async function POST(request: Request) {
-    try {
-        const { phone, password } = await request.json();
+  try {
+    requireCsrf(request);
 
-        if (!phone || !password) {
-            return NextResponse.json({ error: 'Missing fields' }, { status: 400 });
-        }
-
-        const users = await getCollection('users');
-        const user = await users.findOne({ phone });
-
-        if (!user || !user.password) {
-
-            return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-        }
-
-        // Verify password
-        const isValid = await bcrypt.compare(password, user.password);
-        if (!isValid) {
-
-            return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
-        }
-
-        // Create JWT
-        const token = await new SignJWT({
-            sub: user._id.toString(),
-            phone: user.phone,
-            role: user.role
-        })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setExpirationTime('24h')
-            .sign(JWT_SECRET);
-
-        // Set cookie
-        const response = NextResponse.json({
-            success: true,
-            user: {
-                id: user._id.toString(),
-                phone: user.phone,
-                role: user.role,
-                status: user.status,
-                name: user.name,
-                image: user.image
-            }
-        });
-        response.cookies.set('auth_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 60 * 60 * 24, // 1 day
-            path: '/',
-        });
-
-        return response;
-    } catch (error) {
-        console.error('Login error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    const ip = getClientIp(request);
+    const limited = await rateLimitLogin(ip);
+    if (!limited.allowed) {
+      return NextResponse.json({ error: 'Too many login attempts. Please try again later.' }, { status: 429 });
     }
+
+    const body = await request.json();
+    const { email, password } = LoginSchema.parse(body);
+
+    const user = await findUserByEmail(email);
+    if (!user) {
+      console.warn('[auth/login] failed', { at: new Date().toISOString(), ip, reason: 'user_not_found' });
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+    if (!user.password) {
+      console.warn('[auth/login] failed', { at: new Date().toISOString(), ip, reason: 'oauth_only' });
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    const ok = await bcrypt.compare(password, user.password);
+    if (!ok) {
+      console.warn('[auth/login] failed', { at: new Date().toISOString(), ip, reason: 'bad_password' });
+      return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    const token = await signAuthJwt({
+      userId: user._id!.toString(),
+      email: user.email,
+      name: user.name,
+      provider: user.provider,
+    });
+
+    const res = NextResponse.json({ success: true, user: toPublicUser(user) });
+    setAuthCookie(res, token);
+    return res;
+  } catch (err: unknown) {
+    if (err && typeof err === 'object' && 'name' in err && err.name === 'ZodError' && 'format' in err) {
+      const z = err as { format: () => unknown };
+      return NextResponse.json({ error: 'Validation error', details: z.format() }, { status: 400 });
+    }
+    const status =
+      err && typeof err === 'object' && 'status' in err && typeof (err as { status: unknown }).status === 'number'
+        ? (err as { status: number }).status
+        : 500;
+    const message =
+      status === 403
+        ? 'CSRF validation failed'
+        : err instanceof Error
+          ? err.message
+          : 'Internal Server Error';
+    return NextResponse.json({ error: message }, { status });
+  }
 }

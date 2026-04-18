@@ -47,7 +47,7 @@ export default function VendorDashboard() {
           <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
             <div>
               <h1 className="text-4xl font-black text-gray-900 mb-2">Худалдагчийн хяналтын самбар</h1>
-              <p className="text-gray-600">Сайн байна уу, {user?.fullName || 'Худалдагч'}!</p>
+              <p className="text-gray-600">Сайн байна уу, {user?.name || 'Худалдагч'}!</p>
             </div>
             <Link href="/vendor/products/add" className="px-6 py-3 bg-orange-600 text-white font-bold rounded-xl hover:bg-orange-700 transition shadow-lg flex items-center gap-2">
               <Plus className="w-5 h-5" /> Шинэ бараа нэмэх

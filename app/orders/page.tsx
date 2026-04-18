@@ -1,15 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import Image from 'next/image';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/context/AuthContext';
-import { ChevronLeft, Package, Clock, Truck, CheckCircle2, XCircle, ShoppingBag } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import useSWR from 'swr';
-import { toast } from 'react-hot-toast';
-import { formatPrice } from '@/lib/utils';
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+import { motion, AnimatePresence } from "framer-motion";
+import { ChevronLeft, Package, Clock, Truck, CheckCircle2, XCircle, ShoppingBag } from "lucide-react";
+import { toast } from "react-hot-toast";
+import useSWR from "swr";
+
+import { CANCELLABLE_STATUSES, type OrderStatus } from "@/types/Order";
+
+import { useAuth } from "@/context/AuthContext";
+import { formatPrice } from "@/lib/utils";
 
 const TABS = ['Бүгд', 'Хүлээгдэж буй', 'Баталгаажсан', 'Хүргэлтэнд', 'Дууссан'];
 
@@ -41,6 +45,19 @@ export default function MyOrdersPage() {
   const handleCancel = async (orderId: string) => {
     if (!confirm('Та энэ захиалгыг цуцлахдаа итгэлтэй байна уу?')) return;
     setCancellingId(orderId);
+
+    // Optimistic update — immediately show cancelled in UI
+    const previousData = data;
+    mutate(
+      {
+        ...data,
+        orders: (data?.orders || []).map((o: { _id: string; status: string }) =>
+          o._id === orderId ? { ...o, status: 'cancelled' } : o
+        ),
+      },
+      false // don't revalidate yet
+    );
+
     try {
       const res = await fetch('/api/orders', {
         method: 'PATCH',
@@ -49,12 +66,16 @@ export default function MyOrdersPage() {
       });
       if (res.ok) {
         toast.success('Захиалга амжилттай цуцлагдлаа');
-        mutate();
+        mutate(); // revalidate from server
       } else {
-        const data = await res.json();
-        toast.error(data.error || 'Цуцлахад алдаа гарлаа');
+        // Rollback optimistic update
+        mutate(previousData, false);
+        const errData = await res.json();
+        toast.error(errData.error || 'Цуцлахад алдаа гарлаа');
       }
     } catch (e) {
+      // Rollback optimistic update
+      mutate(previousData, false);
       toast.error('Алдаа гарлаа');
     } finally {
       setCancellingId(null);
@@ -262,7 +283,7 @@ export default function MyOrdersPage() {
                         </span>
                       </div>
                       <div className="flex items-center gap-2">
-                        {order.status === 'pending' && (
+                        {CANCELLABLE_STATUSES.includes(order.status as OrderStatus) && (
                           <button
                             onClick={() => handleCancel(order._id)}
                             disabled={cancellingId === order._id}

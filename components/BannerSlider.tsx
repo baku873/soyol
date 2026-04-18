@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-import { Banner } from '@/models/Banner';
+import { Banner } from '@/types/Banner';
 
 export default function BannerSlider() {
   const [banners, setBanners] = useState<Banner[]>([]);

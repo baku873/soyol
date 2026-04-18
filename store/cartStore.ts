@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage, type StateStorage } from 'zustand/middleware';
-import type { Product } from '@models/Product';
+import type { Product } from "@/types/Product";
 
 export interface CartItem extends Product {
   cartItemId: string; // Unique identifier for the cart item (productId or productId-variantId)

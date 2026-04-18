@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { Send, Video, Phone, ArrowLeft, History } from 'lucide-react';
-import { Message } from '../../models/Message';
+import { Message } from '../../types/Message';
 import Image from 'next/image';
 import useSWR from 'swr';
 import { motion } from 'framer-motion';

@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import type { Product } from '@models/Product';
+import type { Product } from "@/types/Product";
 
 interface WishlistState {
   items: Product[];

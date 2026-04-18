@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { getCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { User, PushToken } from '@/models/User';
+import { User, PushToken } from '@/types/User';
 
 export async function POST(req: Request) {
     try {

@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import ProductGrid from './ProductGrid';
-import type { Product } from '@models/Product';
+import type { Product } from "@/types/Product";
 
 interface ProductSectionProps {
   title: string;

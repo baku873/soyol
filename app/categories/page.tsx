@@ -8,8 +8,8 @@ import { formatPrice, getStarRating, formatCurrency } from '@/lib/utils';
 import { useCartStore } from '@/store/cartStore';
 import toast from 'react-hot-toast';
 import UniversalProductCard from '@/components/UniversalProductCard';
-import type { Product } from '@/models/Product';
-import type { Category } from '@/models/Category';
+import type { Product } from '@/types/Product';
+import type { Category } from '@/types/Category';
 
 // Emoji mapping for categories (reused for consistency)
 const CATEGORY_EMOJIS: Record<string, string> = {

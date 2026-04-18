@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { ShoppingBag, User, Phone, MapPin, CreditCard, Package, ChevronRight, Plus, Check, X } from 'lucide-react';
 import { useCartStore } from '@store/cartStore';
 import { formatPrice } from '@lib/utils';
-import type { OrderFormData } from '@models/Order';
+import type { OrderFormData } from "@/types/Order";
 import toast from 'react-hot-toast';
 import { useUser } from '@/context/AuthContext';
 import useSWR from 'swr';

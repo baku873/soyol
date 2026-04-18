@@ -8,7 +8,7 @@ import { Heart, Eye, Package, Clock, TrendingUp, Zap, Sparkles, Star } from 'luc
 import { formatPrice, formatCurrency } from '@/lib/utils';
 import { useCartStore } from '@/store/cartStore';
 import toast from 'react-hot-toast';
-import type { Product } from '@/models/Product';
+import type { Product } from '@/types/Product';
 import ProductBadge from '@/components/ProductBadge';
 
 import { useAuth } from '@/context/AuthContext';

@@ -206,30 +206,28 @@ export default function Footer() {
 
             <div className="space-y-4 pt-2">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider">{t('footer', 'facebookGroups')}</h3>
-              <ul className="space-y-2">
-                <li>
-                  <a
-                    href="https://www.facebook.com/groups/1075978082545812"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-gray-400 hover:text-orange-500 flex items-center gap-2 transition-colors"
-                  >
-                    <Facebook className="w-4 h-4" />
-                    {t('footer', 'group1')}
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://www.facebook.com/groups/soyolvideoshop"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-gray-400 hover:text-orange-500 flex items-center gap-2 transition-colors"
-                  >
-                    <Facebook className="w-4 h-4" />
-                    {t('footer', 'group2')}
-                  </a>
-                </li>
-              </ul>
+              <div className="flex items-center gap-3">
+                <a
+                  href="https://www.facebook.com/groups/1075978082545812"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('footer', 'group1')}
+                  title={t('footer', 'group1')}
+                  className="w-12 h-12 flex items-center justify-center rounded-2xl bg-gray-900 border border-gray-800 text-gray-300 transition-all hover:border-[#1877F2] hover:text-white hover:bg-[#1877F2]/20"
+                >
+                  <Facebook className="w-6 h-6" />
+                </a>
+                <a
+                  href="https://www.facebook.com/groups/soyolvideoshop"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={t('footer', 'group2')}
+                  title={t('footer', 'group2')}
+                  className="w-12 h-12 flex items-center justify-center rounded-2xl bg-gray-900 border border-gray-800 text-gray-300 transition-all hover:border-[#1877F2] hover:text-white hover:bg-[#1877F2]/20"
+                >
+                  <Facebook className="w-6 h-6" />
+                </a>
+              </div>
             </div>
           </div>
         </div>

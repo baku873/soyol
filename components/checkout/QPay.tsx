@@ -2,6 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+
+import confetti from "canvas-confetti";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Loader2,
   CheckCircle2,
@@ -12,9 +15,8 @@ import {
   ShieldCheck,
   CreditCard,
 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import confetti from "canvas-confetti";
 import toast from "react-hot-toast";
+
 import { openExternalLink } from "@/lib/openExternalLink";
 
 interface QPayProps {

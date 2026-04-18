@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import Link from 'next/link';
 import { ShoppingCart } from 'lucide-react';
-import { type Product } from '@/models/Product';
+import { type Product } from '@/types/Product';
 import { useLanguage } from '@/context/LanguageContext';
 import { formatCurrency } from '@/lib/utils';
 import { useCartStore } from '@/store/cartStore';

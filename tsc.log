@@ -1,0 +1,91 @@
+.next/dev/types/validator.ts(918,31): error TS2344: Type 'typeof import("/home/piikee/test/soyol/app/api/orders/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/orders/[id]">'.
+  Types of property 'GET' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ order: WithId<Document>; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+.next/types/validator.ts(918,31): error TS2344: Type 'typeof import("/home/piikee/test/soyol/app/api/orders/[id]/route")' does not satisfy the constraint 'RouteHandlerConfig<"/api/orders/[id]">'.
+  Types of property 'GET' are incompatible.
+    Type '(req: NextRequest, { params }: { params: { id: string; }; }) => Promise<NextResponse<{ error: string; }> | NextResponse<{ order: WithId<Document>; }>>' is not assignable to type '(request: NextRequest, context: { params: Promise<{ id: string; }>; }) => void | Response | Promise<void | Response>'.
+      Types of parameters '__1' and 'context' are incompatible.
+        Type '{ params: Promise<{ id: string; }>; }' is not assignable to type '{ params: { id: string; }; }'.
+          Types of property 'params' are incompatible.
+            Property 'id' is missing in type 'Promise<{ id: string; }>' but required in type '{ id: string; }'.
+app/api/checkout/route.ts(204,121): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type 'string | null' is not assignable to parameter of type 'string | Uint8Array<ArrayBufferLike> | ObjectId | ObjectIdLike | undefined'.
+      Type 'null' is not assignable to type 'string | Uint8Array<ArrayBufferLike> | ObjectId | ObjectIdLike | undefined'.
+app/cart/page.tsx(120,44): error TS2339: Property 'stockStatus' does not exist on type 'CartItem'.
+app/cart/page.tsx(121,47): error TS2339: Property 'stockStatus' does not exist on type 'CartItem'.
+app/cart/page.tsx(168,72): error TS2339: Property 'id' does not exist on type 'CartItem'.
+app/cart/page.tsx(188,72): error TS2339: Property 'id' does not exist on type 'CartItem'.
+app/checkout/page.tsx(9,36): error TS2307: Cannot find module '@models/Order' or its corresponding type declarations.
+app/checkout/page.tsx(113,19): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+app/checkout/page.tsx(139,21): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+app/checkout/page.tsx(157,17): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+app/checkout/page.tsx(187,19): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+app/checkout/page.tsx(189,19): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+app/checkout/page.tsx(222,18): error TS2339: Property 'id' does not exist on type 'CartItem'.
+app/checkout/page.tsx(223,25): error TS2339: Property 'id' does not exist on type 'CartItem'.
+app/checkout/page.tsx(224,20): error TS2339: Property 'name' does not exist on type 'CartItem'.
+app/checkout/page.tsx(225,21): error TS2339: Property 'price' does not exist on type 'CartItem'.
+app/checkout/page.tsx(226,21): error TS2339: Property 'image' does not exist on type 'CartItem'.
+app/checkout/page.tsx(474,34): error TS2339: Property 'id' does not exist on type 'CartItem'.
+app/checkout/page.tsx(476,40): error TS2339: Property 'image' does not exist on type 'CartItem'.
+app/checkout/page.tsx(476,79): error TS2339: Property 'name' does not exist on type 'CartItem'.
+app/checkout/page.tsx(479,90): error TS2339: Property 'name' does not exist on type 'CartItem'.
+app/checkout/page.tsx(482,92): error TS2339: Property 'price' does not exist on type 'CartItem'.
+app/checkout/page.tsx(698,41): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+app/checkout/page.tsx(720,41): error TS7006: Parameter 'prev' implicitly has an 'any' type.
+app/page.tsx(23,30): error TS2307: Cannot find module '../models/Product' or its corresponding type declarations.
+components/CartDrawer.tsx(105,36): error TS2339: Property 'id' does not exist on type 'CartItem'.
+components/CartDrawer.tsx(108,37): error TS2339: Property 'image' does not exist on type 'CartItem'.
+components/CartDrawer.tsx(109,37): error TS2339: Property 'name' does not exist on type 'CartItem'.
+components/CartDrawer.tsx(116,91): error TS2339: Property 'name' does not exist on type 'CartItem'.
+components/CartDrawer.tsx(127,49): error TS2339: Property 'price' does not exist on type 'CartItem'.
+components/CartDrawer.tsx(131,51): error TS2339: Property 'price' does not exist on type 'CartItem'.
+components/Chat/AIChatWindow.tsx(150,33): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Omit<CartItem, "quantity" | "cartItemId" | "selected" | "isReady">'.
+components/Chat/ProductCard.tsx(35,13): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Omit<CartItem, "quantity" | "cartItemId" | "selected" | "isReady">'.
+components/DiscoveryProductCard.tsx(56,13): error TS2559: Type 'Product' has no properties in common with type 'Omit<CartItem, "quantity" | "cartItemId" | "selected" | "isReady">'.
+components/MobileFeaturedCarousel.tsx(53,13): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Omit<CartItem, "quantity" | "cartItemId" | "selected" | "isReady">'.
+components/MobileProductCard.tsx(163,37): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Omit<CartItem, "quantity" | "cartItemId" | "selected" | "isReady">'.
+components/PremiumProductGrid.tsx(6,30): error TS2307: Cannot find module '../models/Product' or its corresponding type declarations.
+components/ProductDetailClient.tsx(29,25): error TS2307: Cannot find module '../models/Product' or its corresponding type declarations.
+components/ProductSection.tsx(8,30): error TS2307: Cannot find module '@models/Product' or its corresponding type declarations.
+components/SpecialProductsCarousel.tsx(118,13): error TS2353: Object literal may only specify known properties, and 'id' does not exist in type 'Omit<CartItem, "quantity" | "cartItemId" | "selected" | "isReady">'.
+components/UniversalProductCard.tsx(14,30): error TS2307: Cannot find module '../models/Product' or its corresponding type declarations.
+components/UniversalProductCard.tsx(51,31): error TS7006: Parameter 'img' implicitly has an 'any' type.
+components/cart/AntiGravityCartItem.tsx(25,18): error TS2339: Property 'stockStatus' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(33,14): error TS2339: Property 'id' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(33,23): error TS2339: Property 'stockStatus' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(50,27): error TS2339: Property 'originalPrice' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(50,49): error TS2339: Property 'originalPrice' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(50,70): error TS2339: Property 'price' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(52,29): error TS2339: Property 'stockStatus' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(103,67): error TS2339: Property 'image' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(105,35): error TS2339: Property 'name' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(114,50): error TS2339: Property 'id' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(116,35): error TS2339: Property 'name' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(120,31): error TS2339: Property 'category' does not exist on type 'CartItem'.
+components/cart/AntiGravityCartItem.tsx(168,43): error TS2339: Property 'price' does not exist on type 'CartItem'.
+store/cartStore.ts(3,30): error TS2307: Cannot find module '@models/Product' or its corresponding type declarations.
+store/cartStore.ts(55,59): error TS2339: Property 'id' does not exist on type 'Omit<CartItem, "quantity" | "cartItemId" | "selected" | "isReady">'.
+store/cartStore.ts(55,95): error TS2339: Property 'id' does not exist on type 'Omit<CartItem, "quantity" | "cartItemId" | "selected" | "isReady">'.
+store/cartStore.ts(74,33): error TS2339: Property 'stockStatus' does not exist on type 'Omit<CartItem, "quantity" | "cartItemId" | "selected" | "isReady">'.
+store/cartStore.ts(165,65): error TS2339: Property 'price' does not exist on type 'CartItem'.
+store/cartStore.ts(171,49): error TS2339: Property 'price' does not exist on type 'CartItem'.
+store/cartStore.ts(176,50): error TS2339: Property 'stockStatus' does not exist on type 'CartItem'.
+store/cartStore.ts(182,50): error TS2339: Property 'stockStatus' does not exist on type 'CartItem'.
+store/cartStore.ts(183,49): error TS2339: Property 'price' does not exist on type 'CartItem'.
+store/cartStore.ts(214,69): error TS2339: Property 'id' does not exist on type 'CartItem'.
+store/cartStore.ts(214,99): error TS2339: Property 'id' does not exist on type 'CartItem'.
+store/cartStore.ts(220,69): error TS2339: Property 'id' does not exist on type 'CartItem'.
+store/cartStore.ts(220,99): error TS2339: Property 'id' does not exist on type 'CartItem'.
+store/wishlistStore.ts(3,30): error TS2307: Cannot find module '@models/Product' or its corresponding type declarations.
+types/index.ts(13,1): error TS2308: Module './Category' has already exported a member named 'Category'. Consider explicitly re-exporting to resolve the ambiguity.
+types/index.ts(13,1): error TS2308: Module './Order' has already exported a member named 'Order'. Consider explicitly re-exporting to resolve the ambiguity.
+types/index.ts(13,1): error TS2308: Module './Order' has already exported a member named 'OrderStatus'. Consider explicitly re-exporting to resolve the ambiguity.
+types/index.ts(13,1): error TS2308: Module './Product' has already exported a member named 'Product'. Consider explicitly re-exporting to resolve the ambiguity.
+types/index.ts(13,1): error TS2308: Module './Review' has already exported a member named 'Review'. Consider explicitly re-exporting to resolve the ambiguity.
+types/index.ts(13,1): error TS2308: Module './Store' has already exported a member named 'Store'. Consider explicitly re-exporting to resolve the ambiguity.

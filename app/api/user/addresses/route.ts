@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { jwtVerify } from 'jose';
 import { getCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
-import { Address, User } from '@/models/User';
+import { Address, User } from '@/types/User';
 
 if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET env variable is not set');
 const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);

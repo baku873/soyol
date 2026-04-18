@@ -1,91 +1,64 @@
 import { NextResponse } from 'next/server';
-import { getCollection } from '@/lib/mongodb';
-import { SignJWT } from 'jose';
+import crypto from 'crypto';
 
-if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET env variable is not set');
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+function getEnv(name: string): string {
+  const v = process.env[name];
+  if (!v) throw new Error(`${name} env var is not set`);
+  return v;
+}
 
-export async function POST(request: Request) {
-    try {
-        const { access_token } = await request.json();
+/** Only same-origin relative paths — Google will not echo custom params on callback. */
+function sanitizePostAuthRedirect(raw: string | null): string {
+  const fallback = '/dashboard';
+  if (!raw || !raw.startsWith('/') || raw.startsWith('//')) return fallback;
+  return raw;
+}
 
-        if (!access_token) {
-            return NextResponse.json({ error: 'Missing access token' }, { status: 400 });
-        }
+export async function GET(req: Request) {
+  try {
+    const clientId = getEnv('GOOGLE_CLIENT_ID');
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    const redirectUri = `${baseUrl}/api/auth/google/callback`;
 
-        // Fetch user info from Google
-        const googleRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-            headers: { Authorization: `Bearer ${access_token}` },
-        });
+    const state = crypto.randomBytes(16).toString('hex');
+    const nonce = crypto.randomBytes(16).toString('hex');
+    const afterAuth = sanitizePostAuthRedirect(new URL(req.url).searchParams.get('redirect'));
 
-        if (!googleRes.ok) {
-            return NextResponse.json({ error: 'Invalid Google token' }, { status: 401 });
-        }
+    const url = new URL('https://accounts.google.com/o/oauth2/v2/auth');
+    url.searchParams.set('client_id', clientId);
+    url.searchParams.set('redirect_uri', redirectUri);
+    url.searchParams.set('response_type', 'code');
+    url.searchParams.set('scope', 'openid email profile');
+    url.searchParams.set('prompt', 'consent');
+    url.searchParams.set('access_type', 'offline');
+    url.searchParams.set('state', state);
+    url.searchParams.set('nonce', nonce);
 
-        const googleUser = await googleRes.json();
-        const { sub: googleId, email, name, picture } = googleUser;
-
-        const users = await getCollection('users');
-        let user = await users.findOne({ $or: [{ googleId }, { email }] });
-        let isNewUser = false;
-
-        if (!user) {
-            // Create user
-            isNewUser = true;
-            const result = await users.insertOne({
-                googleId,
-                email,
-                name: name || email.split('@')[0],
-                image: picture,
-                role: 'user',
-                createdAt: new Date(),
-                status: 'available'
-            });
-            user = await users.findOne({ _id: result.insertedId });
-            if (!user) throw new Error('Failed to create user');
-        } else if (!user.googleId) {
-            // Link googleId to existing user
-            await users.updateOne({ _id: user._id }, { $set: { googleId } });
-            user.googleId = googleId;
-        }
-
-        // Create JWT
-        const token = await new SignJWT({
-            sub: user._id.toString(),
-            phone: user.phone || '',
-            role: user.role,
-            email: user.email,
-        })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setExpirationTime('24h')
-            .sign(JWT_SECRET);
-
-        // Set cookie
-        const response = NextResponse.json({
-            success: true,
-            isNewUser,
-            user: {
-                id: user._id.toString(),
-                phone: user.phone,
-                email: user.email,
-                role: user.role,
-                status: user.status,
-                name: user.name,
-                image: user.image
-            }
-        });
-        
-        response.cookies.set('auth_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 60 * 60 * 24, // 1 day
-            path: '/',
-        });
-
-        return response;
-    } catch (error) {
-        console.error('Google Auth error:', error);
-        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
-    }
+    const res = NextResponse.redirect(url);
+    res.cookies.set('google_oauth_state', state, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 10,
+      path: '/',
+    });
+    res.cookies.set('google_oauth_nonce', nonce, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 10,
+      path: '/',
+    });
+    res.cookies.set('google_oauth_redirect', afterAuth, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 10,
+      path: '/',
+    });
+    return res;
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : 'Internal Server Error';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

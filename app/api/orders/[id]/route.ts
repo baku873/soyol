@@ -1,264 +1,93 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getCollection } from "@/lib/mongodb";
-import { auth } from "@/lib/auth";
+
 import { ObjectId } from "mongodb";
 
-import { User } from "@/models/User";
-import { sendOrderConfirmation } from "@/lib/email";
+import { CANCELLABLE_STATUSES } from "@/types/Order";
 
-export async function GET(req: NextRequest) {
+import { auth } from "@/lib/auth";
+import { getCollection } from "@/lib/mongodb";
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
-    const { searchParams } = new URL(req.url);
-    const phoneParam = searchParams.get("phone");
-
-    // Guest phone-based tracking — no auth required
-    if (phoneParam) {
-      const orders = await getCollection("orders");
-      const results = await orders
-        .find({ phone: phoneParam })
-        .sort({ createdAt: -1 })
-        .toArray();
-      return NextResponse.json({ orders: results });
-    }
-
     const { userId, phone } = await auth();
+    const resolvedParams = await params;
 
-    if (!userId) {
+    if (!userId && !phone) {
       return NextResponse.json(
         { error: "Authentication required" },
-        { status: 401 },
+        { status: 401 }
       );
     }
 
     const orders = await getCollection("orders");
+    
+    let objectId;
+    try {
+      objectId = new ObjectId(resolvedParams.id);
+    } catch {
+      return NextResponse.json({ error: "Invalid order ID" }, { status: 400 });
+    }
 
-    // Find orders by userId OR by matching phone number (catches pre-registration guest orders)
-    const query = phone
-      ? { $or: [{ userId }, { phone, userId: "guest" }] }
-      : { userId };
+    const order = await orders.findOne({ _id: objectId });
 
-    const results = await orders.find(query).sort({ createdAt: -1 }).toArray();
+    if (!order) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
 
-    return NextResponse.json({ orders: results });
+    // Allow access if user is owner, or if phone matches for guest orders
+    const isOwner = order.userId === userId || order.phone === phone;
+    if (!isOwner) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+
+    return NextResponse.json({ order });
   } catch (error) {
     return NextResponse.json(
-      { error: "Failed to fetch orders" },
-      { status: 500 },
+      { error: "Failed to fetch order" },
+      { status: 500 }
     );
   }
 }
 
-export async function POST(req: NextRequest) {
-  try {
-    const { userId: authUserId } = await auth();
-    const userId = authUserId || "guest";
-
-    const body = await req.json();
-    const orders = await getCollection("orders");
-    const products = await getCollection("products");
-
-    // Extract phone from shipping info for guest order tracking
-    const phone = body.shipping?.phone || body.phone || null;
-
-    // Check for pre-order items
-    const hasPreOrder =
-      body.items?.some((item: any) => item.stockStatus === "pre-order") ||
-      false;
-    const deliveryEstimate = hasPreOrder ? "7-14 хоног" : "Өнөөдөр - Маргааш";
-
-    // items-аас server-т нийт үнийг тооцоолох
-    const productsCollection = await getCollection("products");
-    let serverTotal = 0;
-
-    if (body.items && body.items.length > 0) {
-      const { ObjectId } = await import("mongodb");
-      for (const item of body.items) {
-        const productId = item.productId || item.id;
-        if (!productId) continue;
-        try {
-          const product = await productsCollection.findOne({
-            _id: new ObjectId(productId),
-          });
-          if (product) {
-            serverTotal += product.price * (item.quantity || 1);
-          }
-        } catch {
-          continue;
-        }
-      }
-    }
-
-    const totalToSave = serverTotal > 0 ? serverTotal : body.total || 0;
-
-    // Enrich items with product details (name, image, price) before saving
-    const enrichedItems = await Promise.all(
-      (body.items || []).map(async (item: any) => {
-        const productId = item.productId || item.id;
-        if (!productId) return item;
-        // Only look up if any field is missing
-        if (item.name && item.image && item.price) return item;
-        try {
-          const product = await productsCollection.findOne({
-            _id: new ObjectId(productId),
-          });
-          if (product) {
-            return {
-              ...item,
-              name: item.name || product.name,
-              image: item.image || product.images?.[0] || product.image || "",
-              price: item.price || product.price || 0,
-            };
-          }
-        } catch {
-          /* invalid objectId, skip */
-        }
-        return item;
-      }),
-    );
-
-    const result = await orders.insertOne({
-      userId,
-      phone, // Store phone at top level for easy querying
-      items: enrichedItems,
-      total: totalToSave,
-      status: body.status || "pending",
-      deliveryMethod: body.deliveryMethod || "delivery",
-      paymentMethod: body.paymentMethod || "cash",
-      shipping: body.shipping || {},
-      shippingCost: body.shippingCost || 0,
-      hasPreOrder,
-      deliveryEstimate,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    });
-
-    const currentOrderId = result.insertedId.toString();
-
-    // Admin Notification (Non-blocking)
-    if (body.paymentMethod !== "qpay") {
-      try {
-        const { notifyAdminNewOrder } =
-          await import("@/lib/adminNotifications");
-        await notifyAdminNewOrder(
-          currentOrderId,
-          body.shipping?.fullName || "Хэрэглэгч",
-          totalToSave,
-        );
-      } catch (notifError) {
-        console.error("Failed to send admin notifications:", notifError);
-      }
-    }
-
-    // Inventory is NO LONGER decremented here on order creation.
-    // It will be lazily deducted when the order status changes to 'confirmed'
-    // via QPay or Administrator action to prevent stock hoarding.
-
-    // Silent Registration: Save address if requested
-    if (userId !== "guest" && body.saveAddress && body.shipping) {
-      try {
-        const users = await getCollection<User>("users");
-        const userObjectId = new ObjectId(userId);
-
-        // Construct new address object
-        const newAddress = {
-          id: new ObjectId().toString(),
-          city: body.shipping.city || "",
-          district: body.shipping.district || "",
-          label: body.shipping.label || "Гэр",
-          khoroo: body.shipping.khoroo || "",
-          street: body.shipping.street || "",
-          apartment: body.shipping.apartment || "",
-          entrance: body.shipping.entrance || "",
-          floor: body.shipping.floor || "",
-          door: body.shipping.door || "",
-          note: body.shipping.notes || "",
-          isDefault: true,
-        };
-
-        // Unset previous default if exists
-        await users.updateOne(
-          { _id: userObjectId, "addresses.isDefault": true },
-          { $set: { "addresses.$.isDefault": false } },
-        );
-
-        // Add new address
-        await users.updateOne(
-          { _id: userObjectId },
-          {
-            $push: { addresses: newAddress } as any,
-            $set: { phone: phone || undefined }, // Update phone if provided
-          },
-        );
-      } catch (err) {
-        console.error("Failed to save address silently:", err);
-        // Don't fail the order if address save fails
-      }
-    }
-
-    // Send Email Confirmation (Non-blocking)
-    (async () => {
-      try {
-        let recipientEmail = body.shipping?.email || body.email;
-        if (!recipientEmail && userId !== "guest") {
-          const usersCollection = await getCollection("users");
-          const owner = await usersCollection.findOne({
-            _id: new ObjectId(userId),
-          });
-          recipientEmail = owner?.email;
-        }
-
-        if (recipientEmail) {
-          await sendOrderConfirmation(
-            {
-              id: currentOrderId,
-              items: body.items || [],
-              totalPrice: totalToSave,
-              fullName: body.shipping?.fullName || "Хэрэглэгч",
-              address: body.shipping?.address || "",
-              city: body.shipping?.city || "",
-            },
-            recipientEmail,
-          );
-        }
-      } catch (e) {
-        console.error("Email confirmation error:", e);
-      }
-    })().catch((e) => console.error("Email IIFE error:", e));
-
-    return NextResponse.json({ orderId: currentOrderId }, { status: 201 });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to create order" },
-      { status: 500 },
-    );
-  }
-}
-
-export async function PATCH(req: NextRequest) {
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { userId } = await auth();
+    const resolvedParams = await params;
+    
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const body = await req.json();
-    const { orderId, status } = body;
+    const { status } = body;
 
-    if (!orderId || !status) {
-      return NextResponse.json({ error: "Missing fields" }, { status: 400 });
+    if (!status) {
+      return NextResponse.json({ error: "Missing status field" }, { status: 400 });
     }
 
-    // Only allow cancellation for now via this specific endpoint logic
-    // Admin status updates might go through a different flow or check role here
+    // Only allow cancellation via this endpoint for now
     if (status !== "cancelled") {
       return NextResponse.json(
         { error: "Invalid status update via this endpoint" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     const orders = await getCollection("orders");
-    const order = await orders.findOne({ _id: new ObjectId(orderId) });
+    let objectId;
+    try {
+      objectId = new ObjectId(resolvedParams.id);
+    } catch {
+      return NextResponse.json({ error: "Invalid order ID" }, { status: 400 });
+    }
+
+    const order = await orders.findOne({ _id: objectId });
 
     if (!order) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
@@ -268,24 +97,70 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    if (order.status !== "pending") {
+    if (!CANCELLABLE_STATUSES.includes(order.status)) {
+      const messages: Record<string, string> = {
+        cancelled: "Энэ захиалга аль хэдийн цуцлагдсан байна",
+        shipped: "Хүргэлтэнд гарсан захиалгыг цуцлах боломжгүй",
+        delivered: "Хүргэгдсэн захиалгыг цуцлах боломжгүй",
+      };
       return NextResponse.json(
-        { error: "Баталгаажсан захиалгыг цуцлах боломжгүй" },
-        { status: 400 },
+        { error: messages[order.status] || "Энэ захиалгыг цуцлах боломжгүй" },
+        { status: 400 }
       );
     }
 
-    await orders.updateOne(
-      { _id: new ObjectId(orderId) },
-      {
-        $set: {
-          status: "cancelled",
-          updatedAt: new Date(),
-        },
-      },
-    );
+    const { clientPromise } = await import("@/lib/mongodb");
+    const client = await clientPromise;
+    const session = client.startSession();
 
-    // Send notification to customer
+    try {
+      await session.withTransaction(async () => {
+        const db = client.db();
+        const ordersCollection = db.collection("orders");
+        const productsCollection = db.collection("products");
+
+        // 1. Update order status
+        await ordersCollection.updateOne(
+          { _id: objectId },
+          {
+            $set: {
+              status: "cancelled",
+              cancelledAt: new Date(),
+              updatedAt: new Date(),
+            },
+          },
+          { session }
+        );
+
+        // 2. Restore inventory
+        if (order.items && order.items.length > 0) {
+          for (const item of order.items) {
+            const qty = item.quantity || 1;
+            const prodId = item.productId || item.id;
+            if (!prodId) continue;
+            
+            if (item.variantId) {
+              await productsCollection.updateOne(
+                { _id: new ObjectId(prodId), "variants.id": item.variantId },
+                { $inc: { "variants.$.inventory": qty } },
+                { session }
+              );
+            } else {
+              // Only restore stock for in-stock items, pre-order might not have inventory
+              await productsCollection.updateOne(
+                { _id: new ObjectId(prodId), stockStatus: "in-stock" },
+                { $inc: { inventory: qty } },
+                { session }
+              );
+            }
+          }
+        }
+      });
+    } finally {
+      await session.endSession();
+    }
+
+    // Notifications (non-blocking)
     try {
       const notificationsCollection = await getCollection("notifications");
       await notificationsCollection.insertOne({
@@ -298,7 +173,6 @@ export async function PATCH(req: NextRequest) {
         createdAt: new Date(),
       });
 
-      // Send FCM push to customer's phone (non-blocking)
       if (order.userId !== "guest") {
         const { sendPushToUser } = await import("@/lib/fcm");
         sendPushToUser({
@@ -307,7 +181,7 @@ export async function PATCH(req: NextRequest) {
           body: "Таны захиалга амжилттай цуцлагдлаа.",
           data: { url: "/orders" },
         }).catch((err: unknown) =>
-          console.error("FCM cancel push error:", err),
+          console.error("FCM cancel push error:", err)
         );
       }
     } catch (error) {
@@ -319,7 +193,7 @@ export async function PATCH(req: NextRequest) {
     console.error("Order patch error:", error);
     return NextResponse.json(
       { error: "Failed to update order" },
-      { status: 500 },
+      { status: 500 }
     );
   }
 }

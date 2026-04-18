@@ -5,7 +5,7 @@ import { Plus, Trash2, Edit2, Save, X, MoveUp, MoveDown, Image as ImageIcon, Upl
 import toast from 'react-hot-toast';
 import { CldUploadWidget } from 'next-cloudinary';
 import { Reorder } from 'framer-motion';
-import { Banner } from '@/models/Banner';
+import { Banner } from '@/types/Banner';
 
 export default function BannerAdminPage() {
     const [banners, setBanners] = useState<Banner[]>([]);

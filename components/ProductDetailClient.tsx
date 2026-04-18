@@ -26,7 +26,7 @@ import {
 import useSWR from "swr";
 import { useAuth } from "../context/AuthContext";
 import { formatPrice } from "../lib/utils";
-import { Product } from "../models/Product";
+import { Product } from "@/types/Product";
 import { useCartStore } from "../store/cartStore";
 import toast from "react-hot-toast";
 import { useTranslation } from "../hooks/useTranslation";

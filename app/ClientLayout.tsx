@@ -18,6 +18,8 @@ const swrDefaults = {
 import FloatingChatButton from '../components/FloatingChatButton';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   usePushNotifications();
@@ -26,17 +28,21 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
     window.scrollTo(0, 0);
   }, [pathname]);
 
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+
   return (
-    <SWRConfig value={swrDefaults}>
-      <LanguageProvider>
-        <AuthProvider>
-          <ErrorBoundary>
-            {children}
-            <FloatingChatButton />
-            <Toaster position="top-right" reverseOrder={false} />
-          </ErrorBoundary>
-        </AuthProvider>
-      </LanguageProvider>
-    </SWRConfig>
+    <GoogleOAuthProvider clientId={googleClientId}>
+      <SWRConfig value={swrDefaults}>
+        <LanguageProvider>
+          <AuthProvider>
+            <ErrorBoundary>
+              {children}
+              <FloatingChatButton />
+              <Toaster position="top-right" reverseOrder={false} />
+            </ErrorBoundary>
+          </AuthProvider>
+        </LanguageProvider>
+      </SWRConfig>
+    </GoogleOAuthProvider>
   );
 }

@@ -1,11 +1,7 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { jwtVerify } from 'jose';
-import { getCollection } from '@/lib/mongodb';
-import { ObjectId } from 'mongodb';
-
-if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET env variable is not set');
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+import { verifyAuthJwt } from '@/lib/jwt';
+import { findUserById, toPublicUser } from '@/lib/users';
 
 export async function GET(req: Request) {
   try {
@@ -16,37 +12,11 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
     }
 
-    const { payload } = await jwtVerify(token, JWT_SECRET);
+    const payload = await verifyAuthJwt(token);
+    const user = await findUserById(payload.userId);
+    if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-    const userId = (payload.sub || payload.userId) as string | undefined;
-
-    if (!userId) {
-      return NextResponse.json({ error: 'Invalid token' }, { status: 401 });
-    }
-
-    const usersCollection = await getCollection('users');
-    const user = await usersCollection.findOneAndUpdate(
-      { _id: new ObjectId(userId) },
-      { $set: { lastSeen: new Date() } },
-      { returnDocument: 'after' }
-    );
-
-    if (!user) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 });
-    }
-
-    return NextResponse.json({
-      user: {
-        id: user._id.toString(),
-        phone: user.phone,
-        role: user.role,
-        status: user.status,
-        name: user.name,
-        image: user.image,
-        imageUrl: user.image || null,
-        email: user.email
-      }
-    });
+    return NextResponse.json({ user: toPublicUser(user) });
 
   } catch (error) {
     // console.error('Me API Error:', error);

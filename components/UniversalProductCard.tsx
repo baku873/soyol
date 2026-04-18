@@ -11,7 +11,7 @@ import { useWishlistStore } from "../store/wishlistStore";
 import { useAuth } from "../context/AuthContext";
 import { formatPrice } from "../lib/utils";
 import toast from "react-hot-toast";
-import type { Product } from "../models/Product";
+import { Product } from "@/types/Product";
 import ProductBadge from "../components/ProductBadge";
 
 interface UniversalProductCardProps {

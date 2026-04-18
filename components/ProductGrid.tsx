@@ -3,7 +3,7 @@
 import { memo } from 'react';
 import { motion } from 'framer-motion';
 import UniversalProductCard from './UniversalProductCard';
-import type { Product } from '@/models/Product';
+import type { Product } from '@/types/Product';
 
 interface ProductGridProps {
     products: Product[];

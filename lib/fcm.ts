@@ -1,5 +1,5 @@
 import { getCollection } from "./mongodb";
-import { User, PushToken } from "@/models/User";
+import { User, PushToken } from "@/types/User";
 
 let admin: any = null;
 

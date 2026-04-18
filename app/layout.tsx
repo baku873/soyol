@@ -5,7 +5,6 @@ import LuxuryNavbar from '../components/LuxuryNavbar';
 import Footer from '../components/Footer';
 import ClientLayout from './ClientLayout';
 import { SITE_CONFIG } from '../lib/constants';
-import { GoogleOAuthProvider } from '@react-oauth/google';
 const inter = Inter({
   subsets: ['latin', 'cyrillic'],
   display: 'swap',
@@ -73,9 +72,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
-
-  const content = (
+  return (
     <html lang="mn" className={inter.variable}>
       <head>
         <meta name="apple-mobile-web-app-capable" content="yes" />
@@ -90,15 +87,5 @@ export default function RootLayout({
         </ClientLayout>
       </body>
     </html>
-  );
-
-  if (!googleClientId) {
-    return content;
-  }
-
-  return (
-    <GoogleOAuthProvider clientId={googleClientId}>
-      {content}
-    </GoogleOAuthProvider>
   );
 }
