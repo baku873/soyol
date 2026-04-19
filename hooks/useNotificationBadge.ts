@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useUser } from '@/context/AuthContext';
 import { getAblyClient } from '@/lib/ably';
+import { getAblyEnabled } from '@/lib/ablyConfig';
 
 /**
  * Lightweight hook that returns only the unread count.
@@ -34,34 +35,38 @@ export function useNotificationBadge(): { count: number; hasNew: boolean } {
     fetchCount();
   }, [isSignedIn, user?.id, fetchCount]);
 
-  // Subscribe to real-time updates
+  // Subscribe to real-time updates (skipped if ABLY_KEY unset)
   useEffect(() => {
     if (!isSignedIn || !user?.id) return;
 
     let mounted = true;
 
-    try {
-      const ably = getAblyClient();
-      const channel = ably.channels.get(`notifications:${user.id}`);
-      channelRef.current = channel;
+    getAblyEnabled().then((ok) => {
+      if (!ok || !mounted) return;
+      try {
+        const ably = getAblyClient();
+        const channel = ably.channels.get(`notifications:${user.id}`);
+        channelRef.current = channel;
 
-      channel.subscribe('new_notification', () => {
-        if (!mounted) return;
-        setCount((prev) => prev + 1);
-        setHasNew(true);
+        channel.subscribe('new_notification', () => {
+          if (!mounted) return;
+          setCount((prev) => prev + 1);
+          setHasNew(true);
 
-        // Reset "hasNew" pulse after 3 seconds
-        if (hasNewTimerRef.current) clearTimeout(hasNewTimerRef.current);
-        hasNewTimerRef.current = setTimeout(() => {
-          if (mounted) setHasNew(false);
-        }, 3000);
-      });
+          if (hasNewTimerRef.current) clearTimeout(hasNewTimerRef.current);
+          hasNewTimerRef.current = setTimeout(() => {
+            if (mounted) setHasNew(false);
+          }, 3000);
+        });
 
-      channel.subscribe('unread_count', (msg) => {
-        if (!mounted) return;
-        setCount((msg.data as { count: number }).count);
-      });
-    } catch {}
+        channel.subscribe('unread_count', (msg) => {
+          if (!mounted) return;
+          setCount((msg.data as { count: number }).count);
+        });
+      } catch {
+        // ignore
+      }
+    });
 
     return () => {
       mounted = false;

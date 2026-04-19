@@ -1,5 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { getCollection } from '@/lib/mongodb';
+import { mnPhoneSearchVariants } from '@/lib/phone';
 import type { AuthProvider, User } from '@/types/User';
 
 export type PublicUser = {
@@ -36,6 +37,14 @@ export async function findUserById(userId: string): Promise<User | null> {
 export async function findUserByEmail(email: string): Promise<User | null> {
   const users = await getCollection<User>('users');
   return users.findOne({ email: email.toLowerCase() });
+}
+
+/** Match user by phone when stored format may differ (8 vs 11 digits, etc.). */
+export async function findUserByPhoneLoose(raw: string): Promise<User | null> {
+  const variants = mnPhoneSearchVariants(raw);
+  if (variants.length === 0) return null;
+  const users = await getCollection<User>('users');
+  return users.findOne({ phone: { $in: variants } });
 }
 
 export async function findUserByProvider(provider: AuthProvider, providerId: string): Promise<User | null> {

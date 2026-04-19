@@ -13,6 +13,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import {
   Video,
   Phone,
@@ -172,12 +173,14 @@ export default function VideoCall({
     [handleConnect, isConnecting]
   );
 
-  // In-call view
+  // In-call view — MUST portal on the same render that sets inCall=true. If we waited for
+  // useEffect to set document.body, the first paint would render inside ChatWidget (rounded
+  // box + overflow:hidden + transform) and all bottom controls would be clipped on mobile.
   if (inCall && token && LIVEKIT_URL) {
-    return (
+    const callUi = (
       <ErrorBoundary
         fallback={
-          <div className="fixed inset-0 z-[200] bg-slate-900 flex items-center justify-center p-4">
+          <div className="fixed inset-0 z-[10000] bg-slate-900 flex items-center justify-center p-4">
             <div className="text-center space-y-4 max-w-md">
               <ShieldAlert className="w-12 h-12 text-red-400 mx-auto" />
               <h2 className="text-xl font-bold text-white">Видео дуудлагад алдаа гарлаа</h2>
@@ -195,7 +198,7 @@ export default function VideoCall({
           </div>
         }
       >
-        <div className="fixed inset-0 z-[200] bg-black">
+        <div className="fixed inset-0 z-[10000] flex h-[100dvh] max-h-[100dvh] w-full max-w-[100vw] min-h-0 min-w-0 flex-col overflow-hidden bg-black overscroll-none">
           <LiveKitRoom
             video={!initialVideoDisabled}
             audio={true}
@@ -204,13 +207,18 @@ export default function VideoCall({
             data-lk-theme="default"
             onDisconnected={handleDisconnected}
             options={ROOM_OPTIONS}
-            style={{ height: '100dvh', width: '100vw' }}
+            className="flex h-full min-h-0 w-full min-w-0 flex-1 flex-col"
+            style={{ minHeight: 0 }}
           >
             <VideoCallRoom roomName={roomName} identity={identity} />
           </LiveKitRoom>
         </div>
       </ErrorBoundary>
     );
+    if (typeof document !== 'undefined') {
+      return createPortal(callUi, document.body);
+    }
+    return null;
   }
 
   // Pre-call UI

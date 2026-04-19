@@ -51,6 +51,7 @@ export async function POST(request: Request) {
       email: user.email,
       name: user.name,
       provider: user.provider,
+      phone: user.phone,
     });
 
     const res = NextResponse.json({ success: true, user: toPublicUser(user) });

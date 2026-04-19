@@ -103,6 +103,7 @@ export async function GET(req: Request) {
       email: user.email,
       name: user.name,
       provider: user.provider,
+      phone: user.phone,
     });
 
     const res = NextResponse.redirect(new URL(redirect, req.url));

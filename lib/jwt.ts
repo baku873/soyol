@@ -5,6 +5,7 @@ export type JwtPayload = {
   email?: string;
   name: string;
   provider: 'local' | 'google' | 'facebook';
+  phone?: string;
 };
 
 function getJwtSecret(): Uint8Array {
@@ -22,6 +23,7 @@ export async function signAuthJwt(payload: JwtPayload): Promise<string> {
     email: payload.email,
     name: payload.name,
     provider: payload.provider,
+    ...(payload.phone ? { phone: payload.phone } : {}),
   })
     .setProtectedHeader({ alg: 'HS256' })
     .setSubject(payload.userId)
@@ -35,10 +37,10 @@ export async function verifyAuthJwt(token: string): Promise<JwtPayload> {
   const { payload } = await jwtVerify(token, secret);
 
   const userId = (payload.userId ?? payload.sub) as string | undefined;
-  const name = payload.name as string | undefined;
+  const name = (payload.name as string | undefined) || 'Хэрэглэгч';
   const provider = payload.provider as JwtPayload['provider'] | undefined;
 
-  if (!userId || !name || !provider) {
+  if (!userId || !provider) {
     throw new Error('Invalid token payload');
   }
 
@@ -47,6 +49,7 @@ export async function verifyAuthJwt(token: string): Promise<JwtPayload> {
     email: payload.email as string | undefined,
     name,
     provider,
+    phone: payload.phone as string | undefined,
   };
 }
 

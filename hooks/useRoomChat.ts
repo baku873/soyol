@@ -15,7 +15,8 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import type { ChatMessage, AblyMessageData } from '@/types/chat-message';
-import { getAblyClient, closeAblyClient } from '@/lib/ably';
+import { getAblyClient } from '@/lib/ably';
+import { getAblyEnabled } from '@/lib/ablyConfig';
 import type Ably from 'ably';
 
 interface UseRoomChatOptions {
@@ -90,22 +91,19 @@ export function useRoomChat({
     }
   }, [roomId]);
 
-  // Initialize Ably channel and subscribe
+  // Initialize Ably channel and subscribe (skipped if ABLY_KEY is not set)
   useEffect(() => {
     if (!enabled || !roomId) return;
 
     mountedRef.current = true;
     loadHistory();
 
-    const ably = getAblyClient();
-    const channelName = `room-chat:${roomId}`;
-    const channel = ably.channels.get(channelName);
-    channelRef.current = channel;
+    let channel: Ably.RealtimeChannel | null = null;
+    let cancelled = false;
 
     const handleMessage = (message: Ably.Message) => {
       const data = message.data as AblyMessageData;
 
-      // Skip messages from self (we add them optimistically)
       if (data.senderId === senderId) return;
 
       if (!mountedRef.current) return;
@@ -121,32 +119,34 @@ export function useRoomChat({
       };
 
       setMessages((prev) => {
-        // Deduplicate by id
         if (prev.some((m) => m.id === chatMessage.id)) return prev;
         return [...prev, chatMessage];
       });
 
-      // Increment unread if panel is closed
       if (!isPanelOpenRef.current) {
         setUnreadCount((prev) => prev + 1);
       }
     };
 
-    channel.subscribe('message', handleMessage);
+    getAblyEnabled().then((ok) => {
+      if (!ok || cancelled || !mountedRef.current) return;
+      const ably = getAblyClient();
+      const channelName = `room-chat:${roomId}`;
+      channel = ably.channels.get(channelName);
+      channelRef.current = channel;
+      channel.subscribe('message', handleMessage);
+    });
 
     return () => {
+      cancelled = true;
       mountedRef.current = false;
-      channel.unsubscribe('message', handleMessage);
-      channel.detach();
+      if (channel) {
+        channel.unsubscribe('message', handleMessage);
+        channel.detach();
+      }
+      channelRef.current = null;
     };
   }, [enabled, roomId, senderId, loadHistory]);
-
-  // Cleanup Ably on unmount
-  useEffect(() => {
-    return () => {
-      closeAblyClient();
-    };
-  }, []);
 
   // Send a message
   const sendMessage = useCallback(

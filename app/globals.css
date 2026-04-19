@@ -504,3 +504,30 @@ body {
     -webkit-user-select: none;
   }
 }
+
+/* LiveKit root shell — fill the portaled full-screen wrapper */
+[data-lk-theme] .lk-room-container {
+  min-height: 0;
+  flex: 1 1 auto;
+  height: 100%;
+}
+
+/* LiveKit video call: stable height chain + predictable video framing (embedded / mobile) */
+[data-lk-theme] .lk-video-conference {
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+[data-lk-theme] .lk-grid-layout-wrapper,
+[data-lk-theme] .lk-focus-layout-wrapper {
+  min-height: 0;
+}
+
+[data-lk-theme] .lk-grid-layout {
+  min-height: 0;
+}
+
+[data-lk-theme] video.lk-participant-media-video,
+[data-lk-theme] .lk-participant-media-video video {
+  object-fit: contain;
+}

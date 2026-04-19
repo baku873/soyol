@@ -98,7 +98,7 @@ export default function BestProducts({ products }: BestProductsProps) {
                                 fill
                                 className="object-cover object-center lg:object-right-top scale-105" // Zoomed slightly for drama
                                 priority
-                                sizes="100vw"
+                                sizes="(max-width: 1500px) 100vw, 1500px"
                             />
                         </div>
 

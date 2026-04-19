@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useUser } from '@/context/AuthContext';
 import { getAblyClient } from '@/lib/ably';
+import { getAblyEnabled } from '@/lib/ablyConfig';
 import type { BroadcastPayload } from '@/lib/notificationBroadcast';
 
 export interface ClientNotification {
@@ -105,71 +106,85 @@ export function useNotifications(): UseNotificationsReturn {
     fetchUnreadCount();
   }, [isSignedIn, user?.id, fetchNotifications, fetchUnreadCount]);
 
-  // ── Ably real-time subscription ──
+  // ── Ably real-time (skip entirely if ABLY_KEY unset — see /api/ably/config) ──
   useEffect(() => {
     if (!isSignedIn || !user?.id) return;
 
     let mounted = true;
+    let ably: ReturnType<typeof getAblyClient> | null = null;
+    let onConnectedHandler: (() => void) | undefined;
 
-    try {
-      const ably = getAblyClient();
+    getAblyEnabled().then((ok) => {
+      if (!ok || !mounted) return;
+      ably = getAblyClient();
       const channelName = `notifications:${user.id}`;
-      const channel = ably.channels.get(channelName);
-      channelRef.current = channel;
 
-      channel.subscribe('new_notification', (msg) => {
-        if (!mounted) return;
-        const payload = msg.data as BroadcastPayload;
-        const clientNotif: ClientNotification = {
-          _id: payload._id,
-          type: payload.type,
-          title: payload.title,
-          body: payload.body,
-          data: payload.data,
-          priority: payload.priority,
-          createdAt: payload.createdAt,
-          isRead: false,
-        };
-
-        // Prepend to list (avoid duplicates)
-        setNotifications((prev) => {
-          if (prev.some((n) => n._id === clientNotif._id)) return prev;
-          return [clientNotif, ...prev];
-        });
-
-        // Bump unread count
-        setUnreadCount((prev) => prev + 1);
-
-        // Set as latest for toast display
-        setLatestRealtime(clientNotif);
-
-        // Play sound
+      const attach = () => {
+        if (!mounted || !ably) return;
         try {
-          const audio = new Audio(NOTIFICATION_SOUND_URL);
-          audio.volume = 0.3;
-          audio.play().catch(() => {});
-        } catch {}
+          const channel = ably.channels.get(channelName);
+          channelRef.current = channel;
 
-        // Browser notification if tab not active
-        if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-          new Notification(payload.title, {
-            body: payload.body,
-            icon: '/favicon.ico',
+          channel.subscribe('new_notification', (msg) => {
+            if (!mounted) return;
+            const payload = msg.data as BroadcastPayload;
+            const clientNotif: ClientNotification = {
+              _id: payload._id,
+              type: payload.type,
+              title: payload.title,
+              body: payload.body,
+              data: payload.data,
+              priority: payload.priority,
+              createdAt: payload.createdAt,
+              isRead: false,
+            };
+
+            setNotifications((prev) => {
+              if (prev.some((n) => n._id === clientNotif._id)) return prev;
+              return [clientNotif, ...prev];
+            });
+
+            setUnreadCount((prev) => prev + 1);
+            setLatestRealtime(clientNotif);
+
+            try {
+              const audio = new Audio(NOTIFICATION_SOUND_URL);
+              audio.volume = 0.3;
+              audio.play().catch(() => {});
+            } catch {}
+
+            if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+              new Notification(payload.title, {
+                body: payload.body,
+                icon: '/favicon.ico',
+              });
+            }
           });
-        }
-      });
 
-      channel.subscribe('unread_count', (msg) => {
-        if (!mounted) return;
-        const data = msg.data as { count: number };
-        setUnreadCount(data.count);
-      });
-    } catch (err) {
-      console.error('[useNotifications] Ably subscription error:', err);
-    }
+          channel.subscribe('unread_count', (msg) => {
+            if (!mounted) return;
+            const data = msg.data as { count: number };
+            setUnreadCount(data.count);
+          });
+        } catch (err) {
+          console.warn('[useNotifications] Ably channel attach failed:', err);
+        }
+      };
+
+      onConnectedHandler = () => attach();
+
+      if (ably.connection.state === 'connected') {
+        attach();
+      } else {
+        ably.connection.on('connected', onConnectedHandler);
+      }
+    });
 
     return () => {
       mounted = false;
+      if (ably && onConnectedHandler) {
+        ably.connection.off('connected', onConnectedHandler);
+      }
       if (channelRef.current) {
         channelRef.current.unsubscribe();
         channelRef.current = null;

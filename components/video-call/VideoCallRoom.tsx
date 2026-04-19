@@ -7,15 +7,15 @@
 
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import {
   VideoConference,
   RoomAudioRenderer,
+  DisconnectButton,
   useParticipants,
-  useRoomContext,
 } from '@livekit/components-react';
 import '@livekit/components-styles';
-import { MessageCircle, Ban, Users } from 'lucide-react';
+import { MessageCircle, Ban, Users, PhoneOff } from 'lucide-react';
 import toast from 'react-hot-toast';
 import RoomEventHandler from './RoomEventHandler';
 import ChatPanel from './ChatPanel';
@@ -74,7 +74,7 @@ export default function VideoCallRoom({ roomName, identity }: VideoCallRoomProps
   }, []);
 
   return (
-    <div className="relative w-full h-full flex">
+    <div className="relative flex h-full min-h-0 w-full min-w-0 flex-row">
       {/* Room Event Handler — headless, runs inside LiveKitRoom */}
       <RoomEventHandler
         onConnectionStateChange={handleConnectionStateChange}
@@ -93,8 +93,8 @@ export default function VideoCallRoom({ roomName, identity }: VideoCallRoomProps
         permissionError={null}
       />
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col relative">
+      {/* Main Content Area — min-w-0 min-h-0 so LiveKit grid gets a real height and doesn’t squash */}
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col">
         {/* Top bar with room info + chat toggle */}
         <div className="absolute top-0 left-0 right-0 z-30 flex items-center justify-between p-3 pointer-events-none">
           {/* Left: Room info */}
@@ -130,9 +130,21 @@ export default function VideoCallRoom({ roomName, identity }: VideoCallRoomProps
           </div>
         </div>
 
-        {/* LiveKit VideoConference — the full built-in UI */}
-        <div className="flex-1">
+        {/* LiveKit VideoConference — prefab control bar can be clipped in nested/mobile layouts */}
+        <div className="relative flex min-h-0 flex-1 flex-col [&_.lk-video-conference]:flex [&_.lk-video-conference]:min-h-0 [&_.lk-video-conference]:h-full [&_.lk-video-conference]:flex-1">
           <VideoConference />
+          <div
+            className={`pointer-events-none absolute left-0 right-0 z-[80] flex justify-center px-3 pt-2 transition-[bottom] duration-200 ease-out ${
+              isChatOpen
+                ? 'bottom-[calc(58vh+0.75rem)] pb-0 md:bottom-0 md:pb-[max(0.75rem,env(safe-area-inset-bottom))]'
+                : 'bottom-0 pb-[max(0.75rem,env(safe-area-inset-bottom))]'
+            }`}
+          >
+            <DisconnectButton className="pointer-events-auto inline-flex items-center justify-center gap-2 rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white shadow-lg shadow-red-900/40 hover:bg-red-700 active:scale-[0.98] transition-transform">
+              <PhoneOff className="h-5 w-5 shrink-0" aria-hidden />
+              Дуудлага таслах
+            </DisconnectButton>
+          </div>
         </div>
 
         {/* Ban Controls */}

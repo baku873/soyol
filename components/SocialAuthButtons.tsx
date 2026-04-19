@@ -39,9 +39,9 @@ export default function SocialAuthButtons({ mode, oauthRedirect = '/dashboard' }
   return (
     <div className="space-y-3">
       {/* Divider */}
-      <div className="flex items-center gap-3 my-4">
+      <div className="flex items-center gap-3 my-5">
         <div className="flex-1 h-px bg-slate-200" />
-        <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">эсвэл</span>
+        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-[0.15em]">ЭСВЭЛ</span>
         <div className="flex-1 h-px bg-slate-200" />
       </div>
 
@@ -53,7 +53,7 @@ export default function SocialAuthButtons({ mode, oauthRedirect = '/dashboard' }
           setLoadingProvider('google');
           window.location.href = googleStartUrl;
         }}
-        className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white border-2 border-slate-200 hover:border-slate-300 hover:bg-slate-50 rounded-2xl transition-all disabled:opacity-60 disabled:cursor-not-allowed font-bold text-sm text-slate-700 shadow-sm"
+        className="w-full flex items-center justify-center gap-3 py-3.5 px-4 bg-white border border-sky-200/90 hover:border-sky-300 hover:bg-slate-50/80 rounded-2xl transition-all disabled:opacity-60 disabled:cursor-not-allowed font-bold text-sm text-[#0f172a] shadow-sm"
       >
         {loadingProvider === 'google' ? <Loader2 className="w-5 h-5 animate-spin" /> : <GoogleIcon />}
         Google-ээр {mode === 'signIn' ? 'нэвтрэх' : 'бүртгүүлэх'}

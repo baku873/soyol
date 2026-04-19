@@ -57,7 +57,11 @@ export default function ChatPanel({
   if (!isOpen) return null;
 
   return (
-    <div className="w-80 md:w-96 h-full flex flex-col bg-slate-900/95 backdrop-blur-xl border-l border-white/10 absolute right-0 top-0 bottom-0 z-40 md:relative">
+    <div
+      className="z-[60] flex flex-col bg-slate-900/98 backdrop-blur-xl border-white/10 shadow-2xl
+        fixed bottom-0 left-0 right-0 max-h-[min(58vh,100%)] h-[min(58vh,100%)] w-full rounded-t-3xl border-t
+        md:absolute md:inset-y-0 md:right-0 md:left-auto md:top-0 md:bottom-0 md:h-full md:max-h-none md:w-96 md:rounded-none md:border-l md:border-t-0"
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-white/10 shrink-0">
         <div className="flex items-center gap-2">

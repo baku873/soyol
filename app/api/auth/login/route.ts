@@ -3,14 +3,11 @@ import { z } from 'zod';
 import bcrypt from 'bcryptjs';
 import { requireCsrf } from '@/lib/csrf';
 import { rateLimitLogin } from '@/lib/rateLimit';
-import { findUserByEmail, toPublicUser } from '@/lib/users';
+import { findUserByEmail, findUserByPhoneLoose, toPublicUser } from '@/lib/users';
 import { signAuthJwt } from '@/lib/jwt';
 import { setAuthCookie } from '@/lib/authCookies';
 
-const LoginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(1),
-});
+const PasswordSchema = z.string().min(1, 'Нууц үг шаардлагатай');
 
 function getClientIp(req: Request): string {
   const forwarded = req.headers.get('x-forwarded-for');
@@ -29,9 +26,24 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { email, password } = LoginSchema.parse(body);
+    const password = PasswordSchema.parse(body.password);
 
-    const user = await findUserByEmail(email);
+    const emailRaw = typeof body.email === 'string' ? body.email.trim() : '';
+    const phoneRaw = typeof body.phone === 'string' ? body.phone.trim() : '';
+    const phoneDigits = phoneRaw.replace(/\D/g, '');
+    const emailOk = emailRaw.length > 0 && z.string().email().safeParse(emailRaw).success;
+
+    let user: Awaited<ReturnType<typeof findUserByEmail>> = null;
+    if (emailOk) {
+      user = await findUserByEmail(emailRaw.toLowerCase());
+    } else if (phoneDigits.length >= 8) {
+      user = await findUserByPhoneLoose(phoneRaw);
+    } else {
+      return NextResponse.json(
+        { error: 'Утасны дугаар (8+ орон) эсвэл зөв и-мэйл оруулна уу' },
+        { status: 400 },
+      );
+    }
     if (!user) {
       console.warn('[auth/login] failed', { at: new Date().toISOString(), ip, reason: 'user_not_found' });
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
@@ -50,8 +62,9 @@ export async function POST(request: Request) {
     const token = await signAuthJwt({
       userId: user._id!.toString(),
       email: user.email,
-      name: user.name,
+      name: user.name || 'Хэрэглэгч',
       provider: user.provider,
+      phone: user.phone,
     });
 
     const res = NextResponse.json({ success: true, user: toPublicUser(user) });
