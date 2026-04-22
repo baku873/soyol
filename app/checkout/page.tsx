@@ -395,7 +395,7 @@ export default function CheckoutPage() {
                 {selectedAddressId ? (() => {
                   const addr = addresses?.find(a => a.id === selectedAddressId);
                   return addr || addressTab === 'new' ? (
-                    <div 
+                    <div
                       onClick={() => setIsAddressSheetOpen(true)}
                       className="p-4 rounded-xl border border-gray-200 hover:border-orange-500 bg-white cursor-pointer transition-all flex items-center justify-between group"
                     >
@@ -424,7 +424,7 @@ export default function CheckoutPage() {
                     </div>
                   ) : null;
                 })() : (
-                  <button 
+                  <button
                     type="button"
                     onClick={() => setIsAddressSheetOpen(true)}
                     className="w-full p-5 rounded-xl border-2 border-dashed border-gray-200 hover:border-orange-500 bg-gray-50 hover:bg-orange-50/50 transition-all flex items-center justify-center gap-2 text-gray-500 hover:text-orange-600 font-bold"
@@ -447,7 +447,7 @@ export default function CheckoutPage() {
                       <h4 className="font-bold text-gray-900 mb-1">Төв салбар</h4>
                       <p className="text-sm text-gray-600 mb-2">Ундрам плаза Unic office 5давхар 501тоот</p>
                       <p className="text-sm text-gray-600"><span className="font-semibold">Цагийн хуваарь:</span> 10:00 - 20:00 (Өдөр бүр)</p>
-                      <p className="text-sm text-gray-600 mt-1"><span className="font-semibold">Утас:</span> 7711-8899</p>
+                      <p className="text-sm text-gray-600 mt-1"><span className="font-semibold">Утас:</span> 77181818</p>
 
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <p className="text-xs text-orange-600 font-medium bg-orange-50 px-3 py-2 rounded-lg inline-block">
@@ -613,7 +613,7 @@ export default function CheckoutPage() {
       <AnimatePresence>
         {isAddressSheetOpen && (
           <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4">
-            <motion.div 
+            <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -623,7 +623,7 @@ export default function CheckoutPage() {
               }}
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             />
-            <motion.div 
+            <motion.div
               initial={{ y: '100%' }}
               animate={{ y: 0 }}
               exit={{ y: '100%' }}
@@ -634,7 +634,7 @@ export default function CheckoutPage() {
                 <h3 className="text-lg font-bold text-gray-900">
                   {addressTab === 'new' ? 'Шинэ хаяг нэмэх' : 'Хүргэлтийн хаяг сонгох'}
                 </h3>
-                <button 
+                <button
                   type="button"
                   onClick={() => {
                     if (addressTab === 'new' && addresses && addresses.length > 0) {
@@ -666,11 +666,10 @@ export default function CheckoutPage() {
                                 setAddressTab('saved');
                                 setIsAddressSheetOpen(false);
                               }}
-                              className={`p-5 rounded-[20px] border-2 cursor-pointer transition-all flex items-start gap-4 ${
-                                selectedAddressId === addr.id 
-                                  ? 'border-orange-500 bg-orange-50/30 shadow-[0_4px_20px_rgba(249,115,22,0.1)]' 
+                              className={`p-5 rounded-[20px] border-2 cursor-pointer transition-all flex items-start gap-4 ${selectedAddressId === addr.id
+                                  ? 'border-orange-500 bg-orange-50/30 shadow-[0_4px_20px_rgba(249,115,22,0.1)]'
                                   : 'border-transparent bg-white shadow-sm hover:border-orange-200'
-                              }`}
+                                }`}
                             >
                               <div className={`mt-1 w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${selectedAddressId === addr.id ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : 'bg-orange-50 text-orange-500'}`}>
                                 <MapPin className="w-6 h-6" strokeWidth={2.5} />
@@ -679,7 +678,7 @@ export default function CheckoutPage() {
                                 <div className="flex items-center gap-2 mb-1">
                                   <h3 className="text-[16px] font-bold text-gray-900">{addr.label || 'Гэрийн хаяг'}</h3>
                                   {addr.isDefault && <span className="text-[10px] bg-[#FF6B00] text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-tighter">Үндсэн</span>}
-                                  {selectedAddressId === addr.id && <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold ml-auto flex items-center gap-1"><Check className="w-3 h-3"/>Сонгосон</span>}
+                                  {selectedAddressId === addr.id && <span className="text-[10px] bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-bold ml-auto flex items-center gap-1"><Check className="w-3 h-3" />Сонгосон</span>}
                                 </div>
                                 <p className="text-[14px] text-gray-600 font-medium leading-[1.6]">
                                   {addr.city}, {addr.district}, {addr.khoroo}-р хороо
@@ -690,7 +689,7 @@ export default function CheckoutPage() {
                               </div>
                             </div>
                           ))}
-                        
+
                         <button
                           type="button"
                           onClick={() => {
@@ -701,7 +700,7 @@ export default function CheckoutPage() {
                           className="w-full mt-4 p-5 rounded-[20px] border-2 border-dashed border-gray-200 hover:border-orange-500 bg-white hover:bg-orange-50/50 transition-all flex flex-col items-center justify-center gap-3 text-gray-500 hover:text-orange-600 group active:scale-[0.98]"
                         >
                           <div className="w-12 h-12 rounded-full bg-gray-50 group-hover:bg-white flex items-center justify-center transition-colors">
-                             <Plus className="w-6 h-6" strokeWidth={2.5} />
+                            <Plus className="w-6 h-6" strokeWidth={2.5} />
                           </div>
                           <span className="font-bold text-sm tracking-wide">Шинэ хаяг нэмэх</span>
                         </button>
@@ -709,7 +708,7 @@ export default function CheckoutPage() {
                     ) : (
                       <div className="text-center py-12 bg-white rounded-[20px] border border-gray-100 shadow-sm">
                         <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-5">
-                            <MapPin className="w-10 h-10 text-orange-500" />
+                          <MapPin className="w-10 h-10 text-orange-500" />
                         </div>
                         <h3 className="text-[18px] font-bold text-gray-900 mb-3">Одоогоор хаяг байхгүй байна</h3>
                         <p className="text-[15px] text-gray-500 mb-8 max-w-[250px] mx-auto leading-relaxed">Та хүргэлтийн хаягаа нэмснээр захиалга хийхэд хялбар болох болно.</p>
@@ -848,37 +847,37 @@ export default function CheckoutPage() {
                     </div>
 
                     {isSignedIn && (
-                    <div className="pt-2">
-                      <label className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 cursor-pointer hover:bg-orange-50/50 transition-colors border border-transparent hover:border-orange-100">
-                        <div className="flex items-center gap-3">
+                      <div className="pt-2">
+                        <label className="flex items-center justify-between p-4 rounded-2xl bg-gray-50 cursor-pointer hover:bg-orange-50/50 transition-colors border border-transparent hover:border-orange-100">
+                          <div className="flex items-center gap-3">
                             <div className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all ${saveAddress ? 'bg-[#FF6B00]' : 'bg-gray-200'}`}>
                               {saveAddress && <Check className="w-4 h-4 text-white" strokeWidth={4} />}
                             </div>
                             <span className="text-[14px] font-bold text-gray-700">Энэ хаягийг хадгалах</span>
-                        </div>
-                        <input
-                          type="checkbox"
-                          checked={saveAddress}
-                          onChange={(e) => setSaveAddress(e.target.checked)}
-                          className="hidden"
-                        />
-                      </label>
-                    </div>
+                          </div>
+                          <input
+                            type="checkbox"
+                            checked={saveAddress}
+                            onChange={(e) => setSaveAddress(e.target.checked)}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
                     )}
 
-                    <button 
-                        type="button"
-                        onClick={() => {
-                            if (!formData.district || !formData.street) {
-                                toast.error('Дүүрэг болон гудамж байраа оруулна уу');
-                                return;
-                            }
-                            setIsAddressSheetOpen(false);
-                            toast.success('Шинэ хаяг баталгаажлаа');
-                        }}
-                        className="w-full py-4 mt-2 bg-[#FF6B00] text-white text-[16px] font-bold rounded-2xl shadow-[0_8px_20px_rgba(255,107,0,0.25)] active:scale-[0.98] transition-all"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!formData.district || !formData.street) {
+                          toast.error('Дүүрэг болон гудамж байраа оруулна уу');
+                          return;
+                        }
+                        setIsAddressSheetOpen(false);
+                        toast.success('Шинэ хаяг баталгаажлаа');
+                      }}
+                      className="w-full py-4 mt-2 bg-[#FF6B00] text-white text-[16px] font-bold rounded-2xl shadow-[0_8px_20px_rgba(255,107,0,0.25)] active:scale-[0.98] transition-all"
                     >
-                        Батлах
+                      Батлах
                     </button>
                   </div>
                 )}

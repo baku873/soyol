@@ -81,9 +81,6 @@ export default function CareersPage() {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl font-black text-gray-900 mb-8 uppercase tracking-tight">
-              Яагаад <span className="text-soyol underline decoration-4 underline-offset-8">Soyol</span>-д ажиллах вэ?
-            </h2>
             <div className="space-y-6">
               <div className="flex gap-4 p-6 rounded-3xl bg-gray-50 hover:bg-white hover:shadow-xl transition-all duration-300 border border-transparent hover:border-gray-100 group">
                 <div className="w-12 h-12 rounded-2xl bg-soyol/10 flex items-center justify-center shrink-0 group-hover:bg-soyol group-hover:text-white transition-colors">

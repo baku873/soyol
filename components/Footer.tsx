@@ -144,8 +144,6 @@ export default function Footer() {
             <ul className="space-y-3">
               {[
                 { label: t('footer', 'helpCenter'), href: '#' },
-                { label: t('footer', 'trackOrder'), href: '#' },
-                { label: t('footer', 'returns'), href: '#' },
                 { label: t('footer', 'shippingInfo'), href: '#' },
                 { label: t('footer', 'contactUs'), href: '#' }
               ].map((item) => (
@@ -158,77 +156,91 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Column 4: Newsletter & Social */}
+          {/* Column 4: Connect & Community */}
           <div className="lg:col-span-4 space-y-8">
+
+            {/* Newsletter Subscription */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">{t('footer', 'stayConnected')}</h3>
-              <p className="text-sm text-gray-400">
-                {t('footer', 'newsletterDesc')}
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
+                <Mail className="w-4 h-4 text-orange-500" />
+                {t('footer', 'followUs')}
+              </h3>
+              <p className="text-xs text-gray-500 leading-relaxed">
+                Get exclusive deals, new arrivals & flash sale alerts straight to your inbox.
               </p>
-              <form onSubmit={handleSubscribe} className="relative">
-                <Mail className="absolute left-3 top-3.5 w-5 h-5 text-gray-500" />
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder={t('footer', 'emailPlaceholder')}
-                  className="w-full pl-10 pr-12 py-3 bg-gray-900 border border-gray-800 rounded-xl text-sm text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500 transition-all"
-                />
-                <button
-                  type="submit"
-                  className="absolute right-2 top-2 p-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
-                >
-                  <ArrowRight className="w-4 h-4" />
-                </button>
+              <form onSubmit={handleSubscribe} className="relative group">
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 via-pink-500/20 to-purple-500/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="relative flex items-center bg-gray-900 border border-gray-800 rounded-xl overflow-hidden group-hover:border-gray-700 transition-colors duration-300">
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="Enter your email"
+                    className="flex-1 bg-transparent text-sm text-white placeholder-gray-600 px-4 py-3 outline-none"
+                    required
+                  />
+                  <button
+                    type="submit"
+                    className="m-1.5 px-4 py-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xs font-bold rounded-lg transition-all duration-300 flex items-center gap-1.5 shrink-0 active:scale-95"
+                  >
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </form>
             </div>
 
+            {/* Social & Community */}
             <div className="space-y-4">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">{t('footer', 'followUs')}</h3>
-              <div className="flex gap-3">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{t('footer', 'followUs')}</h3>
+              <div className="flex flex-wrap gap-3">
                 {[
-                  { icon: Facebook, href: 'https://www.facebook.com/SoyolVideoShop', color: 'hover:bg-[#1877F2]' },
-                  { icon: Instagram, href: 'https://www.instagram.com/soyol_video_shop_85552229?fbclid=IwY2xjawQp1StleHRuA2FlbQIxMABicmlkETFpTVQ3UFNjSnRHS1AwM2hRc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHrapwSQbsGwv4dnai3_DWxT19gEY_qrPvaLw5XLyzLLWsGed40Iv4OBa8dPR_aem_3zR16bzS5qD0MkQDnyBecw', color: 'hover:bg-[#E4405F]' },
-                  { icon: MessageCircle, href: 'https://whatsapp.com', color: 'hover:bg-[#25D366]' },
+                  { icon: Facebook, href: 'https://www.facebook.com/SoyolVideoShop', label: 'Facebook', gradient: 'from-[#1877F2] to-[#0C5DC7]' },
+                  { icon: Instagram, href: 'https://www.instagram.com/soyol_video_shop_85552229?fbclid=IwY2xjawQp1StleHRuA2FlbQIxMABicmlkETFpTVQ3UFNjSnRHS1AwM2hRc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHrapwSQbsGwv4dnai3_DWxT19gEY_qrPvaLw5XLyzLLWsGed40Iv4OBa8dPR_aem_3zR16bzS5qD0MkQDnyBecw', label: 'Instagram', gradient: 'from-[#F58529] via-[#DD2A7B] to-[#8134AF]' },
+                  { icon: MessageCircle, href: 'https://whatsapp.com', label: 'WhatsApp', gradient: 'from-[#25D366] to-[#128C7E]' },
                 ].map((social, i) => (
                   <a
                     key={i}
                     href={social.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`w-10 h-10 flex items-center justify-center bg-gray-900 rounded-full text-gray-400 transition-all duration-300 ${social.color} hover:text-white`}
+                    aria-label={social.label}
+                    className="group/social relative"
                   >
-                    <social.icon className="w-5 h-5" />
+                    <div className={`absolute inset-0 bg-gradient-to-br ${social.gradient} rounded-xl opacity-0 group-hover/social:opacity-100 transition-opacity duration-300 blur-sm`} />
+                    <div className={`relative w-11 h-11 flex items-center justify-center bg-gray-900 border border-gray-800 rounded-xl text-gray-500 transition-all duration-300 group-hover/social:bg-gradient-to-br ${social.gradient} group-hover/social:text-white group-hover/social:border-transparent group-hover/social:scale-110 group-hover/social:shadow-lg`}>
+                      <social.icon className="w-5 h-5" />
+                    </div>
                   </a>
                 ))}
               </div>
             </div>
 
-            <div className="space-y-4 pt-2">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider">{t('footer', 'facebookGroups')}</h3>
-              <div className="flex items-center gap-3">
-                <a
-                  href="https://www.facebook.com/groups/1075978082545812"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={t('footer', 'group1')}
-                  title={t('footer', 'group1')}
-                  className="w-12 h-12 flex items-center justify-center rounded-2xl bg-gray-900 border border-gray-800 text-gray-300 transition-all hover:border-[#1877F2] hover:text-white hover:bg-[#1877F2]/20"
-                >
-                  <Facebook className="w-6 h-6" />
-                </a>
-                <a
-                  href="https://www.facebook.com/groups/soyolvideoshop"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={t('footer', 'group2')}
-                  title={t('footer', 'group2')}
-                  className="w-12 h-12 flex items-center justify-center rounded-2xl bg-gray-900 border border-gray-800 text-gray-300 transition-all hover:border-[#1877F2] hover:text-white hover:bg-[#1877F2]/20"
-                >
-                  <Facebook className="w-6 h-6" />
-                </a>
+            {/* Facebook Groups — icon-only buttons */}
+            <div className="space-y-4">
+              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{t('footer', 'facebookGroups')}</h3>
+              <div className="flex gap-3">
+                {[
+                  { href: 'https://www.facebook.com/groups/1075978082545812', label: t('footer', 'group1') },
+                  { href: 'https://www.facebook.com/groups/soyolvideoshop', label: t('footer', 'group2') },
+                ].map((group, i) => (
+                  <a
+                    key={i}
+                    href={group.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={group.label}
+                    title={group.label}
+                    className="group/grp relative"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-br from-[#1877F2] to-[#0C5DC7] rounded-xl opacity-0 group-hover/grp:opacity-100 transition-opacity duration-300 blur-sm" />
+                    <div className="relative w-11 h-11 flex items-center justify-center bg-gray-900 border border-gray-800 rounded-xl text-gray-500 transition-all duration-300 group-hover/grp:bg-gradient-to-br group-hover/grp:from-[#1877F2] group-hover/grp:to-[#0C5DC7] group-hover/grp:text-white group-hover/grp:border-transparent group-hover/grp:scale-110 group-hover/grp:shadow-lg">
+                      <Facebook className="w-5 h-5" />
+                    </div>
+                  </a>
+                ))}
               </div>
             </div>
+
           </div>
         </div>
       </div>

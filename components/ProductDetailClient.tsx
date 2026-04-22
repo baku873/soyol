@@ -22,6 +22,8 @@ import {
   FileText,
   List,
   Check,
+  Headphones,
+  CreditCard,
 } from "lucide-react";
 import useSWR from "swr";
 import { useAuth } from "../context/AuthContext";
@@ -134,6 +136,12 @@ export default function ProductDetailClient({
 
   const { addItem, toggleAllSelection } = useCartStore();
   const { t } = useTranslation();
+  const trustBadges = [
+    { icon: ShieldCheck, title: t('footer', 'securePayment'), desc: t('footer', 'securePaymentDesc') },
+    { icon: Truck, title: t('footer', 'fastDelivery'), desc: t('footer', 'fastDeliveryDesc') },
+    { icon: Headphones, title: t('footer', 'support247'), desc: t('footer', 'support247Desc') },
+    { icon: CreditCard, title: t('footer', 'moneyBack'), desc: t('footer', 'moneyBackDesc') },
+  ];
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -716,28 +724,8 @@ export default function ProductDetailClient({
 
                 {/* Trust badges */}
                 <div className="flex flex-col gap-3">
-                  {[
-                    {
-                      icon: Truck,
-                      label:
-                        !product.sections?.includes("Захиалга") ||
-                          product.sections?.includes("Бэлэн")
-                          ? "Хурдан хүргэлт"
-                          : "7–14 хоногт хүргэнэ",
-                      sub: "Улаанбаатар хотын А, Б бүсэд",
-                    },
-                    {
-                      icon: ShieldCheck,
-                      label: "24/7 Тусламж",
-                      sub: "Хэзээ ч холбогдох боломжтой",
-                    },
-                    {
-                      icon: RotateCcw,
-                      label: "Хялбар төлбөр",
-                      sub: "Хамгийн хямд үнээр",
-                    },
-                  ].map(({ icon: Icon, label, sub }) => (
-                    <div key={label} className="flex items-center gap-3">
+                  {trustBadges.map(({ icon: Icon, title, desc }) => (
+                    <div key={title} className="flex items-center gap-3">
                       <div className="w-7 h-7 rounded-lg bg-black/[0.04] flex items-center justify-center shrink-0">
                         <Icon
                           className="w-3.5 h-3.5 text-black/50"
@@ -746,9 +734,11 @@ export default function ProductDetailClient({
                       </div>
                       <div>
                         <p className="text-[12px] font-medium text-black">
-                          {label}
+                          {title}
                         </p>
-                        <p className="text-[11px] text-black/40">{sub}</p>
+                        <p className="text-[11px] text-black/40">
+                          {desc}
+                        </p>
                       </div>
                     </div>
                   ))}

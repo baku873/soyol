@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
     BarChart3, Package, Layers, ShoppingCart, MessageCircle,
-    ArrowLeft, Menu, X, Building2, LogOut, Image as ImageIcon, TrendingUp, Users
+    ArrowLeft, Menu, X, Building2, LogOut, Image as ImageIcon, TrendingUp, Users, Mail
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 import useSWR from 'swr';
@@ -45,6 +45,8 @@ export default function AdminSidebar() {
         { href: '/admin/orders', icon: ShoppingCart, label: 'Захиалгууд', badge: pendingCount, badgeColor: 'bg-red-500', shortcut: 'G + O' },
         { href: '/admin/categories', icon: Layers, label: 'Ангилал', shortcut: null },
         { href: '/admin/messages', icon: MessageCircle, label: 'Мессеж & Дуудлага', badge: unreadMessagesCount, badgeColor: 'bg-blue-500', shortcut: 'G + M' },
+        { href: '/admin/notifications', icon: Mail, label: 'Email Campaigns', shortcut: null },
+        { href: '/admin/video', icon: Building2, label: 'Video Calls', shortcut: null },
     ];
 
     const isActive = (href: string) => {

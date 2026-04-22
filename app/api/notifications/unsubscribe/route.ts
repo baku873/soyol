@@ -24,6 +24,11 @@ export async function GET(req: NextRequest) {
   const token = searchParams.get('token');
   const type = searchParams.get('type');
 
+  // ─── Promotional email unsubscribe (base64 userId, no type param) ───
+  if (token && !type) {
+    return handlePromotionalUnsubscribe(token);
+  }
+
   if (!token || !type) {
     return renderPage('Буруу холбоос', 'Холбоос буруу байна. Дахин оролдоно уу.', false);
   }
@@ -61,6 +66,42 @@ export async function GET(req: NextRequest) {
     return renderPage('Амжилттай', `Та "${typeLabel(notifType)}" мэдэгдлийг имэйлээр хүлээн авахаа зогсоолоо.`, true);
   } catch (err) {
     console.error('[Unsubscribe] Error:', err);
+    return renderPage('Алдаа', 'Алдаа гарлаа. Дахин оролдоно уу.', false);
+  }
+}
+
+/**
+ * Handle promotional email unsubscribe (Temu-style emails).
+ * Token is base64-encoded userId. Sets subscribedToEmails = false.
+ */
+async function handlePromotionalUnsubscribe(token: string) {
+  let userId: string;
+  try {
+    userId = Buffer.from(token, 'base64').toString('utf-8');
+    new ObjectId(userId); // validate
+  } catch {
+    return renderPage('Буруу холбоос', 'Холбоос буруу байна.', false);
+  }
+
+  try {
+    const users = await getCollection('users');
+    const result = await users.updateOne(
+      { _id: new ObjectId(userId) },
+      { $set: { subscribedToEmails: false, updatedAt: new Date() } },
+    );
+
+    if (result.matchedCount === 0) {
+      return renderPage('Хэрэглэгч олдсонгүй', 'Таны бүртгэл олдсонгүй.', false);
+    }
+
+    console.log(`[Unsubscribe] User ${userId} unsubscribed from promotional emails`);
+    return renderPage(
+      'Амжилттай',
+      'Та сурталчилгааны имэйл хүлээн авахаа зогсоолоо. Dashboard-аас дахин бүртгүүлэх боломжтой.',
+      true,
+    );
+  } catch (err) {
+    console.error('[Unsubscribe] Promotional error:', err);
     return renderPage('Алдаа', 'Алдаа гарлаа. Дахин оролдоно уу.', false);
   }
 }
