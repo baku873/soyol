@@ -107,6 +107,7 @@ export async function GET(req: Request) {
       name: user.name,
       provider: user.provider,
       phone: user.phone,
+      role: user.role || 'user',
     });
 
     const res = NextResponse.redirect(new URL(redirect, req.url));

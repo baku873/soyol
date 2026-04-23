@@ -31,7 +31,7 @@
         "store/*"
       ],
       "@models/*": [
-        "models/*"
+        "types/*"
       ]
     },
     "incremental": true,

@@ -11,7 +11,6 @@ function createRouteMatcher(patterns: string[]) {
   };
 }
 
-const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
 const isPublicRoute = createRouteMatcher([
   '/',
   '/login(.*)',
@@ -19,35 +18,77 @@ const isPublicRoute = createRouteMatcher([
   '/api/auth(.*)',
 ]);
 
+const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
+const isAdminRoute = createRouteMatcher(['/admin(.*)']);
+
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Always allow public routes through without our JWT check.
   if (isPublicRoute(req)) return NextResponse.next();
 
-  // Only protect dashboard routes with OUR JWT.
-  if (!isProtectedRoute(req)) return NextResponse.next();
+  // ── Admin routes: require valid JWT + role === 'admin' ──────────
+  if (isAdminRoute(req)) {
+    const token = req.cookies.get('auth_token')?.value;
 
-  const token = req.cookies.get('auth_token')?.value;
-  if (!token) {
-    const url = new URL('/login', req.url);
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
+    // No token → redirect to login with a redirect-back param
+    if (!token) {
+      const url = new URL('/login', req.url);
+      url.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(url);
+    }
+
+    try {
+      const payload = await verifyAuthJwt(token);
+
+      // Authenticated but NOT admin → send home
+      if (payload.role !== 'admin') {
+        return NextResponse.redirect(new URL('/', req.url));
+      }
+
+      // Admin ✓ — forward identity headers to downstream server components
+      const headers = new Headers(req.headers);
+      headers.set('x-auth-user-id', payload.userId);
+      if (payload.email) headers.set('x-auth-user-email', payload.email);
+      headers.set('x-auth-user-name', payload.name);
+      headers.set('x-auth-user-provider', payload.provider);
+      headers.set('x-auth-user-role', payload.role);
+      return NextResponse.next({ request: { headers } });
+    } catch {
+      // Invalid / expired token → redirect to login
+      const url = new URL('/login', req.url);
+      url.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(url);
+    }
   }
 
-  try {
-    const payload = await verifyAuthJwt(token);
-    const headers = new Headers(req.headers);
-    headers.set('x-auth-user-id', payload.userId);
-    if (payload.email) headers.set('x-auth-user-email', payload.email);
-    headers.set('x-auth-user-name', payload.name);
-    headers.set('x-auth-user-provider', payload.provider);
-    return NextResponse.next({ request: { headers } });
-  } catch {
-    const url = new URL('/login', req.url);
-    url.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(url);
+  // ── Dashboard routes: require valid JWT (any role) ─────────────
+  if (isProtectedRoute(req)) {
+    const token = req.cookies.get('auth_token')?.value;
+    if (!token) {
+      const url = new URL('/login', req.url);
+      url.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(url);
+    }
+
+    try {
+      const payload = await verifyAuthJwt(token);
+      const headers = new Headers(req.headers);
+      headers.set('x-auth-user-id', payload.userId);
+      if (payload.email) headers.set('x-auth-user-email', payload.email);
+      headers.set('x-auth-user-name', payload.name);
+      headers.set('x-auth-user-provider', payload.provider);
+      if (payload.role) headers.set('x-auth-user-role', payload.role);
+      return NextResponse.next({ request: { headers } });
+    } catch {
+      const url = new URL('/login', req.url);
+      url.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(url);
+    }
   }
+
+  // All other routes pass through
+  return NextResponse.next();
 }
 
 export const config = {

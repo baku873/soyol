@@ -6,6 +6,7 @@ export type JwtPayload = {
   name: string;
   provider: 'local' | 'google' | 'facebook';
   phone?: string;
+  role?: string;
 };
 
 function getJwtSecret(): Uint8Array {
@@ -23,6 +24,7 @@ export async function signAuthJwt(payload: JwtPayload): Promise<string> {
     email: payload.email,
     name: payload.name,
     provider: payload.provider,
+    role: payload.role || 'user',
     ...(payload.phone ? { phone: payload.phone } : {}),
   })
     .setProtectedHeader({ alg: 'HS256' })
@@ -50,6 +52,6 @@ export async function verifyAuthJwt(token: string): Promise<JwtPayload> {
     name,
     provider,
     phone: payload.phone as string | undefined,
+    role: (payload.role as string | undefined) || 'user',
   };
 }
-

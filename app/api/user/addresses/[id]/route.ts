@@ -23,7 +23,7 @@ async function getUser(req: Request) {
     }
 }
 
-export async function PUT(req: Request, { params }: { params: any }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
     const userId = await getUser(req);
     if (!userId) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 

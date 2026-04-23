@@ -1,11 +1,8 @@
 import { NextResponse } from 'next/server';
 import { getCollection } from '@/lib/mongodb';
 import { verifyOtp } from '@/lib/twilio';
-import { SignJWT } from 'jose';
-import { cookies } from 'next/headers';
-
-if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET env variable is not set');
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+import { signAuthJwt } from '@/lib/jwt';
+import { setAuthCookie } from '@/lib/authCookies';
 
 export async function POST(req: Request) {
   try {
@@ -68,28 +65,18 @@ export async function POST(req: Request) {
       user = { ...newUser, _id: res.insertedId };
     }
 
-    // Generate JWT
-    const token = await new SignJWT({
+    // Generate JWT via unified signAuthJwt() — same shape as all other auth routes
+    const token = await signAuthJwt({
       userId: user._id.toString(),
+      name: user.name || 'Хэрэглэгч',
+      provider: user.provider || 'local',
+      email: user.email,
       phone: user.phone,
-      role: user.role
-    })
-      .setProtectedHeader({ alg: 'HS256' })
-      .setExpirationTime('7d')
-      .sign(JWT_SECRET);
-
-    // Set Cookie
-    const cookieStore = await cookies();
-    cookieStore.set('auth_token', token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: '/',
-      sameSite: 'lax'
+      role: user.role || 'user',
     });
 
-    // Return profile
-    return NextResponse.json({
+    // Set cookie via shared helper — consistent 7d maxAge
+    const response = NextResponse.json({
       success: true,
       user: {
         id: user._id.toString(),
@@ -100,6 +87,9 @@ export async function POST(req: Request) {
         image: user.image
       }
     });
+
+    setAuthCookie(response, token);
+    return response;
 
   } catch (error) {
     console.error('Verify OTP Error:', error);

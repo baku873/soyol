@@ -1,11 +1,10 @@
 import { NextResponse } from 'next/server';
 import { getCollection } from '@/lib/mongodb';
 import bcrypt from 'bcryptjs';
-import { SignJWT } from 'jose';
+import { ObjectId } from 'mongodb';
 import { auth } from '@/lib/auth';
-
-if (!process.env.JWT_SECRET) throw new Error('JWT_SECRET env variable is not set');
-const JWT_SECRET = new TextEncoder().encode(process.env.JWT_SECRET);
+import { signAuthJwt } from '@/lib/jwt';
+import { setAuthCookie } from '@/lib/authCookies';
 
 /**
  * POST /api/auth/complete-profile
@@ -36,7 +35,7 @@ export async function POST(request: Request) {
         const users = await getCollection('users');
 
         // Check if phone is already taken by another user
-        const existingPhone = await users.findOne({ phone, _id: { $ne: (await import('mongodb')).ObjectId.createFromHexString(userId) } });
+        const existingPhone = await users.findOne({ phone, _id: { $ne: new ObjectId(userId) } });
         if (existingPhone) {
             return NextResponse.json({ error: 'Энэ дугаар бүртгэлтэй байна' }, { status: 409 });
         }
@@ -45,7 +44,6 @@ export async function POST(request: Request) {
         const hashedPassword = await bcrypt.hash(password, 10);
 
         // Update user
-        const { ObjectId } = await import('mongodb');
         await users.updateOne(
             { _id: new ObjectId(userId) },
             {
@@ -64,16 +62,15 @@ export async function POST(request: Request) {
             return NextResponse.json({ error: 'Хэрэглэгч олдсонгүй' }, { status: 404 });
         }
 
-        // Re-issue JWT with phone claim
-        const token = await new SignJWT({
-            sub: updatedUser._id.toString(),
-            phone: updatedUser.phone,
-            role: updatedUser.role,
+        // Re-issue JWT with unified payload via signAuthJwt() — same shape as all other auth routes
+        const token = await signAuthJwt({
+            userId: updatedUser._id.toString(),
             email: updatedUser.email,
-        })
-            .setProtectedHeader({ alg: 'HS256' })
-            .setExpirationTime('24h')
-            .sign(JWT_SECRET);
+            name: updatedUser.name || 'Хэрэглэгч',
+            provider: updatedUser.provider || 'local',
+            phone: updatedUser.phone,
+            role: updatedUser.role || 'user',
+        });
 
         const response = NextResponse.json({
             success: true,
@@ -88,13 +85,8 @@ export async function POST(request: Request) {
             },
         });
 
-        response.cookies.set('auth_token', token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 60 * 60 * 24,
-            path: '/',
-        });
+        // Use the shared cookie helper — consistent 7d maxAge, httpOnly, secure, sameSite
+        setAuthCookie(response, token);
 
         return response;
     } catch (error) {
