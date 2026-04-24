@@ -1,8 +1,6 @@
 import './globals.css';
 import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
-import LuxuryNavbar from '../components/LuxuryNavbar';
-import Footer from '../components/Footer';
 import ClientLayout from './ClientLayout';
 import { SITE_CONFIG } from '../lib/constants';
 const inter = Inter({
@@ -81,9 +79,7 @@ export default function RootLayout({
       </head>
       <body className={`${inter.className} min-h-screen bg-white antialiased`}>
         <ClientLayout>
-          <LuxuryNavbar />
-          <main className="min-h-screen pb-16 md:pb-0 relative z-0">{children}</main>
-          <Footer />
+          {children}
         </ClientLayout>
       </body>
     </html>

@@ -17,6 +17,8 @@ const swrDefaults = {
 
 import FloatingChatButton from '../components/FloatingChatButton';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import LuxuryNavbar from '../components/LuxuryNavbar';
+import Footer from '../components/Footer';
 
 import { GoogleOAuthProvider } from '@react-oauth/google';
 
@@ -29,6 +31,7 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
   }, [pathname]);
 
   const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '';
+  const isAdminRoute = !!pathname && pathname.startsWith('/admin');
 
   return (
     <GoogleOAuthProvider clientId={googleClientId}>
@@ -36,7 +39,11 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         <LanguageProvider>
           <AuthProvider>
             <ErrorBoundary>
-              {children}
+              {!isAdminRoute && <LuxuryNavbar />}
+              <main className={isAdminRoute ? 'min-h-screen relative z-0' : 'min-h-screen pb-16 md:pb-0 relative z-0'}>
+                {children}
+              </main>
+              {!isAdminRoute && <Footer />}
               <FloatingChatButton />
               <Toaster position="top-right" reverseOrder={false} />
             </ErrorBoundary>
