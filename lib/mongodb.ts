@@ -1,6 +1,11 @@
 import { MongoClient, Db, Collection, Document } from 'mongodb';
 
-const MONGO_DB = process.env.MONGO_DB || 'Buddha';
+/**
+ * Mongo database name (not the cluster hostname).
+ * Deploy: set `MONGO_DB` on the host to the DB that holds `users` (must match Atlas DB name).
+ * If unset, we default to the same name as `.env.example` so production is not silently pointed at the wrong DB.
+ */
+export const MONGO_DB = process.env.MONGO_DB || 'Soyloo';
 
 const options = {
   maxPoolSize: 10,
@@ -48,7 +53,7 @@ export async function getDb(): Promise<Db> {
 }
 
 export async function getCollection<T extends Document = Document>(
-  name: string
+  name: string,
 ): Promise<Collection<T>> {
   const db = await getDb();
   return db.collection<T>(name);

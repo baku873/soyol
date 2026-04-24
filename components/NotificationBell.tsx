@@ -174,21 +174,24 @@ export default function NotificationBell() {
                       const m = META[n.type] || { icon: '🔔', bg: 'rgba(107,114,128,0.08)' };
                       return (
                         <motion.li key={n._id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} transition={{ duration: 0.2 }}>
-                          <button type="button" onClick={() => onItem(n)}
-                            className={`w-full text-left p-3.5 rounded-[18px] active:scale-[0.98] transition-all flex items-start gap-3 group ${!n.isRead ? 'bg-[#FF5000]/[0.04] border border-[#FF5000]/10' : 'bg-transparent border border-transparent hover:bg-[#F2F2F7]/60'}`}>
-                            <div className="w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 text-lg" style={{ backgroundColor: m.bg }}>{m.icon}</div>
-                            <div className="flex-1 min-w-0">
-                              <div className="flex justify-between items-start gap-2 mb-0.5">
-                                <h4 className={`text-[14px] font-bold line-clamp-1 ${!n.isRead ? 'text-[#111]' : 'text-gray-700'}`}>{n.title}</h4>
-                                <span className={`text-[11px] font-semibold whitespace-nowrap ${!n.isRead ? 'text-[#FF5000]' : 'text-gray-400'}`}>{timeAgo(n.createdAt)}</span>
+                          <div
+                            className={`group flex w-full items-start rounded-[18px] active:scale-[0.98] transition-all ${!n.isRead ? 'bg-[#FF5000]/[0.04] border border-[#FF5000]/10' : 'bg-transparent border border-transparent hover:bg-[#F2F2F7]/60'}`}>
+                            <button type="button" onClick={() => onItem(n)}
+                              className="min-w-0 flex-1 text-left p-3.5 pr-2 flex items-start gap-3 rounded-l-[18px]">
+                              <div className="w-10 h-10 rounded-[14px] flex items-center justify-center shrink-0 text-lg" style={{ backgroundColor: m.bg }}>{m.icon}</div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex justify-between items-start gap-2 mb-0.5">
+                                  <h4 className={`text-[14px] font-bold line-clamp-1 ${!n.isRead ? 'text-[#111]' : 'text-gray-700'}`}>{n.title}</h4>
+                                  <span className={`text-[11px] font-semibold whitespace-nowrap ${!n.isRead ? 'text-[#FF5000]' : 'text-gray-400'}`}>{timeAgo(n.createdAt)}</span>
+                                </div>
+                                <p className="text-[13px] text-gray-500 line-clamp-2 leading-relaxed">{n.body}</p>
                               </div>
-                              <p className="text-[13px] text-gray-500 line-clamp-2 leading-relaxed">{n.body}</p>
-                            </div>
-                            <button onClick={(e) => { e.stopPropagation(); deleteNotification(n._id); }}
-                              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400 transition-all shrink-0 mt-1" title="Устгах">
+                            </button>
+                            <button type="button" onClick={() => deleteNotification(n._id)}
+                              className="opacity-0 group-hover:opacity-100 shrink-0 mt-2.5 mr-2 p-1.5 rounded-full hover:bg-red-50 text-gray-300 hover:text-red-400 transition-all" title="Устгах">
                               <Trash2 className="w-3.5 h-3.5" strokeWidth={2} />
                             </button>
-                          </button>
+                          </div>
                         </motion.li>
                       );
                     })}

@@ -46,9 +46,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const data = await apiClient<{ user: User }>("/api/auth/me");
-        setUser(data.user);
-        setCartAuth(true);
+        const data = await apiClient<{ user: User | null }>("/api/auth/me");
+        setUser(data.user ?? null);
+        setCartAuth(!!data.user);
       } catch (error) {
         setUser(null);
         setCartAuth(false);

@@ -24,6 +24,12 @@ const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
+  // Locale is client-side (LanguageContext), not a URL prefix. Old or mistaken /mn URLs → real routes.
+  if (pathname === '/mn' || pathname.startsWith('/mn/')) {
+    const targetPath = pathname === '/mn' ? '/' : pathname.slice('/mn'.length) || '/';
+    return NextResponse.redirect(new URL(targetPath, req.url));
+  }
+
   // Always allow public routes through without our JWT check.
   if (isPublicRoute(req)) return NextResponse.next();
 

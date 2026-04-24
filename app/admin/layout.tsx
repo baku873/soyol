@@ -1,30 +1,62 @@
 'use client';
 
+import { useEffect } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useUser } from '@/context/AuthContext';
 import { Loader2 } from 'lucide-react';
 import AdminSidebar from '@/components/admin/AdminSidebar';
 import AdminKeyboardShortcuts from '@/components/admin/AdminKeyboardShortcuts';
 
 /**
- * Admin Layout
- *
- * Security is enforced server-side by middleware.ts which verifies the JWT
- * and checks role === 'admin' BEFORE this component ever renders.
- *
- * The loading state below is purely UX polish — it prevents a flash of
- * admin UI while the client-side AuthContext hydrates. It is NOT a
- * security gate; by the time this component renders, the user is already
- * verified as an admin by the middleware.
+ * Admin UI: requires signed-in user with role === 'admin'.
+ * Sensitive operations must still be enforced in API routes.
  */
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const { user, isSignedIn, isLoaded } = useUser();
+  const isAdmin = user?.role === 'admin';
 
-  // Show spinner while client auth context hydrates.
-  // This is UI polish, not security — middleware already blocked non-admins.
-  if (!isLoaded || !isSignedIn || user?.role !== 'admin') {
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!isSignedIn) {
+      const next = pathname || '/admin';
+      router.replace(`/login?redirect=${encodeURIComponent(next)}`);
+    }
+  }, [isLoaded, isSignedIn, isAdmin, router, pathname]);
+
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isSignedIn) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <Loader2 className="w-10 h-10 text-orange-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center justify-center p-6 text-center gap-4">
+        <p className="text-lg font-semibold max-w-md">Админ эрхгүй</p>
+        <p className="text-sm text-slate-400 max-w-md leading-relaxed">
+          Та нэвтэрсэн ч энэ бүртгэлд <code className="text-orange-300">role: &quot;admin&quot;</code> байхгүй байна.
+          Deploy орчинд <code className="text-orange-300">MONGO_DB</code> нь өгөгдлийн сангийн нэртэй таарч байгаа эсэх,
+          мөн таны хэрэглэгчийн баримт зөв санд байгаа эсэхийг шалгана уу.
+        </p>
+        <button
+          type="button"
+          onClick={() => router.replace('/')}
+          className="mt-2 px-5 py-2.5 rounded-full bg-white text-slate-900 text-sm font-bold hover:bg-slate-200 transition-colors"
+        >
+          Нүүр хуудас
+        </button>
       </div>
     );
   }
