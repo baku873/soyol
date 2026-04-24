@@ -4,6 +4,9 @@ export const AUTH_COOKIE_NAME = 'auth_token';
 
 /** Use Secure cookies only when the public site URL is https (avoids losing sessions on http previews). */
 function cookieSecure(): boolean {
+  // In local dev we often run over http://localhost. A Secure cookie would be dropped,
+  // causing infinite redirects back to /login.
+  if (process.env.NODE_ENV !== 'production') return false;
   const base = (process.env.NEXT_PUBLIC_BASE_URL || '').trim().toLowerCase();
   if (base.startsWith('https://')) return true;
   if (base.startsWith('http://')) return false;
