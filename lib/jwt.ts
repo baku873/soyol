@@ -19,12 +19,18 @@ function getJwtSecret(): Uint8Array {
 
 export async function signAuthJwt(payload: JwtPayload): Promise<string> {
   const secret = getJwtSecret();
+  const adminEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  const payloadEmail = (payload.email || '').trim().toLowerCase();
+  const role =
+    payload.role ||
+    (adminEmail && payloadEmail && adminEmail === payloadEmail ? 'admin' : undefined) ||
+    'user';
   return new SignJWT({
     userId: payload.userId,
     email: payload.email,
     name: payload.name,
     provider: payload.provider,
-    role: payload.role || 'user',
+    role,
     ...(payload.phone ? { phone: payload.phone } : {}),
   })
     .setProtectedHeader({ alg: 'HS256' })
