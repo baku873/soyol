@@ -25,11 +25,12 @@ export async function signAuthJwt(payload: JwtPayload): Promise<string> {
     payload.role ||
     (adminEmail && payloadEmail && adminEmail === payloadEmail ? 'admin' : undefined) ||
     'user';
+  const provider = (payload.provider || 'local') as JwtPayload['provider'];
   return new SignJWT({
     userId: payload.userId,
     email: payload.email,
     name: payload.name,
-    provider: payload.provider,
+    provider,
     role,
     ...(payload.phone ? { phone: payload.phone } : {}),
   })
@@ -46,9 +47,10 @@ export async function verifyAuthJwt(token: string): Promise<JwtPayload> {
 
   const userId = (payload.userId ?? payload.sub) as string | undefined;
   const name = (payload.name as string | undefined) || 'Хэрэглэгч';
-  const provider = payload.provider as JwtPayload['provider'] | undefined;
+  // Backward/legacy tokens may not include `provider`. Default to `local`.
+  const provider = (payload.provider as JwtPayload['provider'] | undefined) || 'local';
 
-  if (!userId || !provider) {
+  if (!userId) {
     throw new Error('Invalid token payload');
   }
 
