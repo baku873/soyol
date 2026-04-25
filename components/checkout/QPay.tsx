@@ -39,13 +39,9 @@ export default function QPay({ orderId, amount, onSuccess }: QPayProps) {
   const [paid, setPaid] = useState(false);
   const [timeLeft, setTimeLeft] = useState(900); // 15 minutes in seconds
   const pollingInterval = useRef<NodeJS.Timeout | null>(null);
-  const rootRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     initiatePayment();
-
-    // Make sure the QR view is visible (mobile sometimes keeps prior scroll position).
-    rootRef.current?.scrollIntoView({ block: "start" });
 
     // Countdown timer
     const timer = setInterval(() => {
@@ -183,7 +179,7 @@ export default function QPay({ orderId, amount, onSuccess }: QPayProps) {
   }
 
   return (
-    <div ref={rootRef} className="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl max-w-md mx-auto">
+    <div className="bg-slate-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl max-w-md mx-auto">
       {/* Header */}
       <div className="p-6 border-b border-white/5 bg-slate-800/50 flex items-center justify-between">
         <div className="flex items-center gap-3">
