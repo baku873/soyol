@@ -66,15 +66,22 @@ export default function QPay({ orderId, amount, onSuccess }: QPayProps) {
         }),
       });
 
-      if (!res.ok) throw new Error("Invoice creation failed");
-      const data = await res.json();
+      const data = await res.json().catch(() => null as any);
+      if (!res.ok) {
+        const msg =
+          (data && typeof data === "object" && "error" in data && typeof (data as any).error === "string"
+            ? (data as any).error
+            : "Invoice creation failed");
+        throw new Error(msg);
+      }
       setQpayData(data);
       setLoading(false);
 
       // Start Polling
       startPolling(data.invoiceId);
     } catch (error) {
-      toast.error("QPay холболт амжилтгүй боллоо");
+      const msg = error instanceof Error ? error.message : "QPay холболт амжилтгүй боллоо";
+      toast.error(msg);
       setLoading(false);
     }
   };

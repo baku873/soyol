@@ -72,8 +72,11 @@ export async function POST(req: NextRequest) {
     // Allow if the authenticated user owns the order, OR it is a guest order.
     // Guest orders are identified by userId === 'guest' and the orderId itself
     // acts as an unguessable token (MongoDB ObjectId) so no extra secret is needed.
-    const isOwner = userId && order.userId === userId;
-    const isGuestOrder = order.userId === "guest";
+    const orderUserId = (order as any)?.userId;
+    const isOwner = !!userId && orderUserId === userId;
+    // Treat missing/empty userId as guest orders to avoid blocking checkout flows that
+    // were created before we standardized on `userId: "guest"`.
+    const isGuestOrder = !orderUserId || orderUserId === "guest";
 
     if (!isOwner && !isGuestOrder) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
