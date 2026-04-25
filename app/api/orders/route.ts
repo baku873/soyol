@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { getCollection } from "@/lib/mongodb";
 import { ObjectId } from "mongodb";
+import { CANCELLABLE_STATUSES } from "@/types/Order";
 
 export async function GET(req: NextRequest) {
   try {
@@ -91,5 +92,56 @@ export async function POST(req: NextRequest) {
       { error: error?.message || "Failed to create order" },
       { status: 500 },
     );
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const { userId, phone } = await auth();
+    if (!userId && !phone) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const orderId = typeof (body as any)?.orderId === "string" ? (body as any).orderId : "";
+    const status = typeof (body as any)?.status === "string" ? (body as any).status : "";
+
+    if (!orderId) return NextResponse.json({ error: "Missing orderId" }, { status: 400 });
+    if (status !== "cancelled") {
+      return NextResponse.json({ error: "Invalid status update" }, { status: 400 });
+    }
+
+    let objectId: ObjectId;
+    try {
+      objectId = new ObjectId(orderId);
+    } catch {
+      return NextResponse.json({ error: "Invalid order ID" }, { status: 400 });
+    }
+
+    const orders = await getCollection("orders");
+    const order = await orders.findOne({ _id: objectId });
+    if (!order) return NextResponse.json({ error: "Order not found" }, { status: 404 });
+
+    // Owner checks:
+    // - normal orders: order.userId === userId
+    // - guest / pre-registration orders: phone matches
+    const orderUserId = (order as any).userId;
+    const orderPhone = (order as any).phone;
+    const isOwner = (userId && orderUserId === userId) || (phone && orderPhone && orderPhone === phone);
+    if (!isOwner) return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+
+    if (!CANCELLABLE_STATUSES.includes((order as any).status)) {
+      return NextResponse.json({ error: "Энэ захиалгыг цуцлах боломжгүй" }, { status: 400 });
+    }
+
+    await orders.updateOne(
+      { _id: objectId },
+      { $set: { status: "cancelled", cancelledAt: new Date(), updatedAt: new Date() } },
+    );
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("[Orders PATCH] Error:", error);
+    return NextResponse.json({ error: "Failed to update order" }, { status: 500 });
   }
 }
