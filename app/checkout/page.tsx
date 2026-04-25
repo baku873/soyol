@@ -110,8 +110,7 @@ export default function CheckoutPage() {
   // When switching to the QPay view, ensure we are at the top (prevents “scrolling down” feeling).
   useEffect(() => {
     if (!createdOrder) return;
-    // Use instant scroll: mobile browsers can glitch / lose paints with smooth programmatic scroll.
-    requestAnimationFrame(() => window.scrollTo({ top: 0, left: 0, behavior: 'auto' }));
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
   }, [createdOrder]);
 
   // Auto-fill user info

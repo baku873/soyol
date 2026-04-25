@@ -98,12 +98,13 @@ export default function UniversalProductCard({
 
   return (
     <motion.div
-      initial={disableInitialAnimation ? false : { opacity: 0, y: 16 }}
-      animate={disableInitialAnimation ? undefined : { opacity: 1, y: 0 }}
+      initial={disableInitialAnimation ? undefined : { opacity: 0, y: 16 }}
+      whileInView={disableInitialAnimation ? undefined : { opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: "-40px" }}
       transition={
         disableInitialAnimation
           ? undefined
-          : { duration: 0.3, delay: Math.min(index * 0.02, 0.2), ease: [0.25, 0.1, 0.25, 1] }
+          : { duration: 0.4, delay: index * 0.04, ease: [0.25, 0.1, 0.25, 1] }
       }
       whileTap={{ scale: 0.97 }}
       className="group relative"
