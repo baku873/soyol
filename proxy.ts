@@ -21,7 +21,7 @@ const isPublicRoute = createRouteMatcher([
 const isProtectedRoute = createRouteMatcher(['/dashboard(.*)']);
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
-export async function middleware(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   // Locale is client-side (LanguageContext), not a URL prefix. Old or mistaken /mn URLs → real routes.
@@ -98,5 +98,6 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico).*)"],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 };
+
