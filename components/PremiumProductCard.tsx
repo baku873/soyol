@@ -93,6 +93,7 @@ export default function PremiumProductCard({ product, isFeatured = false }: { pr
                             <ProductBadge
                                 sections={product.sections}
                                 isFeatured={product.featured}
+                                createdAt={product.createdAt}
                                 className="z-10"
                             />
                             {(!product.sections?.includes('Захиалга') || product.sections?.includes('Бэлэн')) && (

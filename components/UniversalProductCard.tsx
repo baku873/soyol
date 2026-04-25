@@ -199,7 +199,13 @@ export default function UniversalProductCard({
                   </div>
                 )}
 
-              {statusBadgeMode === "new" && (
+              {statusBadgeMode === "new" &&
+                (() => {
+                  if (!product.createdAt) return true;
+                  const d = new Date(product.createdAt as any);
+                  if (Number.isNaN(d.getTime())) return true;
+                  return Date.now() - d.getTime() <= 24 * 60 * 60 * 1000;
+                })() && (
                 <div className="flex items-center gap-1.5 px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-full shadow-[0_2px_8px_rgba(0,0,0,0.06)]">
                   <span className="text-[11px] leading-none">✨</span>
                   <span className="text-[10px] sm:text-[11px] font-bold text-[#007AFF] uppercase tracking-wider leading-none mt-[1px]">
@@ -226,6 +232,7 @@ export default function UniversalProductCard({
                     product.sections?.includes("Онцлох")
                   }
                   sections={product.sections}
+                  createdAt={product.createdAt}
                 />
               )}
             </div>

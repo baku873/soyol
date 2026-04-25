@@ -174,6 +174,7 @@ export default function DiscoveryProductCard({
             sections={product.sections}
             isFeatured={product.featured}
             showTrendingBadge={showTrendingBadge}
+            createdAt={product.createdAt}
             className="z-10 shadow-sm scale-95 origin-top-left"
           />
           {product.stockStatus === 'in-stock' && (
