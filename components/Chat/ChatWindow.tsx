@@ -94,7 +94,13 @@ export default function ChatWindow({ otherUser, guestId, onStartCall, onStartVoi
                     </button>
                     <div className="relative w-10 h-10 rounded-xl overflow-hidden bg-slate-700 ring-2 ring-white/5">
                         {otherUser.image ? (
-                            <Image src={otherUser.image} alt={otherUser.name || ''} fill className="object-cover" />
+                            <Image
+                                src={otherUser.image}
+                                alt={otherUser.name || ''}
+                                fill
+                                sizes="40px"
+                                className="object-cover"
+                            />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-slate-400 font-medium bg-slate-600">
                                 {(otherUser.name || otherUser.email || '?')[0].toUpperCase()}

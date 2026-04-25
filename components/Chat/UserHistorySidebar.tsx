@@ -107,7 +107,15 @@ export default function UserHistorySidebar({ user, isOpen, onClose }: UserHistor
                                                 {order.items?.map((item: any, i: number) => (
                                                     <div key={i} className="flex gap-3 items-center">
                                                         <div className="w-10 h-10 rounded-lg bg-white/10 relative overflow-hidden shrink-0">
-                                                            {item.image && <Image src={item.image} alt="" fill className="object-cover" />}
+                                                            {item.image && (
+                                                                <Image
+                                                                    src={item.image}
+                                                                    alt=""
+                                                                    fill
+                                                                    sizes="40px"
+                                                                    className="object-cover"
+                                                                />
+                                                            )}
                                                         </div>
                                                         <div className="flex-1 min-w-0">
                                                             <p className="text-xs text-white font-bold truncate">{item.name}</p>

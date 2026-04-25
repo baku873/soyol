@@ -82,7 +82,13 @@ export default function AdminSelector({ onSelect, compact = false }: AdminSelect
                     >
                         <div className={`relative rounded-xl overflow-hidden bg-slate-700 shrink-0 border-2 border-transparent group-hover:border-[#FF5000] transition-colors ${compact ? 'w-10 h-10' : 'w-12 h-12'}`}>
                             {admin.image ? (
-                                <Image src={admin.image} alt={admin.name || 'Admin'} fill className="object-cover" />
+                                <Image
+                                    src={admin.image}
+                                    alt={admin.name || 'Admin'}
+                                    fill
+                                    sizes={compact ? "40px" : "48px"}
+                                    className="object-cover"
+                                />
                             ) : (
                                 <div className="w-full h-full flex items-center justify-center text-slate-400 font-bold bg-slate-600 text-sm">
                                     {(admin.name || admin.email || 'A')[0].toUpperCase()}

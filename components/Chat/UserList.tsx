@@ -86,7 +86,13 @@ export default function UserList({ users, selectedUser, onSelectUser }: UserList
                             <div className="relative shrink-0">
                                 <div className={`w-12 h-12 rounded-2xl overflow-hidden bg-slate-800 ring-2 ${selectedUser?._id === user._id ? 'ring-amber-500/50' : 'ring-white/5'} group-hover:ring-amber-500/30 transition-all`}>
                                     {user.image ? (
-                                        <Image src={user.image} alt={user.name || ''} fill className="object-cover" />
+                                        <Image
+                                            src={user.image}
+                                            alt={user.name || ''}
+                                            fill
+                                            sizes="48px"
+                                            className="object-cover"
+                                        />
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-slate-400 text-sm font-black bg-gradient-to-br from-slate-700 to-slate-800 uppercase">
                                             {(user.name || user.email || '?')[0]}

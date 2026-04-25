@@ -147,7 +147,13 @@ export default function OrderDetailPage() {
                     {(order.items || []).map((item: any, i: number) => (
                         <div key={i} className="flex gap-3">
                             <div className="w-14 h-14 rounded-2xl bg-slate-50 overflow-hidden border border-slate-100 shrink-0 relative">
-                                <Image src={item.image || '/placeholder-product.png'} alt={item.name || 'Бараа'} fill className="object-cover" />
+                                <Image
+                                    src={item.image || '/placeholder-product.png'}
+                                    alt={item.name || 'Бараа'}
+                                    fill
+                                    sizes="56px"
+                                    className="object-cover"
+                                />
                             </div>
                             <div className="flex-1 min-w-0">
                                 <p className="font-bold text-slate-900 text-sm line-clamp-2">{item.name}</p>
