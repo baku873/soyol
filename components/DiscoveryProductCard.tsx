@@ -254,14 +254,17 @@ export default function DiscoveryProductCard({
 
   return (
     <motion.div
-      initial={disableInitialAnimation ? undefined : { opacity: 0, y: 20 }}
-      whileInView={disableInitialAnimation ? undefined : { opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: '-50px' }}
-      transition={disableInitialAnimation ? undefined : {
-        duration: 0.5,
-        delay: index * 0.05,
-        ease: [0.25, 0.1, 0.25, 1],
-      }}
+      initial={disableInitialAnimation ? false : { opacity: 0, y: 20 }}
+      animate={disableInitialAnimation ? undefined : { opacity: 1, y: 0 }}
+      transition={
+        disableInitialAnimation
+          ? undefined
+          : {
+              duration: 0.35,
+              delay: Math.min(index * 0.03, 0.25),
+              ease: [0.25, 0.1, 0.25, 1],
+            }
+      }
       onHoverStart={() => {
         setIsHovered(true);
       }}

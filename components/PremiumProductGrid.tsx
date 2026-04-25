@@ -48,9 +48,8 @@ function PremiumProductGrid({
       {featured.length > 0 && (
         <motion.div
           variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
+          initial="visible"
+          animate="visible"
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 p-2 sm:p-4 mb-8"
         >
           {featured.map((product, index) => (
@@ -104,9 +103,8 @@ function PremiumProductGrid({
       {regular.length > 0 && (
         <motion.div
           variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-50px" }}
+          initial="visible"
+          animate="visible"
           className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-8 p-2 sm:p-4"
         >
           {regular.map((product, index) => (
