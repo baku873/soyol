@@ -107,6 +107,12 @@ export default function CheckoutPage() {
   const [showAllAddresses, setShowAllAddresses] = useState(false);
   const [createdOrder, setCreatedOrder] = useState<{ id: string; total: number } | null>(null);
 
+  // When switching to the QPay view, ensure we are at the top (prevents “scrolling down” feeling).
+  useEffect(() => {
+    if (!createdOrder) return;
+    window.scrollTo({ top: 0, left: 0, behavior: 'smooth' });
+  }, [createdOrder]);
+
   // Auto-fill user info
   useEffect(() => {
     if (user) {
