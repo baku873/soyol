@@ -63,6 +63,10 @@ export const metadata: Metadata = {
     description: 'Олон улсын чанартай бүтээгдэхүүнийг бөөний үнээр',
     images: ['/og-image.png'],
   },
+  icons: {
+    icon: '/icon.png',
+    apple: '/apple-icon.png',
+  },
 };
 
 export default function RootLayout({
