@@ -80,6 +80,9 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="apple-mobile-web-app-title" content={SITE_CONFIG.name} />
+        <link rel="icon" href="/icon.png" />
+        <link rel="shortcut icon" href="/icon.png" />
+        <link rel="apple-touch-icon" href="/apple-icon.png" />
       </head>
       <body className={`${inter.className} min-h-screen bg-white antialiased`}>
         <ClientLayout>
