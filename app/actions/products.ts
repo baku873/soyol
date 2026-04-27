@@ -3,7 +3,7 @@
 import { getCollection } from '@/lib/mongodb';
 import { ObjectId } from 'mongodb';
 import { revalidatePath } from 'next/cache';
-import { auth } from '@/lib/auth';
+import { auth, currentUser } from '@/lib/auth';
 
 export type ProductFormData = {
   name: string;
@@ -43,8 +43,8 @@ export type ProductFormData = {
 
 export async function createProduct(data: ProductFormData) {
   try {
-    const { userId, role } = await auth();
-    if (!userId || role !== 'admin') {
+    const user = await currentUser();
+    if (!user || user.role !== 'admin') {
       return { success: false, error: 'Зөвшөөрөлгүй' };
     }
 
@@ -82,8 +82,8 @@ export async function createProduct(data: ProductFormData) {
 
 export async function deleteProduct(productId: string) {
   try {
-    const { userId, role } = await auth();
-    if (!userId || role !== 'admin') {
+    const user = await currentUser();
+    if (!user || user.role !== 'admin') {
       return { success: false, error: 'Зөвшөөрөлгүй' };
     }
 
@@ -116,8 +116,8 @@ export async function getAllProducts() {
 
 export async function updateProduct(productId: string, data: Partial<ProductFormData>) {
   try {
-    const { userId, role } = await auth();
-    if (!userId || role !== 'admin') {
+    const user = await currentUser();
+    if (!user || user.role !== 'admin') {
       return { success: false, error: 'Зөвшөөрөлгүй' };
     }
 

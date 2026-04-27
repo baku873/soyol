@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
-import { auth } from "@/lib/auth";
+import { auth, currentUser } from "@/lib/auth";
 import { CacheTags, getProductInvalidationTags } from "@/lib/cache-tags";
 
 export const dynamic = "force-dynamic";
@@ -87,8 +87,8 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { userId, role } = await auth();
-    if (!userId || role !== "admin") {
+    const user = await currentUser();
+    if (!user || user.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 });
     }
 

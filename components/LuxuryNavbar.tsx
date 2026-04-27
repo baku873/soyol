@@ -25,6 +25,7 @@ import {
   LayoutGrid,
   ChevronRight,
   Info,
+  HelpCircle,
 } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
@@ -781,6 +782,26 @@ export default function LuxuryNavbar() {
                   </span>
                   <ChevronRight
                     className={`w-4 h-4 ${pathname === "/about" ? "text-[#FF5000]" : "text-slate-300"}`}
+                    strokeWidth={2}
+                  />
+                </Link>
+
+                <Link
+                  href="/support"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className={`flex items-center gap-4 py-4 border-b border-slate-50 transition-colors active:bg-slate-50`}
+                >
+                  <HelpCircle
+                    className={`w-5 h-5 shrink-0 ${pathname === "/support" ? "text-[#FF5000]" : "text-slate-400"}`}
+                    strokeWidth={pathname === "/support" ? 2 : 1.5}
+                  />
+                  <span
+                    className={`font-semibold text-[15px] flex-1 ${pathname === "/support" ? "text-[#FF5000]" : "text-slate-800"}`}
+                  >
+                    Тусламж & Дэмжлэг
+                  </span>
+                  <ChevronRight
+                    className={`w-4 h-4 ${pathname === "/support" ? "text-[#FF5000]" : "text-slate-300"}`}
                     strokeWidth={2}
                   />
                 </Link>

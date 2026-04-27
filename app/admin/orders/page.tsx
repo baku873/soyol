@@ -359,7 +359,7 @@ export default function AdminOrdersPage() {
                               </div> 
                               <div className="flex items-center justify-between"> 
                                 <div> 
-                                  <p className="font-black text-amber-500 text-base">{formatPrice(order.totalPrice || order.total || 0)}</p> 
+                                  <p className="font-black text-amber-500 text-base">{formatPrice(order.totalPrice || order.total || (order.items?.reduce((acc: number, cur: any) => acc + (cur.price * cur.quantity), 0)) || 0)}</p> 
                                   <p className="text-[10px] text-slate-600 font-mono mt-0.5">#{order._id.slice(-8).toUpperCase()}</p> 
                                 </div> 
                                 <div className="flex gap-2" onClick={e => e.stopPropagation()}> 
@@ -410,7 +410,7 @@ export default function AdminOrdersPage() {
                                 </thead>
                                 <tbody className="divide-y divide-slate-800">
                                     {filteredOrders.map((order) => {
-                                        const totalAmt = order.totalPrice || order.total || 0;
+                                        const totalAmt = order.totalPrice || order.total || order.items?.reduce((acc: number, cur: any) => acc + (cur.price * cur.quantity), 0) || 0;
                                         return (
                                             <tr
                                                 key={order._id}
@@ -597,66 +597,60 @@ export default function AdminOrdersPage() {
                                                     <MapPin className="w-4 h-4 text-amber-500" />
                                                 </div>
                                                 <div className="leading-relaxed flex-1">
-                                                    <div className="grid grid-cols-2 gap-x-6 gap-y-4">
-                                                        <div className="p-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
-                                                            <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block mb-1">Хот / Аймаг</span>
-                                                            <span className="text-white font-bold">{selectedOrder.shipping?.city || selectedOrder.city}</span>
-                                                        </div>
-                                                        <div className="p-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
-                                                            <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block mb-1">Дүүрэг / Сум</span>
-                                                            <span className="text-white font-bold">{selectedOrder.shipping?.district || selectedOrder.district}</span>
-                                                        </div>
-                                                        
-                                                        {(selectedOrder.shipping?.khoroo || selectedOrder.khoroo) && (
-                                                            <div className="col-span-1 p-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
-                                                                <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block mb-1">Хороо / Баг</span>
-                                                                <span className="text-white font-bold">{selectedOrder.shipping?.khoroo || selectedOrder.khoroo}-р хороо</span>
-                                                            </div>
-                                                        )}
-
-                                                        {(selectedOrder.shipping?.street || selectedOrder.street) && (
-                                                            <div className="col-span-1 p-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
-                                                                <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block mb-1">Гудамж / Ойролцоох</span>
-                                                                <span className="text-white font-bold">{selectedOrder.shipping?.street || selectedOrder.street}</span>
-                                                            </div>
-                                                        )}
-
-                                                        {(selectedOrder.shipping?.apartment || selectedOrder.apartment || selectedOrder.shipping?.entrance || selectedOrder.entrance || selectedOrder.shipping?.floor || selectedOrder.floor || selectedOrder.shipping?.door || selectedOrder.door) && (
-                                                            <div className="col-span-2 p-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
-                                                                <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block mb-1">Байр, Орц, Давхар, Хаалга</span>
-                                                                <div className="flex flex-wrap gap-4 mt-1">
-                                                                    {(selectedOrder.shipping?.apartment || selectedOrder.apartment) && (
-                                                                        <div className="flex flex-col">
-                                                                            <span className="text-[8px] text-slate-600 font-bold uppercase">Байр</span>
-                                                                            <span className="text-white font-bold">{selectedOrder.shipping?.apartment || selectedOrder.apartment}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {(selectedOrder.shipping?.entrance || selectedOrder.entrance) && (
-                                                                        <div className="flex flex-col">
-                                                                            <span className="text-[8px] text-slate-600 font-bold uppercase">Орц</span>
-                                                                            <span className="text-white font-bold">{selectedOrder.shipping?.entrance || selectedOrder.entrance}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {(selectedOrder.shipping?.floor || selectedOrder.floor) && (
-                                                                        <div className="flex flex-col">
-                                                                            <span className="text-[8px] text-slate-600 font-bold uppercase">Давхар</span>
-                                                                            <span className="text-white font-bold">{selectedOrder.shipping?.floor || selectedOrder.floor}</span>
-                                                                        </div>
-                                                                    )}
-                                                                    {(selectedOrder.shipping?.door || selectedOrder.door) && (
-                                                                        <div className="flex flex-col">
-                                                                            <span className="text-[8px] text-slate-600 font-bold uppercase">Хаалга</span>
-                                                                            <span className="text-white font-bold">{selectedOrder.shipping?.door || selectedOrder.door}</span>
-                                                                        </div>
-                                                                    )}
+                                                    <div className="space-y-4">
+                                                        {selectedOrder.deliveryMethod === 'pickup' || selectedOrder.shipping?.address === 'Store Pickup' || selectedOrder.address === 'Store Pickup' ? (
+                                                            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-bold flex items-center gap-3">
+                                                                <MapPin className="w-5 h-5" />
+                                                                <div>
+                                                                    <p className="text-sm uppercase tracking-wider">Өөрөө ирж авах</p>
+                                                                    <p className="text-[10px] opacity-80 mt-1 font-normal text-emerald-500 font-medium">Салбараас ирж авна.</p>
                                                                 </div>
                                                             </div>
-                                                        )}
-
-                                                        {(!selectedOrder.khoroo && !selectedOrder.shipping?.khoroo && !selectedOrder.street && !selectedOrder.shipping?.street) && (
-                                                            <div className="col-span-2 p-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
-                                                                <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block mb-1">Захиалгын хаяг (Дэлгэрэнгүй)</span>
-                                                                <span className="text-white font-bold leading-snug">{selectedOrder.shipping?.address || selectedOrder.address}</span>
+                                                        ) : (
+                                                            <div className="grid grid-cols-2 gap-x-6 gap-y-4">
+                                                                <div className="p-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
+                                                                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block mb-1">Хот / Аймаг</span>
+                                                                    <span className="text-white font-bold">{selectedOrder.shipping?.city || selectedOrder.city}</span>
+                                                                </div>
+                                                                <div className="p-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
+                                                                    <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block mb-1">Дүүрэг / Сум</span>
+                                                                    <span className="text-white font-bold">{selectedOrder.shipping?.district || selectedOrder.district}</span>
+                                                                </div>
+                                                                <div className="col-span-2 p-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
+                                                                    <span className="text-[9px] text-amber-500/80 font-black uppercase tracking-widest block mb-1">Дэлгэрэнгүй хаяг</span>
+                                                                    <span className="text-white font-bold leading-snug">{selectedOrder.shipping?.address || selectedOrder.address}</span>
+                                                                </div>
+                                                                {(selectedOrder.shipping?.apartment || selectedOrder.apartment || selectedOrder.shipping?.entrance || selectedOrder.entrance || selectedOrder.shipping?.floor || selectedOrder.floor || selectedOrder.shipping?.door || selectedOrder.door) && (
+                                                                    <div className="col-span-2 p-3 rounded-xl bg-slate-900/50 border border-slate-800/50">
+                                                                        <span className="text-[9px] text-slate-500 font-black uppercase tracking-widest block mb-1">Байр, Орц, Давхар, Хаалга</span>
+                                                                        <div className="flex flex-wrap gap-4 mt-1">
+                                                                            {(selectedOrder.shipping?.apartment || selectedOrder.apartment) && (
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[8px] text-slate-600 font-bold uppercase">Байр</span>
+                                                                                    <span className="text-white font-bold">{selectedOrder.shipping?.apartment || selectedOrder.apartment}</span>
+                                                                                </div>
+                                                                            )}
+                                                                            {(selectedOrder.shipping?.entrance || selectedOrder.entrance) && (
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[8px] text-slate-600 font-bold uppercase">Орц</span>
+                                                                                    <span className="text-white font-bold">{selectedOrder.shipping?.entrance || selectedOrder.entrance}</span>
+                                                                                </div>
+                                                                            )}
+                                                                            {(selectedOrder.shipping?.floor || selectedOrder.floor) && (
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[8px] text-slate-600 font-bold uppercase">Давхар</span>
+                                                                                    <span className="text-white font-bold">{selectedOrder.shipping?.floor || selectedOrder.floor}</span>
+                                                                                </div>
+                                                                            )}
+                                                                            {(selectedOrder.shipping?.door || selectedOrder.door) && (
+                                                                                <div className="flex flex-col">
+                                                                                    <span className="text-[8px] text-slate-600 font-bold uppercase">Хаалга</span>
+                                                                                    <span className="text-white font-bold">{selectedOrder.shipping?.door || selectedOrder.door}</span>
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         )}
                                                     </div>
@@ -763,7 +757,7 @@ export default function AdminOrdersPage() {
                             <div className="p-6 border-t border-slate-800 bg-slate-900 shrink-0 flex items-center justify-between gap-4">
                                 <div>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase">Нийт төлбөр</p>
-                                    <p className="text-xl font-black text-white">{formatPrice(selectedOrder.total || selectedOrder.totalPrice || 0)}</p>
+                                    <p className="text-xl font-black text-white">{formatPrice(selectedOrder.totalPrice || selectedOrder.total || selectedOrder.items?.reduce((acc: number, cur: any) => acc + (cur.price * cur.quantity), 0) || 0)}</p>
                                 </div>
 
                                 <button

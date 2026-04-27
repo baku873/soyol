@@ -256,6 +256,8 @@ export default function CheckoutPage() {
           district: 'Sukhbaatar'
         },
         shippingCost: DELIVERY_FEE,
+        total: grandTotal,
+        totalPrice: grandTotal,
         saveAddress: saveAddress && addressTab === 'new',
       };
 
@@ -452,7 +454,7 @@ export default function CheckoutPage() {
                     <div>
                       <h4 className="font-bold text-gray-900 mb-1">Төв салбар</h4>
                       <p className="text-sm text-gray-600 mb-2">Ундрам плаза Unic office 5давхар 501тоот</p>
-                      <p className="text-sm text-gray-600"><span className="font-semibold">Цагийн хуваарь:</span> 10:00 - 20:00 (Өдөр бүр)</p>
+                      <p className="text-sm text-gray-600"><span className="font-semibold">Цагийн хуваарь:</span> 09:00 - 18:00 (Өдөр бүр)</p>
                       <p className="text-sm text-gray-600 mt-1"><span className="font-semibold">Утас:</span> 77181818</p>
 
                       <div className="mt-4 pt-4 border-t border-gray-200">

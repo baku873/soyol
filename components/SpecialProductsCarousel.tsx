@@ -141,21 +141,13 @@ export default function SpecialProductsCarousel({ products }: SpecialProductsCar
     return (
         <section className="mb-12 relative hidden lg:block">
             {/* Section Header */}
-            <div className="flex items-center justify-between mb-8">
-                <div className="flex items-center gap-4">
-                    <div className="relative">
-                        <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-rose-500 flex items-center justify-center shadow-lg shadow-orange-500/25">
-                            <Flame className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white animate-pulse" />
-                    </div>
-                    <div>
-                        <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">
-                            Онцгой бараанууд
+            <div className="flex items-center justify-between mb-10">
+                <div className="flex flex-col items-start gap-3">
+                    <div className="flex items-center gap-4">
+                        <div className="h-8 w-2 bg-[#FF5000] rounded-r-xl" />
+                        <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                            Танд санал болгох онцгой бараанууд
                         </h2>
-                        <p className="text-sm lg:text-base text-slate-500 font-medium mt-0.5">
-                            Таны анхаарлыг татах бараанууд
-                        </p>
                     </div>
                 </div>
 

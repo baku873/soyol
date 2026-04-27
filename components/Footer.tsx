@@ -44,7 +44,7 @@ export default function Footer() {
   ];
 
   return (
-    <footer className="bg-gray-950 text-gray-300 font-sans">
+    <footer className="bg-gray-950 text-gray-300 font-sans pb-28 lg:pb-0">
       {/* Trust Strip - Temu/Taobao Style */}
       <div className="border-b border-gray-800 bg-gray-900/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -121,7 +121,9 @@ export default function Footer() {
 
           {/* Column 2: About */}
           <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">{t('footer', 'about')}</h3>
+            <Link href="/about">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider hover:text-orange-500 transition-colors cursor-pointer">{t('footer', 'about')}</h3>
+            </Link>
             <ul className="space-y-3">
               {[
                 { label: t('footer', 'aboutUs'), href: '/about' },
@@ -140,12 +142,14 @@ export default function Footer() {
 
           {/* Column 3: Help */}
           <div className="lg:col-span-2 space-y-6">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider">{t('footer', 'help')}</h3>
+            <Link href="/support">
+              <h3 className="text-sm font-bold text-white uppercase tracking-wider hover:text-orange-500 transition-colors cursor-pointer">{t('footer', 'help')}</h3>
+            </Link>
             <ul className="space-y-3">
               {[
-                { label: t('footer', 'helpCenter'), href: '#' },
-                { label: t('footer', 'shippingInfo'), href: '#' },
-                { label: t('footer', 'contactUs'), href: '#' }
+                { label: t('footer', 'helpCenter'), href: '/support' },
+                { label: t('footer', 'shippingInfo'), href: '/support' },
+                { label: t('footer', 'contactUs'), href: '/support' }
               ].map((item) => (
                 <li key={item.label}>
                   <Link href={item.href} className="text-sm text-gray-400 hover:text-orange-500 transition-colors">
@@ -159,15 +163,33 @@ export default function Footer() {
           {/* Column 4: Connect & Community */}
           <div className="lg:col-span-4 space-y-8">
 
-            {/* Newsletter Subscription */}
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
-                <Mail className="w-4 h-4 text-orange-500" />
-                {t('footer', 'followUs')}
-              </h3>
-              <p className="text-xs text-gray-500 leading-relaxed">
-                Get exclusive deals, new arrivals & flash sale alerts straight to your inbox.
-              </p>
+            {/* Unified Social & Newsletter */}
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest leading-relaxed">БИДНИЙГ ДАГААРАЙ</h3>
+                <div className="flex flex-wrap gap-3">
+                  {[
+                    { icon: Facebook, href: 'https://www.facebook.com/SoyolVideoShop', label: 'Facebook', gradient: 'from-[#1877F2] to-[#0C5DC7]' },
+                    { icon: Instagram, href: 'https://www.instagram.com/soyol_video_shop_85552229?fbclid=IwY2xjawQp1StleHRuA2FlbQIxMABicmlkETFpTVQ3UFNjSnRHS1AwM2hRc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHrapwSQbsGwv4dnai3_DWxT19gEY_qrPvaLw5XLyzLLWsGed40Iv4OBa8dPR_aem_3zR16bzS5qD0MkQDnyBecw', label: 'Instagram', gradient: 'from-[#F58529] via-[#DD2A7B] to-[#8134AF]' },
+                    { icon: MessageCircle, href: 'https://whatsapp.com', label: 'WhatsApp', gradient: 'from-[#25D366] to-[#128C7E]' },
+                  ].map((social, i) => (
+                    <a
+                      key={i}
+                      href={social.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={social.label}
+                      className="group/social relative"
+                    >
+                      <div className={`absolute inset-0 bg-gradient-to-br ${social.gradient} rounded-xl opacity-0 group-hover/social:opacity-100 transition-opacity duration-300 blur-sm`} />
+                      <div className={`relative w-11 h-11 flex items-center justify-center bg-gray-900 border border-gray-800 rounded-xl text-gray-500 transition-all duration-300 group-hover/social:bg-gradient-to-br ${social.gradient} group-hover/social:text-white group-hover/social:border-transparent group-hover/social:scale-110 group-hover/social:shadow-lg`}>
+                        <social.icon className="w-5 h-5" />
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+
               <form onSubmit={handleSubscribe} className="relative group">
                 <div className="absolute -inset-0.5 bg-gradient-to-r from-orange-500/20 via-pink-500/20 to-purple-500/20 rounded-xl blur-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <div className="relative flex items-center bg-gray-900 border border-gray-800 rounded-xl overflow-hidden group-hover:border-gray-700 transition-colors duration-300">
@@ -175,7 +197,7 @@ export default function Footer() {
                     type="email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    placeholder="Enter your email"
+                    placeholder="И-мэйл хаягаа оруулна уу"
                     className="flex-1 bg-transparent text-sm text-white placeholder-gray-600 px-4 py-3 outline-none"
                     required
                   />
@@ -187,32 +209,6 @@ export default function Footer() {
                   </button>
                 </div>
               </form>
-            </div>
-
-            {/* Social & Community */}
-            <div className="space-y-4">
-              <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-widest">{t('footer', 'followUs')}</h3>
-              <div className="flex flex-wrap gap-3">
-                {[
-                  { icon: Facebook, href: 'https://www.facebook.com/SoyolVideoShop', label: 'Facebook', gradient: 'from-[#1877F2] to-[#0C5DC7]' },
-                  { icon: Instagram, href: 'https://www.instagram.com/soyol_video_shop_85552229?fbclid=IwY2xjawQp1StleHRuA2FlbQIxMABicmlkETFpTVQ3UFNjSnRHS1AwM2hRc3J0YwZhcHBfaWQQMjIyMDM5MTc4ODIwMDg5MgABHrapwSQbsGwv4dnai3_DWxT19gEY_qrPvaLw5XLyzLLWsGed40Iv4OBa8dPR_aem_3zR16bzS5qD0MkQDnyBecw', label: 'Instagram', gradient: 'from-[#F58529] via-[#DD2A7B] to-[#8134AF]' },
-                  { icon: MessageCircle, href: 'https://whatsapp.com', label: 'WhatsApp', gradient: 'from-[#25D366] to-[#128C7E]' },
-                ].map((social, i) => (
-                  <a
-                    key={i}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={social.label}
-                    className="group/social relative"
-                  >
-                    <div className={`absolute inset-0 bg-gradient-to-br ${social.gradient} rounded-xl opacity-0 group-hover/social:opacity-100 transition-opacity duration-300 blur-sm`} />
-                    <div className={`relative w-11 h-11 flex items-center justify-center bg-gray-900 border border-gray-800 rounded-xl text-gray-500 transition-all duration-300 group-hover/social:bg-gradient-to-br ${social.gradient} group-hover/social:text-white group-hover/social:border-transparent group-hover/social:scale-110 group-hover/social:shadow-lg`}>
-                      <social.icon className="w-5 h-5" />
-                    </div>
-                  </a>
-                ))}
-              </div>
             </div>
 
             {/* Facebook Groups — icon-only buttons */}

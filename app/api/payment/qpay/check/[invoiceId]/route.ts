@@ -36,8 +36,12 @@ export async function GET(
                 );
 
                 // Deduct inventory since order is now confirmed
-                if (order.items && order.items.length > 0) {
-                    await deductInventory(order._id.toString(), order.items);
+                try {
+                    if (order.items && order.items.length > 0) {
+                        await deductInventory(order._id.toString(), order.items);
+                    }
+                } catch (e) {
+                    console.error('[QPay Check] Failed to deduct inventory:', e);
                 }
 
                 // Notify Admin

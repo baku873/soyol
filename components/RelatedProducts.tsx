@@ -25,17 +25,14 @@ export default function RelatedProducts({ products }: RelatedProductsProps) {
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                className="mb-12 flex flex-col items-start gap-3"
+                className="mb-10 flex flex-col items-start gap-3"
             >
-                <div className="flex items-center gap-3">
-                    <div className="h-10 w-1 bg-orange-500 rounded-full shadow-[0_0_15px_rgba(249,115,22,0.5)]" />
-                    <h2 className="text-3xl font-black text-slate-900 tracking-tight">
-                        Танд санал болгох бараа
+                <div className="flex items-center gap-4">
+                    <div className="h-8 w-2 bg-[#FF5000] rounded-r-xl" />
+                    <h2 className="text-2xl lg:text-3xl font-black text-slate-900 tracking-tight uppercase">
+                        Танд санал болгож буй бараа
                     </h2>
                 </div>
-                <p className="text-slate-500 text-sm font-medium ml-4">
-                    Таны магадгүй сонирхох бусад бүтээгдэхүүнүүд
-                </p>
             </motion.div>
 
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">

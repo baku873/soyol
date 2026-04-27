@@ -8,28 +8,60 @@ import { motion, AnimatePresence } from 'framer-motion';
 const FAQS = [
     {
         id: 1,
-        question: 'Захиалга хэрхэн хийх вэ?',
-        answer: 'Та хүссэн бараагаа сонгон сагсанд нэмж, "Худалдан авах" товчийг даран хүргэлтийн мэдээллээ оруулснаар захиалга баталгаажна.'
+        question: 'ХҮРГЭЛТИЙН ҮЙЛЧИЛГЭЭ',
+        answer: (
+            <p>
+                Бид барааны овор хэмжээнээс үл шалтгаалан ширхэг барааг ч Улаанбаатар хотын өнцөг булан бүрт 2-6 цагийн дотор гарт тань хүргэж өгч байна. Мөн орон нутгийн захиалгыг албан ёсны хуваарийн дагуу шуудангийн унаанд болон хот хоорондын тээвэрт хүргэж өгч үйлчилж байна.
+            </p>
+        )
     },
     {
         id: 2,
-        question: 'Хүргэлт хэдэн хоногт ирдэг вэ?',
-        answer: 'Улаанбаатар хот дотор 24-48 цагийн дотор, орон нутагт 3-5 хоногийн дотор хүргэгдэнэ.'
+        question: 'ХОЛБОО БАРИХ МЭДЭЭЛЭЛ',
+        answer: (
+            <div className="space-y-2">
+                <p>Та захиалга хүргэлтийн нэгдсэн төв болох <strong>77-181818</strong> дугаарт залгах эсвэл дуут зурвас үлдээж бидэнтэй холбогдох боломжтой. Мөн албан ёсны facebook, Instagram хуудсаар дамжуулан холбогдох боломжтой. Бид ажлын цагаар танд яаралтай хариу өгч холбогдох болно.</p>
+                <p><strong>Манай хаяг:</strong> Баянзүрх дүүрэг 2 дугаар хороо Сансарын Ундрам плаза Юник оффис 5 давхарт 501 тоот 77181818</p>
+            </div>
+        )
     },
     {
         id: 3,
-        question: 'Төлбөрийн аргууд юу юу байдаг вэ?',
-        answer: 'Бид QPay, Банкны карт, шилжүүлэг болон бэлнээр (хүргэлт дээр) төлөх боломжуудыг санал болгож байна.'
+        question: 'БАРААГ БУЦААХ, СОЛИХ НӨХЦӨЛ',
+        answer: (
+            <ul className="list-disc pl-4 space-y-2">
+                <li>Худалдан авагч нь барааг хүлээн авснаас (хүргэлт дууссан) хойш 72 цагийн дотор 77-181818 утсанд холбогдон мэдэгдсэнээр буцааж, сольж болно.</li>
+                <li>Бараа буцаах, солиход гарах зардлыг тухайн нөхцөлийг үүсгэсэн тал хариуцна. Тухайлбал: бараа гэмтэлтэй, буруу бараа илгээсэн бол борлуулагч тал хариуцна. Харин худалдан авагчаас шалтгаалан буцаах, солих тохиолдолд худалдан авагч хариуцна.</li>
+                <li>Буцаах барааг хүргэлтийн жолооч авахдаа бүрэн бүтэн байдал болон эвдрэл гэмтэл хайрцаг сав, баглаа боодлыг сайтар шалган авч цааш нь хүлээлгэж өгнө.</li>
+                <li>Худалдан авагчийн солихыг хүссэн бараа борлуулагчид байхгүй тохиолдолд талууд харилцан тохиролцож барааг буцааж болно.</li>
+            </ul>
+        )
     },
     {
         id: 4,
-        question: 'Буцаалт хэрхэн хийх вэ?',
-        answer: 'Барааг хүлээн авснаас хойш 48 цагийн дотор сав баглаа боодлыг гэмтээгээгүй нөхцөлд буцаах боломжтой.'
+        question: 'ТӨЛБӨР БУЦААН ОЛГОХ',
+        answer: (
+            <ul className="list-disc pl-4 space-y-2">
+                <li>Худалдан авагч худалдан авалтаа цуцалсан, барааг буцаасан тохиолдолд тухайн барааны үнийг төлбөр буцаах үйл ажиллагаа 24 цагийн дотор худалдан авагчийн дансанд шилжүүлнэ.</li>
+                <li>Буцаасан барааны буцаалтын зардлыг худалдан авагч хариуцах бөгөөд худалдан авагч буцаалтын төлбөрөө төлөөгүй тохиолдолд бараа хүргэлт ба буцаалтын зардлыг буцаах төлбөрөөс хасч шилжүүлнэ.</li>
+                <li>Худалдан авагч өөрийн хүсэлтээр захиалгаа цуцалсан тохиолдолд худалдан авалттай холбогдон гарсан төлбөрийн гүйлгээний шимтгэлийг болон бусад зардлыг хариуцан төлнө.</li>
+            </ul>
+        )
     },
     {
         id: 5,
-        question: 'Холбоо барих мэдээлэл',
-        answer: 'Та манай хэрэглэгчийн үйлчилгээний төвтэй 85552229 дугаараар эсвэл info@soyol.mn хаягаар холбогдоорой.'
+        question: 'БАРААГ БУЦААХ БОЛОН СОЛИХООС ТАТГАЛЗАХ',
+        answer: (
+            <ul className="list-disc pl-4 space-y-2">
+                <li>Худалдан авагчаас шалтгаалан бараа гэмтсэн, бохирдсон, чанараа алдсан тохиолдолд</li>
+                <li>Худалдан авагч барааг ашигласнаас үүдэн барааны үнэ цэнэ буурсан бол</li>
+                <li>Бараа хүлээж авснаас хойш 72 цаг өнгөрсөн тохиолдолд</li>
+                <li>Хувилан олшруулах боломжтой барааны баглаа боодол гэмтсэн, нээгдсэн бол</li>
+                <li>Зөвхөн тухайн худалдан авагчийн захиалгад үндэслэн үйлдвэрлэгдсэн бараа</li>
+                <li>Тухайн барааг худалдаалахдаа буцаах болон солих боломжгүй хэмээн заасан бараа</li>
+                <li>Нэг барааны талаар хоёроос дээш буцаах тухай тохирсон боловч худалдан авагчийн буруутай үйл ажиллагаанаас болж хүлээгдэх нөхцөл</li>
+            </ul>
+        )
     }
 ];
 
@@ -38,8 +70,7 @@ export default function HelpPage() {
     const [openId, setOpenId] = useState<number | null>(null);
 
     const filteredFaqs = FAQS.filter(f =>
-        f.question.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        f.answer.toLowerCase().includes(searchQuery.toLowerCase())
+        f.question.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -99,9 +130,9 @@ export default function HelpPage() {
                                                     transition={{ duration: 0.2 }}
                                                     className="overflow-hidden bg-[#FAFAFA]"
                                                 >
-                                                    <p className="p-4 pt-0 text-[14px] text-[#666666] leading-relaxed">
+                                                    <div className="p-4 pt-0 text-[14px] text-[#666666] leading-relaxed">
                                                         {faq.answer}
-                                                    </p>
+                                                    </div>
                                                 </motion.div>
                                             )}
                                         </AnimatePresence>
@@ -121,40 +152,40 @@ export default function HelpPage() {
                     <h2 className="text-[11px] font-bold text-[#999999] uppercase tracking-wider ml-4 mb-2">Холбоо барих</h2>
                     <div className="bg-white rounded-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] overflow-hidden flex flex-col gap-[1px] bg-[#F5F5F5]">
 
-                        <a href="tel:85552229" className="flex items-center justify-between p-4 bg-white active:bg-gray-50 transition-colors">
+                        <a href="tel:77181818" className="flex items-center justify-between p-4 bg-white active:bg-gray-50 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-orange-50 flex items-center justify-center">
                                     <PhoneCall className="w-5 h-5 text-[#FF6B00]" strokeWidth={2} />
                                 </div>
                                 <div>
                                     <div className="text-[13px] text-[#999999] font-medium mb-0.5">Утас</div>
-                                    <div className="text-[16px] font-bold text-[#1A1A1A]">85552229</div>
+                                    <div className="text-[16px] font-bold text-[#1A1A1A]">77-181818</div>
                                 </div>
                             </div>
                             <span className="text-[13px] font-bold text-[#FF6B00] px-3 py-1.5 bg-orange-50 rounded-full">Залгах</span>
                         </a>
 
-                        <button className="flex items-center justify-between p-4 bg-white active:bg-gray-50 transition-colors w-full text-left">
+                        <a href="https://www.facebook.com/SoyolVideoShop/" target="_blank" rel="noopener noreferrer" className="flex items-center justify-between p-4 bg-white active:bg-gray-50 transition-colors w-full text-left">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center">
                                     <MessageCircle className="w-5 h-5 text-blue-500" strokeWidth={2} />
                                 </div>
                                 <div>
                                     <div className="text-[16px] font-bold text-[#1A1A1A]">Чат дэмжлэг</div>
-                                    <div className="text-[12px] text-[#999999] font-medium mt-0.5">Онлайн: 09:00 - 22:00</div>
+                                    <div className="text-[12px] text-[#999999] font-medium mt-0.5">Онлайн: 09:00 - 18:00</div>
                                 </div>
                             </div>
                             <span className="text-[13px] font-bold text-[#FF6B00] px-3 py-1.5 bg-orange-50 rounded-full">Бичих</span>
-                        </button>
+                        </a>
 
-                        <a href="mailto:info@soyol.mn" className="flex items-center justify-between p-4 bg-white active:bg-gray-50 transition-colors">
+                        <a href="mailto:office@soyolvideoshop.mn" className="flex items-center justify-between p-4 bg-white active:bg-gray-50 transition-colors">
                             <div className="flex items-center gap-3">
                                 <div className="w-10 h-10 rounded-full bg-gray-50 flex items-center justify-center">
                                     <Mail className="w-5 h-5 text-gray-500" strokeWidth={2} />
                                 </div>
                                 <div>
                                     <div className="text-[13px] text-[#999999] font-medium mb-0.5">И-мэйл</div>
-                                    <div className="text-[15px] font-bold text-[#1A1A1A]">info@soyol.mn</div>
+                                    <div className="text-[15px] font-bold text-[#1A1A1A]">office@soyolvideoshop.mn</div>
                                 </div>
                             </div>
                         </a>
