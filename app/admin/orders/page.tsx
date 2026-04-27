@@ -47,6 +47,7 @@ interface Order {
     status: 'pending' | 'confirmed' | 'delivered' | 'cancelled';
     createdAt: string;
     deliveryEstimate?: string;
+    deliveryMethod?: string;
     shipping?: {
         fullName: string;
         phone: string;
