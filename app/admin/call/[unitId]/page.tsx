@@ -19,7 +19,7 @@ interface AdminCallPageProps {
 export default function AdminCallPage({ params }: AdminCallPageProps) {
   const { unitId } = use(params);
   const router = useRouter();
-  const roomName = `room-${unitId}`;
+  const roomName = unitId.startsWith('support-') ? unitId : `room-${unitId}`;
   const identity = `admin-${Date.now()}`;
 
   const [token, setToken] = useState<string | null>(null);

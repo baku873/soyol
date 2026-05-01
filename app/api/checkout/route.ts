@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { items, saveAddress, ...userDetails } = validation.data;
-    const { clientPromise } = await import("@/lib/mongodb");
+    const { clientPromise, MONGO_DB } = await import("@/lib/mongodb");
     const client = await clientPromise;
     const session = client.startSession();
 
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
 
     try {
       await session.withTransaction(async () => {
-        const db = client.db();
+        const db = client.db(MONGO_DB);
         const productsCollection = db.collection("products");
         const ordersCollection = db.collection("orders");
         const storesCollection = db.collection("stores");

@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Subject and message are required' }, { status: 400 });
     }
 
-    const { clientPromise } = await import('@/lib/mongodb');
+    const { clientPromise, MONGO_DB } = await import('@/lib/mongodb');
     const client = await clientPromise;
     const session = client.startSession();
 
@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
 
     try {
       await session.withTransaction(async () => {
-        const db = client.db();
+        const db = client.db(MONGO_DB);
         const convCol = db.collection<Conversation>('support_conversations');
         const msgCol = db.collection<SupportMessage>('support_messages');
 

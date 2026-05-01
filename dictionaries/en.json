@@ -47,7 +47,11 @@
     "findingSupport": "Finding support...",
     "noAgents": "No agents available",
     "aiThinking": "Thinking...",
-    "welcomeAi": "Hello! I am Soyol Video Shop's AI Assistant. How can I help you today?"
+    "welcomeAi": "Hello! I am Soyol Video Shop's AI Assistant. How can I help you today?",
+    "supportTeam": "Support Team",
+    "online": "Online",
+    "sendHint": "Enter to send · Shift+Enter for new line",
+    "voiceCall": "Voice Call"
   },
   "cart": {
     "title": "Your Cart",

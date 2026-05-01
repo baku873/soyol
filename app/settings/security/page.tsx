@@ -1,13 +1,48 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { ChevronLeft, ChevronRight, Lock, Eye, BarChart2, Smartphone, Fingerprint, Activity, PauseCircle, Trash2 } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Lock, Eye, BarChart2, Smartphone, Fingerprint, Activity, PauseCircle, Trash2, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function PrivacyPage() {
     const [dataUsage, setDataUsage] = useState(true);
-    const [twoFactor, setTwoFactor] = useState(false);
-    const [biometrics, setBiometrics] = useState(true);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadSettings = async () => {
+            try {
+                const res = await fetch('/api/user/profile');
+                if (res.ok) {
+                    const data = await res.json();
+                    setDataUsage(data.dataUsageConsent ?? true);
+                }
+            } catch (error) {
+                console.error('Failed to load security settings', error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadSettings();
+    }, []);
+
+    const handleDataUsageToggle = async () => {
+        const prev = dataUsage;
+        const next = !prev;
+        setDataUsage(next); // Optimistic
+
+        try {
+            const res = await fetch('/api/user/profile', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ dataUsageConsent: next }),
+            });
+            if (!res.ok) throw new Error();
+        } catch {
+            setDataUsage(prev); // Revert
+            toast.error('Алдаа гарлаа');
+        }
+    };
 
     return (
         <div className="min-h-screen bg-[#F5F5F5] font-sans pb-10">
@@ -49,12 +84,16 @@ export default function PrivacyPage() {
                                 <BarChart2 className="w-[22px] h-[22px] text-[#444444]" strokeWidth={1.5} />
                                 <span className="text-[15px] font-bold text-[#1A1A1A]">Мэдээлэл ашиглалт</span>
                             </div>
-                            <button
-                                onClick={() => setDataUsage(!dataUsage)}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${dataUsage ? 'bg-[#FF6B00]' : 'bg-[#E5E5E5]'}`}
-                            >
-                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${dataUsage ? 'translate-x-5' : 'translate-x-1'}`} />
-                            </button>
+                            {loading ? (
+                                <Loader2 className="w-5 h-5 text-[#FF6B00] animate-spin" />
+                            ) : (
+                                <button
+                                    onClick={handleDataUsageToggle}
+                                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${dataUsage ? 'bg-[#FF6B00]' : 'bg-[#E5E5E5]'}`}
+                                >
+                                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${dataUsage ? 'translate-x-5' : 'translate-x-1'}`} />
+                                </button>
+                            )}
                         </div>
 
                     </div>
@@ -70,12 +109,9 @@ export default function PrivacyPage() {
                                 <Smartphone className="w-[22px] h-[22px] text-[#444444]" strokeWidth={1.5} />
                                 <span className="text-[15px] font-bold text-[#1A1A1A]">2 шатлалт баталгаажуулалт</span>
                             </div>
-                            <button
-                                onClick={() => setTwoFactor(!twoFactor)}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${twoFactor ? 'bg-[#FF6B00]' : 'bg-[#E5E5E5]'}`}
-                            >
-                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${twoFactor ? 'translate-x-5' : 'translate-x-1'}`} />
-                            </button>
+                            <span className="text-[11px] font-bold text-[#999] bg-[#F5F5F5] px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                Тун удахгүй
+                            </span>
                         </div>
 
                         <div className="flex items-center justify-between px-4 h-[64px] border-b border-[#F5F5F5]">
@@ -83,12 +119,9 @@ export default function PrivacyPage() {
                                 <Fingerprint className="w-[22px] h-[22px] text-[#444444]" strokeWidth={1.5} />
                                 <span className="text-[15px] font-bold text-[#1A1A1A]">Биометр нэвтрэлт</span>
                             </div>
-                            <button
-                                onClick={() => setBiometrics(!biometrics)}
-                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${biometrics ? 'bg-[#FF6B00]' : 'bg-[#E5E5E5]'}`}
-                            >
-                                <span className={`inline-block h-5 w-5 transform rounded-full bg-white transition-transform ${biometrics ? 'translate-x-5' : 'translate-x-1'}`} />
-                            </button>
+                            <span className="text-[11px] font-bold text-[#999] bg-[#F5F5F5] px-2.5 py-1 rounded-full uppercase tracking-wider">
+                                Тун удахгүй
+                            </span>
                         </div>
 
                         <Link href="/settings/sessions" className="flex items-center justify-between px-4 h-[64px] active:bg-gray-50 transition-colors">

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Star, ThumbsUp, ThumbsDown, Send, Loader2, AlertCircle } from 'lucide-react';
+import { Star, ThumbsUp, ThumbsDown, Send, Loader2, AlertCircle, Trash2 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import toast from 'react-hot-toast';
 
@@ -21,6 +21,7 @@ const StarRating = ({ rating, setRating, readOnly = false }: { rating: number, s
 
 interface Review {
   _id: string;
+  userId?: string;
   userName?: string;
   rating: number;
   comment: string;
@@ -29,16 +30,25 @@ interface Review {
   createdAt: string;
 }
 
-const ReviewItem = ({ review }: { review: Review }) => (
+const ReviewItem = ({ review, isOwner, onDelete }: { review: Review; isOwner: boolean; onDelete?: (id: string) => void }) => (
   <div className="py-4 border-b border-gray-100">
     <div className="flex items-center mb-2">
       <div className="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-600 text-sm mr-3">
         {review.userName?.charAt(0) || 'U'}
       </div>
-      <div>
+      <div className="flex-1">
         <p className="font-semibold text-sm text-gray-800">{review.userName || 'Anonymous'}</p>
         <StarRating rating={review.rating} readOnly />
       </div>
+      {isOwner && onDelete && (
+        <button
+          onClick={() => onDelete(review._id)}
+          className="p-1.5 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+          title="Устгах"
+        >
+          <Trash2 size={14} />
+        </button>
+      )}
     </div>
     <p className="text-gray-600 text-sm leading-relaxed">{review.comment}</p>
     <div className="flex items-center gap-4 mt-3 text-xs text-gray-500">
@@ -122,6 +132,25 @@ export default function ProductReviews({ productId }: { productId: string }) {
     }
   };
 
+  const handleDeleteReview = async (reviewId: string) => {
+    // Optimistic removal
+    const prev = reviews;
+    setReviews(reviews.filter(r => r._id !== reviewId));
+
+    try {
+      const res = await fetch(`/api/reviews?id=${reviewId}`, { method: 'DELETE' });
+      if (!res.ok) {
+        const data = await res.json();
+        throw new Error(data.error || 'Алдаа гарлаа');
+      }
+      toast.success('Үнэлгээ устгагдлаа');
+    } catch (error: any) {
+      // Rollback
+      setReviews(prev);
+      toast.error(error.message || 'Үнэлгээ устгахад алдаа гарлаа');
+    }
+  };
+
   return (
     <div className="space-y-6">
       {isAuthenticated ? (
@@ -171,7 +200,14 @@ export default function ProductReviews({ productId }: { productId: string }) {
             <Loader2 className="w-6 h-6 text-gray-300 animate-spin" />
           </div>
         ) : reviews.length > 0 ? (
-          reviews.map(review => <ReviewItem key={review._id} review={review} />)
+          reviews.map(review => (
+            <ReviewItem
+              key={review._id}
+              review={review}
+              isOwner={review.userId === user?.id || user?.role === 'admin'}
+              onDelete={handleDeleteReview}
+            />
+          ))
         ) : (
           <p className="text-gray-500 text-sm py-4">Одоогоор үнэлгээ байхгүй байна.</p>
         )}

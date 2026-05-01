@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 import { upsertOauthUser } from '@/lib/users';
 import { signAuthJwt } from '@/lib/jwt';
 import { setAuthCookie } from '@/lib/authCookies';
+import { createSession } from '@/lib/sessions';
 
 function getEnv(name: string): string {
   const v = process.env[name];
@@ -105,6 +106,16 @@ export async function GET(req: Request) {
       provider: user.provider,
       phone: user.phone,
       role: user.role || 'user',
+    });
+
+    // Record session
+    const ua = req.headers.get('user-agent');
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0].trim() || 'unknown';
+    await createSession({
+      userId: user._id.toString(),
+      userAgent: ua,
+      ip,
+      sessionToken: token,
     });
 
     const res = NextResponse.redirect(new URL(redirect, req.url));

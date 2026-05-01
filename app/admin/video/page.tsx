@@ -11,10 +11,18 @@ interface RoomInfo {
   creationTime: number;
 }
 
+interface SupportRoomInfo {
+  name: string;
+  clientId: string;
+  numParticipants: number;
+  creationTime: number;
+}
+
 /* ─── Main Dashboard ─── */
 export default function AdminVideoPage() {
   const router = useRouter();
   const [rooms, setRooms] = useState<RoomInfo[]>([]);
+  const [supportRooms, setSupportRooms] = useState<SupportRoomInfo[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [tick, setTick] = useState(0);
@@ -25,7 +33,8 @@ export default function AdminVideoPage() {
       const res = await fetch('/api/livekit/rooms');
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      setRooms(data.rooms ?? []);
+      setRooms(data.unitRooms ?? []);
+      setSupportRooms(data.supportRooms ?? []);
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch rooms');
@@ -70,8 +79,14 @@ export default function AdminVideoPage() {
               Unit Dashboard
             </span>
           </div>
-          <div className="text-emerald-800 text-[10px] uppercase tracking-[0.3em]">
-            {rooms.length} unit{rooms.length !== 1 ? 's' : ''} online
+          <div className="text-emerald-800 text-[10px] uppercase tracking-[0.3em] flex items-center gap-4">
+            {supportRooms.length > 0 && (
+                <span className="text-orange-500 font-bold flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                    {supportRooms.length} Waiting
+                </span>
+            )}
+            <span>{rooms.length} unit{rooms.length !== 1 ? 's' : ''} online</span>
           </div>
         </div>
       </header>
@@ -114,29 +129,108 @@ export default function AdminVideoPage() {
               </div>
             ))}
           </div>
-        ) : rooms.length === 0 ? (
-          /* Empty state */
-          <div className="flex flex-col items-center justify-center py-24 space-y-6">
-            <div className="relative w-20 h-20">
-              <div className="absolute inset-0 rounded-full border border-emerald-900/20" />
-              <div className="absolute inset-3 rounded-full border border-emerald-900/30" />
-              <div className="absolute inset-6 rounded-full border border-emerald-900/40" />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-2 h-2 rounded-full bg-emerald-900/40" />
-              </div>
-            </div>
-            <div className="text-center space-y-2">
-              <p className="text-emerald-700 uppercase tracking-[0.3em] text-sm">
-                No Units Online
-              </p>
-              <p className="text-emerald-900 text-xs tracking-[0.2em]">
-                Waiting for units to connect...
-              </p>
-            </div>
-          </div>
         ) : (
-          /* Room list */
-          <div className="space-y-2">
+          <div className="space-y-12">
+            {/* SECTION 1 — Waiting Support Calls */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="relative flex h-3 w-3">
+                  {supportRooms.length > 0 && <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>}
+                  <span className={`relative inline-flex rounded-full h-3 w-3 ${supportRooms.length > 0 ? 'bg-orange-500' : 'bg-slate-700'}`}></span>
+                </div>
+                <h2 className={`text-sm uppercase tracking-[0.2em] font-bold ${supportRooms.length > 0 ? 'text-orange-500' : 'text-slate-600'}`}>
+                  Waiting Support Calls
+                </h2>
+                {supportRooms.length > 0 && (
+                    <span className="bg-orange-500/20 text-orange-400 text-[10px] px-2 py-0.5 rounded-full border border-orange-500/30">
+                        {supportRooms.length}
+                    </span>
+                )}
+              </div>
+
+              {supportRooms.length === 0 ? (
+                <div className="border border-slate-800/50 bg-slate-900/20 py-8 px-6 text-center">
+                  <p className="text-slate-600 text-xs uppercase tracking-[0.2em]">No clients waiting</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {supportRooms.map((room) => {
+                    const elapsed = formatElapsed(room.creationTime, tick);
+                    return (
+                      <div
+                        key={room.name}
+                        className="group flex items-center border border-orange-900/30 bg-orange-950/10 hover:bg-orange-950/20 hover:border-orange-500/50 transition-all duration-200"
+                      >
+                        <div className="w-1 self-stretch bg-orange-600 shadow-[0_0_8px_rgba(234,88,12,0.6)]" />
+
+                        <div className="flex-1 flex items-center justify-between px-4 py-4">
+                          <div className="flex items-center gap-5">
+                            <div className="space-y-1.5">
+                              <div className="flex items-center gap-3">
+                                <span className="text-orange-400 uppercase tracking-[0.2em] text-sm font-bold">
+                                  Client #{room.clientId.slice(0, 8)}
+                                </span>
+                                <span className="text-orange-500/80 text-[10px] uppercase tracking-[0.1em] border border-orange-500/30 px-2 rounded-sm bg-orange-500/10">
+                                  Support Req
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-3 text-[10px]">
+                                <span className="text-orange-700 uppercase tracking-[0.2em]">
+                                  {room.numParticipants} participant{room.numParticipants !== 1 ? 's' : ''}
+                                </span>
+                                <span className="text-orange-900">|</span>
+                                <span className="text-orange-600 font-bold uppercase tracking-[0.2em]">
+                                  Waiting: {elapsed}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => router.push(`/admin/call/support-${room.clientId}`)}
+                            className="px-6 py-2.5 bg-orange-600 hover:bg-orange-500 text-black uppercase tracking-[0.2em] text-[10px] font-bold shadow-[0_0_15px_rgba(234,88,12,0.4)] hover:shadow-[0_0_20px_rgba(234,88,12,0.6)] transition-all duration-200"
+                          >
+                            Answer Call
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </section>
+
+            {/* SECTION 2 — Unit Rooms */}
+            <section className="space-y-4">
+              <div className="flex items-center gap-3 mb-4">
+                <span className="w-3 h-3 bg-emerald-500 rounded-sm"></span>
+                <h2 className="text-emerald-500 text-sm uppercase tracking-[0.2em] font-bold">
+                  Unit Dashboard
+                </h2>
+              </div>
+              {rooms.length === 0 ? (
+                  /* Empty state */
+                  <div className="flex flex-col items-center justify-center py-16 space-y-6">
+                    <div className="relative w-16 h-16">
+                      <div className="absolute inset-0 rounded-full border border-emerald-900/20" />
+                      <div className="absolute inset-2 rounded-full border border-emerald-900/30" />
+                      <div className="absolute inset-4 rounded-full border border-emerald-900/40" />
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-900/40" />
+                      </div>
+                    </div>
+                    <div className="text-center space-y-2">
+                      <p className="text-emerald-700 uppercase tracking-[0.3em] text-sm">
+                        No Units Online
+                      </p>
+                      <p className="text-emerald-900 text-xs tracking-[0.2em]">
+                        Waiting for units to connect...
+                      </p>
+                    </div>
+                  </div>
+              ) : (
+                  /* Room list */
+                  <div className="space-y-2">
             {rooms.map((room) => {
               const elapsed = formatElapsed(room.creationTime, tick);
               return (
@@ -191,6 +285,9 @@ export default function AdminVideoPage() {
               );
             })}
           </div>
+          )}
+          </section>
+        </div>
         )}
       </main>
     </div>

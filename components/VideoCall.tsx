@@ -67,6 +67,7 @@ export default function VideoCall({
   const [permissionError, setPermissionError] = useState<PermissionError | null>(null);
   const [localConnectionState, setLocalConnectionState] = useState<ConnectionState>('idle');
   const hasCleanedUp = useRef(false);
+  const hasAutoConnected = useRef(false);
 
   const {
     token,
@@ -135,6 +136,13 @@ export default function VideoCall({
     await connectToRoom(roomValue);
     setInCall(true);
   }, [roomInput, connectToRoom, checkMediaPermissions]);
+
+  useEffect(() => {
+    if (prefilledRoom && !hasAutoConnected.current && !inCall) {
+      hasAutoConnected.current = true;
+      handleConnect();
+    }
+  }, [prefilledRoom, handleConnect, inCall]);
 
   const handleLeave = useCallback(() => {
     if (hasCleanedUp.current) return;
@@ -222,6 +230,17 @@ export default function VideoCall({
   }
 
   // Pre-call UI
+  if (prefilledRoom && (isConnecting || localConnectionState === 'connecting' || (!error && !permissionError && !inCall))) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <Loader2 className="w-10 h-10 text-orange-500 animate-spin mx-auto" />
+          <p className="text-slate-600 font-medium">Тусламжийн багтай холбогдож байна...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[60vh] flex items-center justify-center p-4">
       <div className="w-full max-w-md">

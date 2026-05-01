@@ -227,8 +227,8 @@ export default function ProfilePage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex-1 flex items-center justify-center gap-1.5 py-[7px] rounded-[8px] text-[12px] font-semibold transition-all duration-200 ${active
-                    ? 'bg-white text-gray-900 shadow-sm'
-                    : 'text-gray-500'
+                  ? 'bg-white text-gray-900 shadow-sm'
+                  : 'text-gray-500'
                   }`}
               >
                 <Icon className="w-3.5 h-3.5" strokeWidth={2} />
@@ -268,13 +268,6 @@ export default function ProfilePage() {
                 </div>
                 <p className="text-[24px] font-bold text-[#1A1A1A]">{dataLoading ? '—' : addressCount}</p>
                 <p className="text-[12px] text-[#999] font-medium mt-0.5">Хадгалсан хаяг</p>
-              </div>
-              <div className="bg-white rounded-[14px] shadow-[0_2px_8px_rgba(0,0,0,0.06)] p-4 col-span-2">
-                <div className="w-9 h-9 bg-[#FFF7ED] rounded-[10px] flex items-center justify-center mb-3">
-                  <TrendingUp className="w-5 h-5 text-[#F97316]" strokeWidth={2} />
-                </div>
-                <p className="text-[24px] font-bold text-[#1A1A1A]">{formatPrice(totalPaid)}</p>
-                <p className="text-[12px] text-[#999] font-medium mt-0.5">Нийт төлсөн төлбөр</p>
               </div>
             </div>
 

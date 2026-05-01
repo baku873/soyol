@@ -6,6 +6,7 @@ import { rateLimitLogin } from '@/lib/rateLimit';
 import { findUserByEmail, findUserByPhoneLoose, toPublicUser } from '@/lib/users';
 import { signAuthJwt } from '@/lib/jwt';
 import { setAuthCookie } from '@/lib/authCookies';
+import { createSession } from '@/lib/sessions';
 
 const PasswordSchema = z.string().min(1, 'Нууц үг шаардлагатай');
 
@@ -66,6 +67,14 @@ export async function POST(request: Request) {
       provider: user.provider,
       phone: user.phone,
       role: user.role || 'user',
+    });
+
+    // Record session
+    await createSession({
+      userId: user._id!.toString(),
+      userAgent: request.headers.get('user-agent'),
+      ip,
+      sessionToken: token,
     });
 
     const res = NextResponse.json({ success: true, user: toPublicUser(user) });

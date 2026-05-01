@@ -49,6 +49,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await apiClient<{ user: User | null }>("/api/auth/me");
         setUser(data.user ?? null);
         setCartAuth(!!data.user);
+        // Sync wishlist from DB for returning authenticated users
+        if (data.user) {
+          useWishlistStore.getState().syncWithServer();
+        }
       } catch (error) {
         setUser(null);
         setCartAuth(false);
@@ -63,6 +67,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = (userData: User) => {
     setUser(userData);
     setCartAuth(true);
+    // Hydrate wishlist from DB after login
+    useWishlistStore.getState().syncWithServer();
   };
 
   const logout = async () => {

@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import useSWR from 'swr';
 import toast from 'react-hot-toast';
-import { Loader2, Search, Shield, User, KeyRound, X, Eye, EyeOff, ArrowUpDown } from 'lucide-react';
-
+import { Loader2, Search, Shield, User, KeyRound, X, Eye, EyeOff, ArrowUpDown, Trash2 } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const fetcher = (url: string) => fetch(url).then(r => r.json());
 
@@ -17,8 +17,10 @@ interface AdminUser {
 }
 
 export default function AdminUsersPage() {
+    const { user: currentAdmin } = useAuth();
     const [searchTerm, setSearchTerm] = useState('');
     const [togglingId, setTogglingId] = useState<string | null>(null);
+    const [deletingId, setDeletingId] = useState<string | null>(null);
     const [sortBy, setSortBy] = useState<'date_desc' | 'date_asc' | 'name_asc' | 'name_desc'>('date_desc');
 
     // Password reset modal state
@@ -116,6 +118,33 @@ export default function AdminUsersPage() {
         }
     };
 
+    const handleDelete = async (user: AdminUser) => {
+        if (!window.confirm('Delete this user? This cannot be undone.')) return;
+
+        setDeletingId(user._id);
+        try {
+            const res = await fetch(`/api/admin/users?id=${user._id}`, { method: 'DELETE' });
+            const result = await res.json();
+            if (res.ok) {
+                toast.success(result.message || 'Хэрэглэгч устгагдлаа');
+                // Optimistic: remove from local state
+                mutate(
+                    (current: any) => ({
+                        ...current,
+                        users: (current?.users || []).filter((u: AdminUser) => u._id !== user._id),
+                    }),
+                    false
+                );
+            } else {
+                toast.error(result.error || 'Алдаа гарлаа');
+            }
+        } catch {
+            toast.error('Сервертэй холбогдож чадсангүй');
+        } finally {
+            setDeletingId(null);
+        }
+    };
+
     return (
         <div className="flex-1 flex flex-col min-h-screen bg-slate-950 text-white">
             {/* Header */}
@@ -200,6 +229,8 @@ export default function AdminUsersPage() {
                                         filteredUsers.map(user => {
                                             const isAdmin = user.role === 'admin';
                                             const isToggling = togglingId === user._id;
+                                            const isSelf = currentAdmin?.id === user._id;
+                                            const isDeleting = deletingId === user._id;
 
                                             return (
                                                 <tr key={user._id} className="hover:bg-slate-800/30 transition-colors group">
@@ -272,6 +303,20 @@ export default function AdminUsersPage() {
                                                                     <><User className="w-3 h-3" /> Хэрэглэгч болгох</>
                                                                 ) : (
                                                                     <><Shield className="w-3 h-3" /> Админ болгох</>
+                                                                )}
+                                                            </button>
+
+                                                            {/* Delete User */}
+                                                            <button
+                                                                onClick={() => handleDelete(user)}
+                                                                disabled={isSelf || isDeleting}
+                                                                title={isSelf ? 'Өөрийгөө устгах боломжгүй' : 'Хэрэглэгч устгах'}
+                                                                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border bg-red-500/10 text-red-400 border-red-500/20 hover:bg-red-500/20 disabled:opacity-30 disabled:cursor-not-allowed"
+                                                            >
+                                                                {isDeleting ? (
+                                                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                                                ) : (
+                                                                    <Trash2 className="w-3 h-3" />
                                                                 )}
                                                             </button>
                                                         </div>

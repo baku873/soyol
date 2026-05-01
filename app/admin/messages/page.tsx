@@ -78,7 +78,12 @@ export default function AdminMessagesDashboard() {
     return () => {
       channel.unsubscribe();
       typingChannel.unsubscribe();
-      ably.close();
+      if (ably.connection.state !== 'closed' && ably.connection.state !== 'closing') {
+        const closePromise = ably.close() as any;
+        if (closePromise && closePromise.catch) {
+          closePromise.catch((e: any) => console.error('Ably close error', e));
+        }
+      }
     };
   }, [selectedId, user]);
 
@@ -94,7 +99,12 @@ export default function AdminMessagesDashboard() {
     });
     return () => {
       globalChannel.unsubscribe();
-      ably.close();
+      if (ably.connection.state !== 'closed' && ably.connection.state !== 'closing') {
+        const closePromise = ably.close() as any;
+        if (closePromise && closePromise.catch) {
+          closePromise.catch((e: any) => console.error('Ably close error', e));
+        }
+      }
     };
   }, [isAdmin]);
 

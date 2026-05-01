@@ -3,23 +3,48 @@ import { NextRequest, NextResponse } from 'next/server';
  import { auth } from '@/lib/auth'; 
  import { ObjectId } from 'mongodb'; 
  
- // GET — энэ бараа wishlist-д байгаа эсэхийг шалгах 
+ // GET — productId param: check single item; no param: return full wishlist with product data
  export async function GET(req: NextRequest) { 
    try { 
      const { userId } = await auth(); 
-     if (!userId) return NextResponse.json({ isWishlisted: false }); 
+     if (!userId) return NextResponse.json({ isWishlisted: false, items: [] }); 
  
      const { searchParams } = new URL(req.url); 
      const productId = searchParams.get('productId'); 
-     if (!productId) return NextResponse.json({ isWishlisted: false }); 
- 
+
      const users = await getCollection('users'); 
      const user = await users.findOne({ _id: new ObjectId(userId) }); 
-     const isWishlisted = (user?.wishlist || []).includes(productId); 
- 
-     return NextResponse.json({ isWishlisted }); 
+     const wishlistIds: string[] = user?.wishlist || [];
+
+     // Single-product check mode
+     if (productId) {
+       return NextResponse.json({ isWishlisted: wishlistIds.includes(productId) }); 
+     }
+
+     // Full wishlist mode — return product objects
+     if (wishlistIds.length === 0) {
+       return NextResponse.json({ items: [] });
+     }
+
+     const products = await getCollection('products');
+     const objectIds = wishlistIds
+       .filter((id) => ObjectId.isValid(id))
+       .map((id) => new ObjectId(id));
+
+     const productDocs = await products
+       .find({ _id: { $in: objectIds } })
+       .project({ password: 0 })
+       .toArray();
+
+     const items = productDocs.map((p) => ({
+       ...p,
+       id: p._id.toString(),
+       _id: undefined,
+     }));
+
+     return NextResponse.json({ items });
    } catch { 
-     return NextResponse.json({ isWishlisted: false }); 
+     return NextResponse.json({ isWishlisted: false, items: [] }); 
    } 
  } 
  

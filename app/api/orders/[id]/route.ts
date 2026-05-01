@@ -109,13 +109,13 @@ export async function PATCH(
       );
     }
 
-    const { clientPromise } = await import("@/lib/mongodb");
+    const { clientPromise, MONGO_DB } = await import("@/lib/mongodb");
     const client = await clientPromise;
     const session = client.startSession();
 
     try {
       await session.withTransaction(async () => {
-        const db = client.db();
+        const db = client.db(MONGO_DB);
         const ordersCollection = db.collection("orders");
         const productsCollection = db.collection("products");
 

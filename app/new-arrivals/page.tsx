@@ -46,15 +46,9 @@ export default function NewArrivalsPage() {
   useEffect(() => {
     async function fetchProducts() {
       try {
-        const response = await fetch("/api/products?limit=200");
+        const response = await fetch("/api/products?new=true&limit=50");
         const data = await response.json();
-        const allProducts = data.products || [];
-        const taggedNewProducts = allProducts.filter(
-          (p: any) =>
-            Array.isArray(p.sections) &&
-            (p.sections.includes("Шинэ") || p.sections.includes("New")),
-        );
-        setProducts(taggedNewProducts);
+        setProducts(data.products || []);
       } catch (error) {
         // Error handling - could log to error tracking service in production
       } finally {

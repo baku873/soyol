@@ -90,3 +90,38 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to create review' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await auth();
+    if (!session?.userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id || !ObjectId.isValid(id)) {
+      return NextResponse.json({ error: 'Valid review ID is required' }, { status: 400 });
+    }
+
+    const reviewsCollection = await getCollection('reviews');
+    const review = await reviewsCollection.findOne({ _id: new ObjectId(id) });
+
+    if (!review) {
+      return NextResponse.json({ error: 'Review not found' }, { status: 404 });
+    }
+
+    // Allow deletion only if owner or admin
+    if (review.userId !== session.userId && session.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+    }
+
+    await reviewsCollection.deleteOne({ _id: new ObjectId(id) });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    return NextResponse.json({ error: 'Failed to delete review' }, { status: 500 });
+  }
+}

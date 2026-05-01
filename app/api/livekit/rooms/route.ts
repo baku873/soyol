@@ -29,17 +29,29 @@ export async function GET() {
 
     const allRooms = await roomService.listRooms();
 
-    // Filter to only "room-*" rooms (unit rooms)
+    // Filter to "room-*" rooms (unit rooms)
     const unitRooms = allRooms
       .filter((r) => r.name?.startsWith('room-'))
       .map((r) => ({
+        type: 'unit',
         name: r.name,
         unitId: r.name?.replace(/^room-/, '') ?? '',
         numParticipants: r.numParticipants ?? 0,
         creationTime: Number(r.creationTime ?? 0),
       }));
 
-    return NextResponse.json({ rooms: unitRooms });
+    // Filter to "support-*" rooms
+    const supportRooms = allRooms
+      .filter((r) => r.name?.startsWith('support-'))
+      .map((r) => ({
+        type: 'support',
+        name: r.name,
+        clientId: r.name?.replace(/^support-/, '') ?? '',
+        numParticipants: r.numParticipants ?? 0,
+        creationTime: Number(r.creationTime ?? 0),
+      }));
+
+    return NextResponse.json({ unitRooms, supportRooms });
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
     console.error('LiveKit listRooms error:', message);
