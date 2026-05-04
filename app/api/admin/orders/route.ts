@@ -194,3 +194,60 @@ export async function PUT(request: Request) {
         return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
     }
 }
+
+// Create a new order manually (Admin only)
+export async function POST(request: Request) {
+    try {
+        const user = await currentUser();
+        if (!user || user.role !== 'admin') {
+            return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+        }
+
+        const body = await request.json();
+        const { userId, fullName, phone, paidAmount, bank, product, quantity } = body;
+
+        if (!product || !paidAmount || !fullName) {
+            return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+        }
+
+        const ordersCollection = await getCollection('orders');
+        
+        const newOrder = {
+            userId: userId && userId !== 'guest' ? userId : 'guest',
+            fullName: fullName,
+            phone: phone || '',
+            address: 'Тодорхойгүй (Admin нэмсэн)',
+            city: '',
+            district: '',
+            khoroo: '',
+            items: [
+                {
+                    id: new ObjectId().toString(),
+                    productId: product.id,
+                    name: product.name,
+                    price: product.price || 0,
+                    quantity: quantity || 1,
+                    image: product.image || product.images?.[0] || '',
+                }
+            ],
+            totalPrice: Number(paidAmount),
+            total: Number(paidAmount),
+            status: 'confirmed', // Automatically confirmed when admin adds it
+            paymentStatus: 'paid',
+            paymentMethod: 'manual_transfer',
+            bank: bank || 'Тодорхойгүй', // Custom field for manual entries
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+        };
+
+        const result = await ordersCollection.insertOne(newOrder);
+
+        // Optionally deduct inventory here if required
+        // await deductInventory(result.insertedId.toString(), newOrder.items);
+
+        return NextResponse.json({ success: true, orderId: result.insertedId });
+    } catch (error) {
+        console.error('Error creating admin order:', error);
+        return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    }
+}

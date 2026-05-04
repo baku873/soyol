@@ -1,11 +1,10 @@
 'use client';
-
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import Image from 'next/image';
 import {
     Loader2, Package, Search,
     MapPin, Phone, Check, CheckCircle2, Truck, ChevronRight,
-    ShoppingCart, X, AlertCircle
+    ShoppingCart, X, AlertCircle, Plus
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { formatDistanceToNow } from 'date-fns';
@@ -82,6 +81,19 @@ export default function AdminOrdersPage() {
     const [editStatus, setEditStatus] = useState<OrderStatus>('pending');
     const [editEstimate, setEditEstimate] = useState('');
     const [updating, setUpdating] = useState(false);
+
+    // Add order state
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+    const [addSearchUser, setAddSearchUser] = useState('');
+    const [addSearchProduct, setAddSearchProduct] = useState('');
+    const [addSelectedUser, setAddSelectedUser] = useState<any>(null);
+    const [addSelectedProduct, setAddSelectedProduct] = useState<any>(null);
+    const [addPaidAmount, setAddPaidAmount] = useState('');
+    const [addBank, setAddBank] = useState('');
+    const [isSubmittingAdd, setIsSubmittingAdd] = useState(false);
+
+    const { data: usersData } = useSWR(isAddModalOpen ? `/api/admin/users?search=${addSearchUser}&limit=5` : null, fetcher);
+    const { data: productsData } = useSWR(isAddModalOpen ? `/api/products?q=${addSearchProduct}&limit=5` : null, fetcher);
 
     const filteredOrders = useMemo(() => {
         return orders
@@ -165,6 +177,44 @@ export default function AdminOrdersPage() {
         setQuickUpdating(orderId);
         await updateOrderStatus(orderId, newStatus);
         setQuickUpdating(null);
+    };
+
+    const handleAddOrder = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!addSelectedProduct || !addPaidAmount) {
+            toast.error('Бараа болон төлсөн дүнг оруулна уу');
+            return;
+        }
+        setIsSubmittingAdd(true);
+        try {
+            const res = await fetch('/api/admin/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    userId: addSelectedUser?._id || 'guest',
+                    fullName: addSelectedUser?.name || 'Зочин (Admin нэмсэн)',
+                    phone: addSelectedUser?.phone || '',
+                    paidAmount: addPaidAmount,
+                    bank: addBank,
+                    product: addSelectedProduct,
+                    quantity: 1
+                })
+            });
+            if (!res.ok) throw new Error('Failed to create order');
+            toast.success('Захиалга амжилттай нэмэгдлээ');
+            mutate();
+            setIsAddModalOpen(false);
+            setAddSelectedUser(null);
+            setAddSelectedProduct(null);
+            setAddPaidAmount('');
+            setAddBank('');
+            setAddSearchUser('');
+            setAddSearchProduct('');
+        } catch (error) {
+            toast.error('Захиалга нэмэхэд алдаа гарлаа');
+        } finally {
+            setIsSubmittingAdd(false);
+        }
     };
 
     const handleBulkAction = async (newStatus: OrderStatus) => {
@@ -292,6 +342,13 @@ export default function AdminOrdersPage() {
                                     </span>
                                 </button>
                             ))}
+                            <button
+                                onClick={() => setIsAddModalOpen(true)}
+                                className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors"
+                            >
+                                <Plus className="w-4 h-4" />
+                                <span className="hidden sm:inline">Захиалга нэмэх</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -332,153 +389,153 @@ export default function AdminOrdersPage() {
 
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 relative scrollbar-hide">
                 <div className="max-w-6xl mx-auto space-y-4 pb-20">
-                    {filteredOrders.length === 0 ? ( 
-                      <div className="py-20 text-center bg-slate-900 rounded-3xl border border-dashed border-slate-800 shadow-xl">
+                    {filteredOrders.length === 0 ? (
+                        <div className="py-20 text-center bg-slate-900 rounded-3xl border border-dashed border-slate-800 shadow-xl">
                             <div className="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-4">
                                 <Package className="w-8 h-8 text-slate-500" />
                             </div>
                             <h3 className="text-xl font-bold text-white">Захиалга байхгүй байна</h3>
                         </div>
-                    ) : ( 
-                      <> 
-                        {/* MOBILE — md-с дээш нуугдана */} 
-                        <div className="md:hidden space-y-3"> 
-                          {filteredOrders.map((order) => ( 
-                            <div 
-                              key={order._id} 
-                              onClick={() => openOrderDetails(order)} 
-                              className="bg-slate-900 border border-slate-800 rounded-2xl p-4 cursor-pointer active:scale-[0.99] transition-transform" 
-                            > 
-                              <div className="flex items-start justify-between mb-3"> 
-                                <div> 
-                                  <p className="font-bold text-white text-sm">{order.fullName}</p> 
-                                  <p className="text-xs text-slate-500 mt-0.5">{order.phone}</p> 
-                                </div> 
-                                <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold border uppercase tracking-wider ${getStatusBadgeClass(order.status)}`}> 
-                                  {getStatusLabel(order.status)} 
-                                </span> 
-                              </div> 
-                              <div className="flex items-center justify-between"> 
-                                <div> 
-                                  <p className="font-black text-amber-500 text-base">{formatPrice(order.totalPrice || order.total || (order.items?.reduce((acc: number, cur: any) => acc + (cur.price * cur.quantity), 0)) || 0)}</p> 
-                                  <p className="text-[10px] text-slate-600 font-mono mt-0.5">#{order._id.slice(-8).toUpperCase()}</p> 
-                                </div> 
-                                <div className="flex gap-2" onClick={e => e.stopPropagation()}> 
-                                  {order.status === 'pending' && ( 
-                                    <button 
-                                      onClick={() => handleStatusQuickChange(order._id, 'confirmed')} 
-                                      disabled={quickUpdating === order._id} 
-                                      className="px-4 py-2 bg-blue-500/20 text-blue-400 text-xs font-bold rounded-xl border border-blue-500/20 disabled:opacity-50" 
-                                    > 
-                                      {quickUpdating === order._id ? <Loader2 className="w-3 h-3 animate-spin" /> : '✓ Батлах'} 
-                                    </button> 
-                                  )} 
-                                  {order.status === 'confirmed' && ( 
-                                    <button 
-                                      onClick={() => handleStatusQuickChange(order._id, 'delivered')} 
-                                      disabled={quickUpdating === order._id} 
-                                      className="px-4 py-2 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-xl border border-emerald-500/20 disabled:opacity-50" 
-                                    > 
-                                      {quickUpdating === order._id ? <Loader2 className="w-3 h-3 animate-spin" /> : '🚚 Хүргэх'} 
-                                    </button> 
-                                  )} 
-                                </div> 
-                              </div> 
-                            </div> 
-                          ))} 
-                        </div> 
- 
-                        {/* DESKTOP TABLE — mobile-д нуугдана */} 
-                        <div className="hidden md:block bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl"> 
-                          <div className="overflow-x-auto"> 
-                            <table className="w-full text-left border-collapse"> 
-                                <thead>
-                                    <tr className="bg-slate-950 border-b border-slate-800">
-                                        <th className="px-4 py-3 w-10">
-                                            <input
-                                                type="checkbox"
-                                                checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
-                                                onChange={toggleBulkSelectAll}
-                                                className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-amber-500 focus:ring-amber-500/20"
-                                            />
-                                        </th>
-                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">ID / Огноо</th>
-                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Хэрэглэгч</th>
-                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Дүн / Бараа</th>
-                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Төлөв</th>
-                                        <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Шуурхай үйлдэл</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-800">
-                                    {filteredOrders.map((order) => {
-                                        const totalAmt = order.totalPrice || order.total || order.items?.reduce((acc: number, cur: any) => acc + (cur.price * cur.quantity), 0) || 0;
-                                        return (
-                                            <tr
-                                                key={order._id}
-                                                onClick={() => openOrderDetails(order)}
-                                                className={`group cursor-pointer transition-colors ${selectedOrderId === order._id ? 'bg-slate-800/50' : 'hover:bg-slate-800/30'}`}
-                                            >
-                                                <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                    ) : (
+                        <>
+                            {/* MOBILE — md-с дээш нуугдана */}
+                            <div className="md:hidden space-y-3">
+                                {filteredOrders.map((order) => (
+                                    <div
+                                        key={order._id}
+                                        onClick={() => openOrderDetails(order)}
+                                        className="bg-slate-900 border border-slate-800 rounded-2xl p-4 cursor-pointer active:scale-[0.99] transition-transform"
+                                    >
+                                        <div className="flex items-start justify-between mb-3">
+                                            <div>
+                                                <p className="font-bold text-white text-sm">{order.fullName}</p>
+                                                <p className="text-xs text-slate-500 mt-0.5">{order.phone}</p>
+                                            </div>
+                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold border uppercase tracking-wider ${getStatusBadgeClass(order.status)}`}>
+                                                {getStatusLabel(order.status)}
+                                            </span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <p className="font-black text-amber-500 text-base">{formatPrice(order.totalPrice || order.total || (order.items?.reduce((acc: number, cur: any) => acc + (cur.price * cur.quantity), 0)) || 0)}</p>
+                                                <p className="text-[10px] text-slate-600 font-mono mt-0.5">#{order._id.slice(-8).toUpperCase()}</p>
+                                            </div>
+                                            <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                                                {order.status === 'pending' && (
+                                                    <button
+                                                        onClick={() => handleStatusQuickChange(order._id, 'confirmed')}
+                                                        disabled={quickUpdating === order._id}
+                                                        className="px-4 py-2 bg-blue-500/20 text-blue-400 text-xs font-bold rounded-xl border border-blue-500/20 disabled:opacity-50"
+                                                    >
+                                                        {quickUpdating === order._id ? <Loader2 className="w-3 h-3 animate-spin" /> : '✓ Батлах'}
+                                                    </button>
+                                                )}
+                                                {order.status === 'confirmed' && (
+                                                    <button
+                                                        onClick={() => handleStatusQuickChange(order._id, 'delivered')}
+                                                        disabled={quickUpdating === order._id}
+                                                        className="px-4 py-2 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-xl border border-emerald-500/20 disabled:opacity-50"
+                                                    >
+                                                        {quickUpdating === order._id ? <Loader2 className="w-3 h-3 animate-spin" /> : '🚚 Хүргэх'}
+                                                    </button>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* DESKTOP TABLE — mobile-д нуугдана */}
+                            <div className="hidden md:block bg-slate-900 border border-slate-800 rounded-xl overflow-hidden shadow-xl">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left border-collapse">
+                                        <thead>
+                                            <tr className="bg-slate-950 border-b border-slate-800">
+                                                <th className="px-4 py-3 w-10">
                                                     <input
                                                         type="checkbox"
-                                                        checked={selectedOrderIds.has(order._id)}
-                                                        onChange={(e) => toggleBulkSelect(order._id, e as any)}
+                                                        checked={selectedOrderIds.size === filteredOrders.length && filteredOrders.length > 0}
+                                                        onChange={toggleBulkSelectAll}
                                                         className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-amber-500 focus:ring-amber-500/20"
                                                     />
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <p className="font-mono text-sm text-white font-bold group-hover:text-amber-500 transition-colors">#{order._id.slice(-8).toUpperCase()}</p>
-                                                    <p className="text-xs text-slate-500 mt-1">{formatDistanceToNow(new Date(order.createdAt), { addSuffix: true, locale: mn })}</p>
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <p className="text-sm font-bold text-white">{order.shipping?.fullName || order.fullName || 'Нэргүй'}</p>
-                                                    <p className="text-xs font-mono text-slate-400 mt-1">{order.shipping?.phone || order.phone}</p>
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <p className="text-sm font-black text-amber-500">{formatPrice(totalAmt)}</p>
-                                                    <p className="text-xs text-slate-500 mt-1">{order.items.length} төрөл бараа</p>
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold border uppercase tracking-wider ${getStatusBadgeClass(order.status)}`}>
-                                                        {getStatusLabel(order.status)}
-                                                    </span>
-                                                </td>
-                                                <td className="px-4 py-4">
-                                                    <div className="flex gap-2" onClick={e => e.stopPropagation()}>
-                                                        {order.status === 'pending' && (
-                                                            <button
-                                                                onClick={() => handleStatusQuickChange(order._id, 'confirmed')}
-                                                                disabled={quickUpdating === order._id}
-                                                                className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-bold rounded-lg border border-blue-500/20 disabled:opacity-50 transition-colors"
-                                                            >
-                                                                {quickUpdating === order._id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Батлах'}
-                                                            </button>
-                                                        )}
-                                                        {order.status === 'confirmed' && (
-                                                            <button
-                                                                onClick={() => handleStatusQuickChange(order._id, 'delivered')}
-                                                                disabled={quickUpdating === order._id}
-                                                                className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/20 disabled:opacity-50 transition-colors"
-                                                            >
-                                                                {quickUpdating === order._id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Хүргэх'}
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={() => openOrderDetails(order)}
-                                                            className="p-1.5 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-colors ml-auto opacity-0 group-hover:opacity-100"
-                                                        >
-                                                            <ChevronRight className="w-4 h-4" />
-                                                        </button>
-                                                    </div>
-                                                </td>
+                                                </th>
+                                                <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">ID / Огноо</th>
+                                                <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Хэрэглэгч</th>
+                                                <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Дүн / Бараа</th>
+                                                <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Төлөв</th>
+                                                <th className="px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">Шуурхай үйлдэл</th>
                                             </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table> 
-                          </div> 
-                        </div> 
-                      </> 
+                                        </thead>
+                                        <tbody className="divide-y divide-slate-800">
+                                            {filteredOrders.map((order) => {
+                                                const totalAmt = order.totalPrice || order.total || order.items?.reduce((acc: number, cur: any) => acc + (cur.price * cur.quantity), 0) || 0;
+                                                return (
+                                                    <tr
+                                                        key={order._id}
+                                                        onClick={() => openOrderDetails(order)}
+                                                        className={`group cursor-pointer transition-colors ${selectedOrderId === order._id ? 'bg-slate-800/50' : 'hover:bg-slate-800/30'}`}
+                                                    >
+                                                        <td className="px-4 py-4" onClick={e => e.stopPropagation()}>
+                                                            <input
+                                                                type="checkbox"
+                                                                checked={selectedOrderIds.has(order._id)}
+                                                                onChange={(e) => toggleBulkSelect(order._id, e as any)}
+                                                                className="w-4 h-4 rounded border-slate-700 bg-slate-800 text-amber-500 focus:ring-amber-500/20"
+                                                            />
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            <p className="font-mono text-sm text-white font-bold group-hover:text-amber-500 transition-colors">#{order._id.slice(-8).toUpperCase()}</p>
+                                                            <p className="text-xs text-slate-500 mt-1">{formatDistanceToNow(new Date(order.createdAt), { addSuffix: true, locale: mn })}</p>
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            <p className="text-sm font-bold text-white">{order.shipping?.fullName || order.fullName || 'Нэргүй'}</p>
+                                                            <p className="text-xs font-mono text-slate-400 mt-1">{order.shipping?.phone || order.phone}</p>
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            <p className="text-sm font-black text-amber-500">{formatPrice(totalAmt)}</p>
+                                                            <p className="text-xs text-slate-500 mt-1">{order.items.length} төрөл бараа</p>
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-bold border uppercase tracking-wider ${getStatusBadgeClass(order.status)}`}>
+                                                                {getStatusLabel(order.status)}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-4 py-4">
+                                                            <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                                                                {order.status === 'pending' && (
+                                                                    <button
+                                                                        onClick={() => handleStatusQuickChange(order._id, 'confirmed')}
+                                                                        disabled={quickUpdating === order._id}
+                                                                        className="px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 text-xs font-bold rounded-lg border border-blue-500/20 disabled:opacity-50 transition-colors"
+                                                                    >
+                                                                        {quickUpdating === order._id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Батлах'}
+                                                                    </button>
+                                                                )}
+                                                                {order.status === 'confirmed' && (
+                                                                    <button
+                                                                        onClick={() => handleStatusQuickChange(order._id, 'delivered')}
+                                                                        disabled={quickUpdating === order._id}
+                                                                        className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-lg border border-emerald-500/20 disabled:opacity-50 transition-colors"
+                                                                    >
+                                                                        {quickUpdating === order._id ? <Loader2 className="w-3 h-3 animate-spin" /> : 'Хүргэх'}
+                                                                    </button>
+                                                                )}
+                                                                <button
+                                                                    onClick={() => openOrderDetails(order)}
+                                                                    className="p-1.5 text-slate-500 hover:text-white hover:bg-slate-800 rounded-lg transition-colors ml-auto opacity-0 group-hover:opacity-100"
+                                                                >
+                                                                    <ChevronRight className="w-4 h-4" />
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </>
                     )}
                 </div>
             </main>
@@ -578,7 +635,7 @@ export default function AdminOrdersPage() {
                                                     <p className="font-bold text-white">{selectedOrder.fullName || 'Зочин'}</p>
                                                     <div className="flex items-center gap-2 mt-0.5">
                                                         <p className="text-sm font-mono text-slate-400">{selectedOrder.phone}</p>
-                                                        <button 
+                                                        <button
                                                             onClick={() => {
                                                                 navigator.clipboard.writeText(selectedOrder.phone);
                                                                 toast.success('Утас хуулагдлаа');
@@ -586,7 +643,7 @@ export default function AdminOrdersPage() {
                                                             className="p-1 hover:bg-slate-800 rounded transition-colors"
                                                             title="Хуулах"
                                                         >
-                                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
                                                         </button>
                                                     </div>
                                                 </div>
@@ -657,7 +714,7 @@ export default function AdminOrdersPage() {
                                                     </div>
                                                 </div>
                                                 <div className="flex flex-col gap-2 opacity-0 group-hover/addr:opacity-100 transition-opacity absolute -right-2 top-0">
-                                                    <button 
+                                                    <button
                                                         onClick={() => {
                                                             const addr = `${selectedOrder.shipping?.city || selectedOrder.city}, ${selectedOrder.shipping?.district || selectedOrder.district}, ${selectedOrder.shipping?.khoroo || selectedOrder.khoroo || ''} ${selectedOrder.shipping?.street || selectedOrder.street || ''} ${selectedOrder.shipping?.apartment || selectedOrder.apartment || ''} ${selectedOrder.shipping?.entrance ? selectedOrder.shipping.entrance + '-р орц' : ''} ${selectedOrder.shipping?.door ? selectedOrder.shipping.door + '-р хаалга' : ''}`.replace(/\s+/g, ' ').trim();
                                                             navigator.clipboard.writeText(addr);
@@ -668,8 +725,8 @@ export default function AdminOrdersPage() {
                                                     >
                                                         <Check className="w-4 h-4" />
                                                     </button>
-                                                    
-                                                    <button 
+
+                                                    <button
                                                         onClick={() => {
                                                             const itemsText = selectedOrder.items.map(i => `- ${i.name || 'Бараа'}${i.selectedOptions ? ' (' + Object.values(i.selectedOptions).join(', ') + ')' : ''} x${i.quantity}`).join('\n');
                                                             const addr = `${selectedOrder.shipping?.city || selectedOrder.city}, ${selectedOrder.shipping?.district || selectedOrder.district}, ${selectedOrder.shipping?.khoroo || selectedOrder.khoroo || ''} ${selectedOrder.shipping?.street || selectedOrder.street || ''} ${selectedOrder.shipping?.apartment || selectedOrder.apartment || ''} ${selectedOrder.shipping?.entrance ? selectedOrder.shipping.entrance + '-р орц' : ''} ${selectedOrder.shipping?.door ? selectedOrder.shipping.door + '-р хаалга' : ''}`.replace(/\s+/g, ' ').trim();
@@ -714,7 +771,7 @@ export default function AdminOrdersPage() {
                                                                     {item.name || 'Тодорхойгүй бараа'}
                                                                 </p>
                                                             </div>
-                                                            
+
                                                             {/* Variants / Options */}
                                                             {item.selectedOptions && Object.keys(item.selectedOptions).length > 0 ? (
                                                                 <div className="flex flex-wrap gap-2 mt-2">
@@ -740,7 +797,7 @@ export default function AdminOrdersPage() {
                                                                 </p>
                                                             </div>
                                                         </div>
-                                                        
+
                                                         {itemPrice === 0 && (
                                                             <p className="text-[9px] text-red-500 px-2 py-0.5 bg-red-500/10 rounded mt-2 flex items-center gap-1.5 w-fit font-bold">
                                                                 <AlertCircle className="w-3 h-3" /> Үнэ тодорхойгүй
@@ -772,6 +829,179 @@ export default function AdminOrdersPage() {
                             </div>
                         </motion.div>
                     </>
+                )}
+            </AnimatePresence>
+            {/* Add Order Modal */}
+            <AnimatePresence>
+                {isAddModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="bg-slate-900 border border-slate-800 rounded-3xl w-full max-w-lg overflow-hidden flex flex-col max-h-[90vh]"
+                        >
+                            <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+                                <h2 className="text-xl font-bold text-white">Шинэ захиалга нэмэх</h2>
+                                <button onClick={() => setIsAddModalOpen(false)} className="text-slate-400 hover:text-white">
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            <form onSubmit={handleAddOrder} className="p-6 flex-1 overflow-y-auto space-y-6">
+                                {/* User Selection */}
+                                <div className="space-y-2 relative">
+                                    <label className="text-xs font-bold text-slate-400 uppercase">Хэрэглэгч сонгох</label>
+                                    {!addSelectedUser ? (
+                                        <div>
+                                            <input
+                                                type="text"
+                                                placeholder="Нэр эсвэл утсаар хайх..."
+                                                value={addSearchUser}
+                                                onChange={e => setAddSearchUser(e.target.value)}
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-amber-500 focus:outline-none"
+                                            />
+                                            {addSearchUser && usersData?.users && usersData.users.length > 0 && (
+                                                <div className="absolute z-10 w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl shadow-xl overflow-hidden">
+                                                    {usersData.users.map((u: any) => (
+                                                        <div
+                                                            key={u._id}
+                                                            onClick={() => {
+                                                                setAddSelectedUser(u);
+                                                                setAddSearchUser('');
+                                                            }}
+                                                            className="px-4 py-3 hover:bg-slate-700 cursor-pointer text-sm"
+                                                        >
+                                                            <div className="text-white font-bold">{u.name || 'Нэргүй'}</div>
+                                                            <div className="text-slate-400 text-xs">{u.phone || 'Утасгүй'}</div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            {addSearchUser && (!usersData?.users || usersData.users.length === 0) && (
+                                                <div className="absolute z-10 w-full mt-2 bg-slate-800 border border-slate-700 rounded-xl p-4 text-center text-slate-400 text-sm">
+                                                    Хэрэглэгч олдсонгүй
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => {
+                                                            setAddSelectedUser({ _id: 'guest', name: addSearchUser, phone: '' });
+                                                            setAddSearchUser('');
+                                                        }}
+                                                        className="block w-full mt-2 text-amber-500 font-bold hover:underline"
+                                                    >
+                                                        "{addSearchUser}" гэж зочноор бүртгэх
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center justify-between p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                                            <div>
+                                                <div className="text-amber-500 font-bold">{addSelectedUser.name || 'Зочин'}</div>
+                                                <div className="text-amber-500/70 text-xs">{addSelectedUser.phone}</div>
+                                            </div>
+                                            <button type="button" onClick={() => setAddSelectedUser(null)} className="text-slate-400 hover:text-white p-2">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Product Selection */}
+                                <div className="space-y-2 relative">
+                                    <label className="text-xs font-bold text-slate-400 uppercase">Бараа сонгох *</label>
+                                    {!addSelectedProduct ? (
+                                        <div>
+                                            <input
+                                                type="text"
+                                                placeholder="Барааны нэрээр хайх..."
+                                                value={addSearchProduct}
+                                                onChange={e => setAddSearchProduct(e.target.value)}
+                                                className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-amber-500 focus:outline-none"
+                                            />
+                                            {addSearchProduct && productsData?.products && productsData.products.length > 0 && (
+                                                <div className="absolute z-10 w-full mt-2 max-h-60 overflow-y-auto bg-slate-800 border border-slate-700 rounded-xl shadow-xl">
+                                                    {productsData.products.map((p: any) => (
+                                                        <div
+                                                            key={p.id}
+                                                            onClick={() => {
+                                                                setAddSelectedProduct(p);
+                                                                setAddSearchProduct('');
+                                                                setAddPaidAmount(p.price.toString());
+                                                            }}
+                                                            className="flex items-center gap-3 px-4 py-3 hover:bg-slate-700 cursor-pointer"
+                                                        >
+                                                            <div className="w-10 h-10 rounded bg-slate-900 relative shrink-0">
+                                                                {p.image && <Image src={p.image} alt={p.name} fill className="object-contain p-1" />}
+                                                            </div>
+                                                            <div className="min-w-0 flex-1">
+                                                                <div className="text-white text-sm font-bold truncate">{p.name}</div>
+                                                                <div className="text-amber-500 text-xs font-black">{formatPrice(p.price)}</div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-4 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+                                            <div className="w-12 h-12 rounded bg-slate-900 relative shrink-0">
+                                                {addSelectedProduct.image && <Image src={addSelectedProduct.image} alt={addSelectedProduct.name} fill className="object-contain p-1" />}
+                                            </div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="text-emerald-400 font-bold truncate text-sm">{addSelectedProduct.name}</div>
+                                                <div className="text-emerald-500/70 text-xs">{formatPrice(addSelectedProduct.price)}</div>
+                                            </div>
+                                            <button type="button" onClick={() => setAddSelectedProduct(null)} className="text-slate-400 hover:text-white p-2">
+                                                <X className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Paid Amount */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-400 uppercase">Төлсөн дүн (₮) *</label>
+                                    <input
+                                        type="number"
+                                        required
+                                        value={addPaidAmount}
+                                        onChange={e => setAddPaidAmount(e.target.value)}
+                                        placeholder="0"
+                                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-amber-500 focus:outline-none"
+                                    />
+                                </div>
+
+                                {/* Bank */}
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-400 uppercase">Шилжүүлсэн Банк</label>
+                                    <select
+                                        value={addBank}
+                                        onChange={e => setAddBank(e.target.value)}
+                                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white focus:border-amber-500 focus:outline-none appearance-none"
+                                    >
+                                        <option value="">Сонгох...</option>
+                                        <option value="Хаан Банк">Хаан Банк</option>
+                                        <option value="Голомт Банк">Голомт Банк</option>
+                                        <option value="Хас Банк">Хас Банк</option>
+                                        <option value="Төрийн Банк">Төрийн Банк</option>
+                                        <option value="Худалдаа Хөгжлийн Банк">Худалдаа Хөгжлийн Банк</option>
+                                        <option value="Капитрон Банк">Капитрон Банк</option>
+                                        <option value="М банк">М банк</option>
+                                        <option value="Бусад">Бусад</option>
+                                    </select>
+                                </div>
+
+                                <button
+                                    type="submit"
+                                    disabled={isSubmittingAdd || !addSelectedProduct || !addPaidAmount}
+                                    className="w-full py-4 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 rounded-xl font-black text-sm flex items-center justify-center gap-2 transition-colors mt-4"
+                                >
+                                    {isSubmittingAdd ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Захиалга үүсгэх'}
+                                </button>
+                            </form>
+                        </motion.div>
+                    </div>
                 )}
             </AnimatePresence>
         </div>
