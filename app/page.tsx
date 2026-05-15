@@ -70,6 +70,18 @@ export default function HomePage() {
   } = useProducts({
     minPrice: minPrice || undefined,
     maxPrice: maxPrice || undefined,
+    stockStatus:
+      activeFilter === "Бэлэн"
+        ? "in-stock"
+        : activeFilter === "Захиалга"
+          ? "pre-order"
+          : undefined,
+    section:
+      activeFilter === "Бэлэн"
+        ? "Бэлэн"
+        : activeFilter === "Захиалга"
+          ? "Захиалга"
+          : undefined,
   });
 
   // Fetch featured products separately for carousels to keep them consistent across tabs

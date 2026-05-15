@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
     const minPrice = searchParams.get("minPrice");
     const maxPrice = searchParams.get("maxPrice");
     const stockStatus = searchParams.get("stockStatus");
+    const section = searchParams.get("section");
 
     const products = await getCollection("products");
     const filter: Record<string, any> = {};
@@ -43,10 +44,24 @@ export async function GET(request: NextRequest) {
       filter.category = category;
     }
 
+    if (section) {
+      filter.sections = section;
+    }
+
     const conditions: object[] = [];
 
-    if (stockStatus) {
-      filter.stockStatus = stockStatus;
+    if (stockStatus && section) {
+      // Home filter logic: EITHER in section OR has status
+      conditions.push({
+        $or: [{ sections: section }, { stockStatus: stockStatus }],
+      });
+    } else {
+      if (stockStatus) {
+        filter.stockStatus = stockStatus;
+      }
+      if (section) {
+        filter.sections = section;
+      }
     }
 
     const featured = searchParams.get("featured");
