@@ -44,14 +44,11 @@ export async function GET(request: NextRequest) {
       filter.category = category;
     }
 
-    if (section) {
-      filter.sections = section;
-    }
-
     const conditions: object[] = [];
 
     if (stockStatus && section) {
-      // Home filter logic: EITHER in section OR has status
+      // Home filter logic: EITHER in section OR has matching stockStatus
+      // Do NOT set filter.sections directly here — that would AND with the $or
       conditions.push({
         $or: [{ sections: section }, { stockStatus: stockStatus }],
       });
