@@ -421,6 +421,14 @@ export default function AdminOrdersPage() {
                                                 <p className="text-[10px] text-slate-600 font-mono mt-0.5">#{order._id.slice(-8).toUpperCase()}</p>
                                             </div>
                                             <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                                                <a
+                                                    href={`tel:${order.phone}`}
+                                                    className="px-3 py-2 bg-emerald-500/20 text-emerald-400 text-xs font-bold rounded-xl border border-emerald-500/20 hover:bg-emerald-500/30 transition-colors flex items-center gap-1.5"
+                                                    title="Дуудах"
+                                                >
+                                                    <Phone className="w-3 h-3" />
+                                                    <span>Call</span>
+                                                </a>
                                                 {order.status === 'pending' && (
                                                     <button
                                                         onClick={() => handleStatusQuickChange(order._id, 'confirmed')}
@@ -502,6 +510,14 @@ export default function AdminOrdersPage() {
                                                         </td>
                                                         <td className="px-4 py-4">
                                                             <div className="flex gap-2" onClick={e => e.stopPropagation()}>
+                                                                <a
+                                                                    href={`tel:${order.phone}`}
+                                                                    className="px-3 py-1.5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 rounded-lg border border-emerald-500/20 transition-colors flex items-center gap-1.5 text-xs font-bold"
+                                                                    title="Дуудах"
+                                                                >
+                                                                    <Phone className="w-3 h-3" />
+                                                                    <span>Call</span>
+                                                                </a>
                                                                 {order.status === 'pending' && (
                                                                     <button
                                                                         onClick={() => handleStatusQuickChange(order._id, 'confirmed')}
@@ -645,6 +661,13 @@ export default function AdminOrdersPage() {
                                                         >
                                                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></svg>
                                                         </button>
+                                                        <a
+                                                            href={`tel:${selectedOrder.phone}`}
+                                                            className="p-1 hover:bg-slate-800 rounded transition-colors text-emerald-400 hover:text-emerald-300"
+                                                            title="Дуудах"
+                                                        >
+                                                            <Phone className="w-4 h-4" />
+                                                        </a>
                                                     </div>
                                                 </div>
                                             </div>
