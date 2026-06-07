@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { Plus, Trash2, Edit2, Save, X, MoveUp, MoveDown, Image as ImageIcon, UploadCloud, GripVertical } from 'lucide-react';
 import toast from 'react-hot-toast';
-import { CldUploadWidget } from 'next-cloudinary';
+import AdminImageUpload from '@/components/admin/AdminImageUpload';
 import { Reorder } from 'framer-motion';
 import { Banner } from '@/types/Banner';
 
@@ -160,33 +160,25 @@ export default function BannerAdminPage() {
                         <div className="space-y-4">
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Зураг оруулах <span className="text-red-500">*</span></label>
-                                <CldUploadWidget
-                                    uploadPreset="ml_default"
-                                    onSuccess={(result) => {
-                                        if (typeof result.info === 'object' && 'secure_url' in result.info) {
-                                            setNewBanner({ ...newBanner, image: result.info.secure_url });
-                                        }
-                                    }}
-                                >
-                                    {({ open }) => (
-                                        <div
-                                            onClick={() => open()}
-                                            className="w-full flex items-center justify-center gap-3 px-4 py-3.5 bg-gray-50 border-2 border-dashed border-gray-200 hover:border-orange-400 hover:bg-orange-50 cursor-pointer rounded-xl transition-all"
-                                        >
-                                            {newBanner.image ? (
-                                                <div className="flex items-center gap-3 w-full">
-                                                    <img src={newBanner.image} alt="Preview" className="w-12 h-12 object-cover rounded-lg border border-gray-200" />
-                                                    <span className="text-sm font-medium text-gray-700 truncate">{newBanner.image}</span>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    <UploadCloud className="w-5 h-5 text-gray-400" />
-                                                    <span className="text-sm font-medium text-gray-500">Зураг сонгох (Cloudinary)</span>
-                                                </>
-                                            )}
+                                {newBanner.image ? (
+                                    <div className="w-full flex items-center justify-between gap-3 px-4 py-3.5 bg-gray-50 border border-gray-200 rounded-xl">
+                                        <div className="flex items-center gap-3">
+                                            <img src={newBanner.image} alt="Preview" className="w-12 h-12 object-cover rounded-lg border border-gray-200" />
+                                            <span className="text-sm font-medium text-gray-700 truncate">{newBanner.image}</span>
                                         </div>
-                                    )}
-                                </CldUploadWidget>
+                                        <button
+                                            onClick={() => setNewBanner({ ...newBanner, image: '' })}
+                                            className="p-2 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg"
+                                        >
+                                            <X className="w-4 h-4" />
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <AdminImageUpload
+                                        onUpload={(url) => setNewBanner({ ...newBanner, image: url })}
+                                        placeholder="Зураг сонгох"
+                                    />
+                                )}
                             </div>
                             <div>
                                 <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-1.5 ml-1">Гарчиг (Заавал биш)</label>

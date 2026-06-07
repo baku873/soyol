@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Loader2, Save, ArrowLeft, Image as ImageIcon, Box, FileText, CheckCircle2, Star, List, Plus, Trash2, Upload, Layers } from 'lucide-react';
-import { CldUploadWidget } from 'next-cloudinary';
+import AdminImageUpload from './AdminImageUpload';
 import useSWR from 'swr';
 import toast from 'react-hot-toast';
 import VariantsManager, { ProductOption, ProductVariant } from './VariantsManager';
@@ -317,29 +317,10 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting }: Pro
                                     )}
 
                                     {!formData.image && (
-                                        <CldUploadWidget
-                                            uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"}
-                                            onSuccess={(result: any) => {
-                                                const url = result?.info?.secure_url;
-                                                if (url) {
-                                                    setFormData(prev => ({ ...prev, image: url }));
-                                                }
-                                            }}
-                                        >
-                                            {({ open }) => (
-                                                <button
-                                                    type="button"
-                                                    onClick={() => open()}
-                                                    className="w-full py-12 bg-slate-950 border-2 border-dashed border-slate-800 rounded-2xl flex flex-col items-center justify-center gap-3 text-slate-500 hover:text-amber-500 hover:border-amber-500/50 hover:bg-amber-500/5 transition-all group"
-                                                >
-                                                    <div className="p-4 bg-slate-900 rounded-full group-hover:bg-amber-500/10 transition-colors">
-                                                        <ImageIcon className="w-8 h-8" />
-                                                    </div>
-                                                    <span className="font-bold">Зураг сонгох</span>
-                                                    <span className="text-[10px] uppercase tracking-widest opacity-60">Үндсэн зураг заавал байх шаардлагатай</span>
-                                                </button>
-                                            )}
-                                        </CldUploadWidget>
+                                        <AdminImageUpload
+                                            onUpload={(url) => setFormData(prev => ({ ...prev, image: url }))}
+                                            placeholder="Зураг сонгох"
+                                        />
                                     )}
                                 </div>
                             </div>
@@ -369,29 +350,14 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting }: Pro
                                 </div>
 
                                 {(formData.images || []).length < 8 && (
-                                    <CldUploadWidget
-                                        uploadPreset={process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "ml_default"}
-                                        onSuccess={(result: any) => {
-                                            const url = result?.info?.secure_url;
-                                            if (url) {
-                                                setFormData(prev => ({
-                                                    ...prev,
-                                                    images: [...(prev.images || []), url]
-                                                }));
-                                            }
-                                        }}
-                                    >
-                                        {({ open }) => (
-                                            <button
-                                                type="button"
-                                                onClick={() => open()}
-                                                className="w-full flex items-center justify-center gap-2 py-4 bg-slate-950 border border-slate-800 rounded-xl text-slate-400 hover:text-white hover:bg-slate-900 transition-all text-sm font-bold border-dashed"
-                                            >
-                                                <Plus className="w-4 h-4" />
-                                                Зураг нэмэх
-                                            </button>
-                                        )}
-                                    </CldUploadWidget>
+                                    <AdminImageUpload
+                                        onUpload={(url) => setFormData(prev => ({
+                                            ...prev,
+                                            images: [...(prev.images || []), url]
+                                        }))}
+                                        placeholder="Зураг нэмэх"
+                                        multiple
+                                    />
                                 )}
                             </div>
                         </div>

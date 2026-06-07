@@ -1,9 +1,8 @@
 'use client';
 
-import { CldUploadWidget } from 'next-cloudinary';
-import { ImagePlus, Trash, GripVertical, Star } from 'lucide-react';
+import AdminImageUpload from './AdminImageUpload';
+import { Trash, Star } from 'lucide-react';
 import Image from 'next/image';
-import { useCallback, useState } from 'react';
 
 interface MultiImageUploadProps {
     disabled?: boolean;
@@ -16,11 +15,6 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
     onChange,
     value
 }) => {
-    const onUpload = useCallback((result: any) => {
-        if (result.info && result.info.secure_url) {
-            onChange((prev) => [...prev, result.info.secure_url]);
-        }
-    }, [onChange]);
 
     const onRemove = (urlToRemove: string) => {
         onChange((prev) => prev.filter((url) => url !== urlToRemove));
@@ -81,32 +75,12 @@ const MultiImageUpload: React.FC<MultiImageUploadProps> = ({
                 </div>
             )}
 
-            <CldUploadWidget
-                onSuccess={onUpload}
-                uploadPreset="Buddha"
-                options={{
-                    maxFiles: 10
-                }}
-            >
-                {({ open }) => {
-                    const onClick = () => {
-                        open();
-                    };
-
-                    return (
-                        <button
-                            type="button"
-                            disabled={disabled}
-                            onClick={onClick}
-                            className="w-full px-4 py-8 bg-slate-800/50 border border-white/10 border-dashed rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 hover:border-amber-500/50 transition-all flex flex-col items-center justify-center gap-2"
-                        >
-                            <ImagePlus className="h-8 w-8 mb-2" />
-                            <span className="text-sm font-medium">{value && value.length > 0 ? 'Нэмэлт зураг оруулах' : 'Зураг оруулах'}</span>
-                            <span className="text-xs text-slate-500">Олон зураг зэрэг сонгож болно (Max 10)</span>
-                        </button>
-                    );
-                }}
-            </CldUploadWidget>
+            <AdminImageUpload
+                disabled={disabled}
+                onUpload={(url) => onChange((prev) => [...prev, url])}
+                placeholder={value && value.length > 0 ? 'Нэмэлт зураг оруулах' : 'Зураг оруулах'}
+                multiple
+            />
         </div>
     );
 }
