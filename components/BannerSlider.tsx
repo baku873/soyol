@@ -8,8 +8,10 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Banner } from '@/types/Banner';
 
 export default function BannerSlider() {
-  const [banners, setBanners] = useState<Banner[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const banners: Banner[] = [
+    { id: '1', image: '/soyol-banner.jpg', title: 'Soyol Banner 1', active: true, order: 1 },
+    { id: '2', image: '/soyol-banner.png', title: 'Soyol Banner 2', active: true, order: 2 }
+  ];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0); // -1 for left, 1 for right
   const [isHovered, setIsHovered] = useState(false);
@@ -33,14 +35,6 @@ export default function BannerSlider() {
   }, [banners.length, currentIndex]);
 
   useEffect(() => {
-    fetch('/api/banners')
-      .then(res => res.json())
-      .then(data => setBanners(data.banners || []))
-      .catch(err => console.error('Error fetching banners:', err))
-      .finally(() => setIsLoading(false));
-  }, []);
-
-  useEffect(() => {
     if (isHovered || banners.length <= 1) return;
     const interval = setInterval(nextSlide, 5000);
     return () => clearInterval(interval);
@@ -60,7 +54,7 @@ export default function BannerSlider() {
     }),
   };
 
-  if (isLoading || banners.length === 0) {
+  if (banners.length === 0) {
     return (
       <div className="w-full max-w-[1600px] mx-auto rounded-[2rem] bg-gray-100 animate-pulse aspect-[21/9] sm:aspect-[21/7] lg:aspect-[21/6]" />
     );
